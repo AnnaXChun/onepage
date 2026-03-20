@@ -19,16 +19,18 @@ function Login() {
 
     try {
       const response = await login(formData)
-      if (response.code === 200) {
+      if (response.code === 200 && response.data?.token) {
         localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+        // Store user info from form data since backend doesn't return user object
+        const userInfo = { username: formData.username }
+        localStorage.setItem('user', JSON.stringify(userInfo))
         // Reload to update auth state
         window.location.href = '/'
       } else {
         setError(response.message || '登录失败')
       }
     } catch (err) {
-      setError(err.message || '网络错误')
+      setError('用户名或密码错误')
     } finally {
       setLoading(false)
     }

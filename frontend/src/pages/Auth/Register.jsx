@@ -34,16 +34,18 @@ function Register() {
         password: formData.password,
         email: formData.email
       })
-      if (response.code === 200) {
+      if (response.code === 200 && response.data?.token) {
         localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+        // Store user info from form data since backend doesn't return user object
+        const userInfo = { username: formData.username, email: formData.email }
+        localStorage.setItem('user', JSON.stringify(userInfo))
         // Reload to update auth state
         window.location.href = '/'
       } else {
         setError(response.message || 'Registration failed')
       }
     } catch (err) {
-      setError(err.message || 'Network error')
+      setError('注册失败，用户名可能已存在')
     } finally {
       setLoading(false)
     }
