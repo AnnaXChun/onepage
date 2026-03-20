@@ -138,17 +138,40 @@ function Home() {
         <div className="relative mt-20 max-w-4xl mx-auto">
           <div className="grid grid-cols-3 gap-4">
             {[
-              { title: 'Minimal', color: 'from-zinc-800 to-zinc-900' },
-              { title: 'Gallery', color: 'from-purple-900 to-zinc-900' },
-              { title: 'Vintage', color: 'from-amber-900 to-zinc-900' },
+              {
+                title: 'Minimal',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=750&fit=crop',
+                color: 'from-zinc-700 to-zinc-900'
+              },
+              {
+                title: 'Gallery',
+                image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=600&h=750&fit=crop',
+                color: 'from-purple-700 to-zinc-900'
+              },
+              {
+                title: 'Vintage',
+                image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=600&h=750&fit=crop',
+                color: 'from-amber-700 to-zinc-900'
+              },
             ].map((template, i) => (
               <div
                 key={i}
                 className={`aspect-[4/5] rounded-2xl overflow-hidden animate-scale-in stagger-${i + 2}`}
                 style={{ animationDelay: `${(i + 2) * 100}ms` }}
               >
-                <div className={`w-full h-full bg-gradient-to-br ${template.color} flex items-center justify-center`}>
-                  <span className="text-3xl font-bold text-white/10">{template.title[0]}</span>
+                <div className="relative w-full h-full">
+                  <img
+                    src={template.image}
+                    alt={template.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${template.color} opacity-60`} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-5xl font-bold text-white/20">{template.title[0]}</span>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <span className="text-lg font-semibold text-white drop-shadow-lg">{template.title}</span>
+                  </div>
                 </div>
               </div>
             ))}
