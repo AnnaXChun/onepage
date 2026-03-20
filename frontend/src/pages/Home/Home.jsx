@@ -6,6 +6,7 @@ import TemplateSelect from '../../components/TemplateSelect/TemplateSelect'
 import Preview from '../../components/Preview/Preview'
 import Payment from '../../components/Payment/Payment'
 import ShareLink from '../../components/ShareLink/ShareLink'
+import TemplateGallery from '../../components/TemplateGallery/TemplateGallery'
 
 const STEPS = {
   LANDING: 'landing',
@@ -22,6 +23,7 @@ function Home() {
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [generatedBlog, setGeneratedBlog] = useState(null)
   const [user, setUser] = useState(null)
+  const [showGallery, setShowGallery] = useState(false)
 
   // Load user from localStorage on mount and on storage event
   useEffect(() => {
@@ -63,6 +65,15 @@ function Home() {
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template)
     setCurrentStep(STEPS.PREVIEW)
+  }
+
+  const handleGallerySelect = (template) => {
+    setSelectedTemplate(template)
+    setShowGallery(false)
+    // If no image uploaded yet, go to upload step; otherwise go to preview
+    if (!uploadedImage) {
+      setCurrentStep(STEPS.UPLOAD)
+    }
   }
 
   const handlePreviewGenerated = (blog) => {
@@ -128,7 +139,10 @@ function Home() {
                 </svg>
               </span>
             </button>
-            <button className="btn-secondary !py-4">
+            <button
+              onClick={() => setShowGallery(true)}
+              className="btn-secondary !py-4"
+            >
               View Templates
             </button>
           </div>
@@ -339,6 +353,12 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-textPrimary">
       {renderStep()}
+      {showGallery && (
+        <TemplateGallery
+          onClose={() => setShowGallery(false)}
+          onSelect={handleGallerySelect}
+        />
+      )}
     </div>
   )
 }
