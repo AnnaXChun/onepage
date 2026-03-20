@@ -1,0 +1,9 @@
+{
+    "name": "gallery-display",
+    "displayName": "图片展示型",
+    "description": "图片为主的瀑布流/网格布局，适合摄影师和设计师展示作品",
+    "category": "portfolio",
+    "tags": ["gallery", "portfolio", "images", "grid", "dark"],
+    "author": "Vibe Team",
+    "version": "1.0.0"
+}

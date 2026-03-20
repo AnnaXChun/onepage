@@ -1,0 +1,34 @@
+database:
+  host: localhost
+  port: 3306
+  username: root
+  password: root
+  name: onepage
+
+redis:
+  host: localhost
+  port: 6379
+
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
+app:
+  host: 0.0.0.0
+  port: 8080
+
+jwt:
+  secret: onepage-secret-key-for-jwt-token-generation
+  expiration: 86400000
+
+upload:
+  path: ./uploads
+
+wechatpay:
+  app-id: your-app-id
+  mch-id: your-merchant-id
+  api-key: your-api-key
+  notify-url: http://your-domain/api/payment/notify
+  refund-notify-url: http://your-domain/api/payment/refund-notify

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{USER_NAME}}</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="main">
+        <section class="intro">
+            <img src="{{USER_IMAGE}}" alt="{{USER_NAME}}" class="photo">
+            <h1 class="name">{{USER_NAME}}</h1>
+            <p class="bio">{{USER_BIO}}</p>
+        </section>
+
+        <section class="posts">
+            {{BLOG_CONTENT}}
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

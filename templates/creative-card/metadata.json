@@ -1,0 +1,9 @@
+{
+    "name": "creative-card",
+    "displayName": "创意卡片型",
+    "description": "卡片式布局，悬停动效丰富，渐变背景和3D翻转效果",
+    "category": "creative",
+    "tags": ["creative", "card", "hover", "gradient", "3d"],
+    "author": "Vibe Team",
+    "version": "1.0.0"
+}

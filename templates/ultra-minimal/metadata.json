@@ -1,0 +1,9 @@
+{
+    "name": "ultra-minimal",
+    "displayName": "极简主义型",
+    "description": "大量留白，只有必要元素，极简黑白设计",
+    "category": "minimal",
+    "tags": ["ultra-minimal", "minimalist", "clean", "simple", "blackwhite"],
+    "author": "Vibe Team",
+    "version": "1.0.0"
+}

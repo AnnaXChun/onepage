@@ -1,0 +1,9 @@
+{
+    "name": "minimal-simple",
+    "displayName": "简约文字型",
+    "description": "极简设计，大标题配合简洁文字描述，用户图片作为侧边装饰",
+    "category": "personal",
+    "tags": ["minimal", "simple", "clean", "personal"],
+    "author": "Vibe Team",
+    "version": "1.0.0"
+}

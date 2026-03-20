@@ -1,0 +1,9 @@
+{
+    "name": "vintage-style",
+    "displayName": "复古风格型",
+    "description": "复古配色暖色调、纸张质感背景，适合文艺青年和怀旧风格",
+    "category": "vintage",
+    "tags": ["vintage", "retro", "warm", "paper", "antique"],
+    "author": "Vibe Team",
+    "version": "1.0.0"
+}
