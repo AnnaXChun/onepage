@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function ShareLink({ blog, onRestart }) {
   const [copied, setCopied] = useState(false)
@@ -95,12 +96,20 @@ function ShareLink({ blog, onRestart }) {
           </div>
 
           {/* Create Another */}
-          <button
-            onClick={onRestart}
-            className="px-8 py-3 border border-zinc-700 text-gray-400 font-medium rounded-full hover:border-zinc-500 hover:text-white transition-all"
-          >
-            Create another page
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={onRestart}
+              className="px-8 py-3 border border-zinc-700 text-gray-400 font-medium rounded-full hover:border-zinc-500 hover:text-white transition-all"
+            >
+              Create another page
+            </button>
+            <Link
+              to="/orders"
+              className="px-8 py-3 bg-zinc-800 text-white font-medium rounded-full hover:bg-zinc-700 transition-all"
+            >
+              View My Orders
+            </Link>
+          </div>
         </div>
       </main>
 
