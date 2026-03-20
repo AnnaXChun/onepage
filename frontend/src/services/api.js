@@ -94,4 +94,16 @@ export const getShareLink = async (blogId) => {
   return response.data
 }
 
+// 获取博客内容 by shareCode
+export const getBlogByShareCode = async (shareCode) => {
+  const response = await api.get(`/blog/share/${shareCode}`)
+  return response.data
+}
+
+// 创建博客
+export const createBlog = async (blogData) => {
+  const response = await api.post('/blog/create', blogData)
+  return response.data
+}
+
 export default api

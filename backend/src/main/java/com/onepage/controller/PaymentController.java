@@ -116,7 +116,7 @@ public class PaymentController {
             // 验证回调签名（微信）
             if (!weChatPayService.verifyCallback(params)) {
                 log.warn("支付回调签名验证失败: {}", orderNo);
-                return Result.error(Map.of("message", "签名验证失败"));
+                return Result.error("签名验证失败");
             }
 
             // 确认支付

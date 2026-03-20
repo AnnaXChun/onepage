@@ -27,6 +27,10 @@ public class BlogController {
             HttpServletRequest request) {
         try {
             Long userId = getUserIdFromRequest(request);
+            // Use default user ID (1) for guest/demo users
+            if (userId == null) {
+                userId = 1L;
+            }
             Blog blog = blogService.createBlog(
                 userId,
                 dto.getTitle(),
@@ -116,6 +120,13 @@ public class BlogController {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
-        return jwtUtil.getUserIdFromToken(token);
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        try {
+            return jwtUtil.getUserIdFromToken(token);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

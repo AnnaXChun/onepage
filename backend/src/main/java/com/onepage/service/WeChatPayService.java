@@ -191,10 +191,5 @@ public class WeChatPayService {
         public int getHttpReadTimeoutMs() {
             return 8000;
         }
-
-        @Override
-        public boolean useSandbox() {
-            return sandbox;
-        }
     }
 }

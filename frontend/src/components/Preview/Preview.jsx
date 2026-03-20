@@ -1,21 +1,40 @@
 import { useState, useEffect } from 'react'
+import { createBlog } from '../../services/api'
 
 function Preview({ image, template, onGenerated, onBack }) {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Simulate generation
-    const timer = setTimeout(() => {
-      const mockResult = {
-        id: 'blog_' + Date.now(),
-        title: 'My Blog',
-        content: 'Welcome to my personal blog! This is a blog generated from your image.',
+    const generateAndCreateBlog = async () => {
+      try {
+        // Create actual blog in database
+        const blogData = {
+          title: 'My Blog',
+          content: 'Welcome to my personal blog! This is a blog generated from your image.\n\nWith advanced AI technology, we extract colors, style, and atmosphere from your photo to create a unique personal blog site. No coding knowledge required.\n\nShare your story with the world.',
+          coverImage: image,
+          templateId: template?.id || 'minimal-simple',
+        }
+        const response = await createBlog(blogData)
+        if (response.code === 200 && response.data) {
+          onGenerated(response.data)
+        } else {
+          setError(response.message || 'Failed to create blog')
+        }
+      } catch (err) {
+        setError('Failed to create blog. Please try again.')
+        console.error('Error creating blog:', err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
-      onGenerated(mockResult)
+    }
+
+    // Simulate generation delay, then create blog
+    const timer = setTimeout(() => {
+      generateAndCreateBlog()
     }, 2000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [image, template])
 
   if (loading) {
     return (

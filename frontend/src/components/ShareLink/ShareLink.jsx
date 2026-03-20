@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom'
 function ShareLink({ blog, onRestart }) {
   const [copied, setCopied] = useState(false)
 
+  // Use local dev URL for testing, replace with production URL in deployment
+  const isLocalhost = window.location.hostname === 'localhost'
   const shareUrl = blog?.shareCode
-    ? `https://vibe.page/${blog.shareCode}`
+    ? isLocalhost
+      ? `http://localhost:5173/blog/${blog.shareCode}`
+      : `https://vibe.page/blog/${blog.shareCode}`
     : `https://vibe.page/blog_${Date.now().toString(36)}`
 
   const handleCopy = async () => {
