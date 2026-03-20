@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 import Upload from '../../components/Upload/Upload'
 import TemplateSelect from '../../components/TemplateSelect/TemplateSelect'
@@ -74,7 +75,10 @@ function Home() {
         <div className="hidden md:flex items-center gap-8">
           <button className="text-textSecondary hover:text-textPrimary transition-colors">Templates</button>
           <button className="text-textSecondary hover:text-textPrimary transition-colors">Pricing</button>
-          <button className="btn-secondary !py-2 !px-6 !text-sm">Sign In</button>
+          <Link to="/login" className="btn-secondary !py-2 !px-6 !text-sm">Sign In</Link>
+          <Link to="/register" className="px-6 py-2 bg-textPrimary text-background font-medium rounded-full hover:scale-[1.02] transition-all text-sm">
+            Get Started
+          </Link>
         </div>
       </nav>
 

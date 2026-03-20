@@ -10,6 +10,15 @@ const api = axios.create({
   },
 })
 
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 // 上传图片
 export const uploadImage = async (file) => {
   const formData = new FormData()
@@ -104,6 +113,30 @@ export const getBlogByShareCode = async (shareCode) => {
 export const createBlog = async (blogData) => {
   const response = await api.post('/blog/create', blogData)
   return response.data
+}
+
+// 登录
+export const login = async (data) => {
+  const response = await api.post('/user/login', data)
+  return response.data
+}
+
+// 注册
+export const register = async (data) => {
+  const response = await api.post('/user/register', data)
+  return response.data
+}
+
+// 获取用户信息
+export const getUserInfo = async () => {
+  const response = await api.get('/user/info')
+  return response.data
+}
+
+// 登出
+export const logout = async () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
 }
 
 export default api
