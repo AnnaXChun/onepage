@@ -1,36 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
-}
-
-.drag-active {
-  border-color: #6366f1 !important;
-  background-color: #eef2ff !important;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer base {
+  :root {
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: oklch(12% 0.02 280);
+    color: oklch(95% 0.01 280);
+    line-height: 1.6;
+  }
+
+  /* Remove default tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth focus outlines */
+  :focus-visible {
+    outline: 2px solid oklch(65% 0.18 280);
+    outline-offset: 2px;
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+@layer components {
+  /* Custom button styles */
+  .btn-primary {
+    @apply px-8 py-4 bg-[#oklch(65%_0.18_280)] text-white font-semibold rounded-full;
+    @apply hover:bg-[#oklch(70%_0.2_280)] transition-all duration-300;
+    @apply hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply px-8 py-4 border border-[#oklch(30%_0.02_280)] text-[#oklch(95%_0.01_280)] font-medium rounded-full;
+    @apply hover:border-[#oklch(40%_0.02_280)] transition-all duration-300;
+  }
+
+  .btn-ghost {
+    @apply px-6 py-3 text-[#oklch(75%_0.02_280)] font-medium;
+    @apply hover:text-[#oklch(95%_0.01_280)] transition-colors duration-200;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-[#oklch(18%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-2xl;
+  }
+
+  .card-elevated {
+    @apply bg-[#oklch(22%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-2xl;
+    @apply shadow-lg shadow-black/20;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-4 py-3 bg-[#oklch(18%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-xl;
+    @apply text-[#oklch(95%_0.01_280)] placeholder:text-[#oklch(55%_0.02_280)];
+    @apply focus:border-[#oklch(65%_0.18_280)] focus:ring-1 focus:ring-[#oklch(65%_0.18_280)];
+    @apply transition-all duration-200;
+  }
+
+  /* Stagger animation utilities */
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+  .stagger-5 { animation-delay: 500ms; }
+  .stagger-6 { animation-delay: 600ms; }
+}
+
+@layer utilities {
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, oklch(65% 0.18 280), oklch(75% 0.15 200));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow effect */
+  .glow {
+    box-shadow: 0 0 40px oklch(65% 0.18 280 / 0.15);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 300ms var(--ease-out-quart);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(12% 0.02 280);
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(30% 0.02 280);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(40% 0.02 280);
 }

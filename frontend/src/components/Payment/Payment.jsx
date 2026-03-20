@@ -142,52 +142,55 @@ function Payment({ template, onSuccess, onBack }) {
 
   // 渲染二维码展示
   const renderQRCode = () => (
-    <div className="text-center">
-      <div className="mb-4">
+    <div className="text-center animate-fade-in">
+      <div className="mb-6">
         {qrCodeUrl && (
           <div className="relative inline-block">
             {/* 模拟二维码展示 */}
-            <div className="w-48 h-48 bg-white mx-auto rounded-lg flex items-center justify-center">
+            <div className="w-56 h-56 bg-white mx-auto rounded-2xl flex items-center justify-center p-4 shadow-2xl">
               {paymentMethod === 'wechat' ? (
-                <div className="text-black text-center p-4">
-                  <svg className="w-24 h-24 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                <div className="text-background text-center">
+                  <svg className="w-28 h-28 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9.5 4C5.36 4 2 6.69 2 10c0 1.89 1.08 3.56 2.78 4.66L4 17l2.5-1.5c.89.31 1.87.5 2.91.5.34 0 .67-.02 1-.05-.1-.32-.2-.67-.2-1.05 0-1.54.91-2.79 2.16-3.22-.29-.45-.46-.99-.46-1.58 0-1.34 1.26-2.2 2.91-2.2.18 0 .35.01.53.03C14.16 5.32 11.97 4 9.5 4z"/>
                   </svg>
                   <p className="text-xs text-gray-500">WeChat Scan to Pay</p>
                 </div>
               ) : (
-                <div className="text-black text-center p-4">
-                  <svg className="w-24 h-24 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                <div className="text-background text-center">
+                  <svg className="w-28 h-28 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2.3 8.5c-.3.6-.9 1.1-1.7 1.4-.5.2-1 .3-1.5.3H8.5c-.6 0-1.1-.1-1.5-.3-.8-.3-1.4-.8-1.7-1.4-.3-.5-.4-1.1-.4-1.7 0-1.5 1.3-2.5 3.4-2.8 1.7-.2 3.3.3 4.3 1.2.9-.9 2.4-1.4 4-1.2 2 .3 3.4 1.3 3.4 2.8 0 .6-.1 1.2-.4 1.7z"/>
                   </svg>
                   <p className="text-xs text-gray-500">Alipay Scan to Pay</p>
                 </div>
               )}
             </div>
+            {/* Glow effect */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-xl -z-10" />
+
             {/* 超时提示 */}
             {expireMinutes <= 5 && expireMinutes > 0 && (
-              <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
-                <p className="text-red-400 font-medium">Expiring soon</p>
+              <div className="absolute inset-0 bg-background/80 rounded-2xl flex items-center justify-center">
+                <p className="text-error font-medium">Expiring soon</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      <p className="text-gray-400 text-sm mb-4">
+      <p className="text-textSecondary text-sm mb-4">
         {paymentMethod === 'wechat' ? 'Scan with WeChat to pay' : 'Scan with Alipay to pay'}
       </p>
 
-      <div className="flex justify-between items-center text-sm text-gray-500 mb-6">
-        <span>Order: {orderNo}</span>
-        <span className={expireMinutes <= 5 ? 'text-red-400' : ''}>
+      <div className="flex justify-between items-center text-sm text-textMuted mb-6">
+        <span>Order: {orderNo?.slice(-8)}</span>
+        <span className={expireMinutes <= 5 ? 'text-error font-medium' : ''}>
           Expires in: {expireMinutes}:00
         </span>
       </div>
 
       {/* 支付状态 */}
       {paymentStatus === 'PAID' && (
-        <div className="bg-green-500/20 text-green-400 py-3 px-6 rounded-full inline-flex items-center gap-2">
+        <div className="bg-success/20 text-success py-3 px-6 rounded-full inline-flex items-center gap-2 animate-scale-in">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -197,20 +200,20 @@ function Payment({ template, onSuccess, onBack }) {
 
       {/* 订单详情 */}
       {orderDetail && (
-        <div className="mt-6 bg-zinc-800/50 rounded-xl p-4 text-left">
-          <h4 className="text-sm font-medium text-gray-400 mb-2">Order Details</h4>
-          <div className="space-y-1 text-sm">
+        <div className="mt-6 bg-surface rounded-xl p-4 text-left border border-border">
+          <h4 className="text-sm font-medium text-textMuted mb-3">Order Details</h4>
+          <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Template</span>
-              <span>{orderDetail.templateName}</span>
+              <span className="text-textMuted">Template</span>
+              <span className="text-textPrimary">{orderDetail.templateName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Amount</span>
-              <span>${orderDetail.amount}</span>
+              <span className="text-textMuted">Amount</span>
+              <span className="text-textPrimary font-semibold">${orderDetail.amount}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Status</span>
-              <span className="text-green-400">{orderDetail.statusText}</span>
+              <span className="text-textMuted">Status</span>
+              <span className="text-success">{orderDetail.statusText}</span>
             </div>
           </div>
         </div>
@@ -219,9 +222,9 @@ function Payment({ template, onSuccess, onBack }) {
   )
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={() => {
               if (pollRef.current) {
@@ -229,64 +232,64 @@ function Payment({ template, onSuccess, onBack }) {
               }
               onBack()
             }}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
           <h1 className="text-lg font-semibold">Checkout</h1>
-          <div className="w-6" />
+          <div className="w-10" />
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 pt-24 pb-12">
+      <main className="flex-1 flex items-center justify-center px-8 pt-24 pb-12">
         <div className="w-full max-w-md">
           {/* 错误提示 */}
           {error && (
-            <div className="mb-6 bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl">
+            <div className="mb-6 bg-error/20 border border-error/30 text-error px-4 py-3 rounded-xl animate-fade-in">
               {error}
             </div>
           )}
 
           {/* 订单信息 */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl overflow-hidden bg-zinc-800">
+          <div className="text-center mb-8 animate-slide-up">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-2xl overflow-hidden bg-surface border border-border">
               {template?.thumbnail && (
                 <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover" />
               )}
             </div>
             <h2 className="text-2xl font-bold mb-2">{template?.name} Template</h2>
-            <p className="text-gray-500">Premium template purchase</p>
+            <p className="text-textMuted">Premium template purchase</p>
           </div>
 
           {/* 未发起支付时显示支付选项 */}
           {!orderNo && (
-            <div className="bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
-              <div className="flex justify-between items-center mb-8 pb-6 border-b border-zinc-800">
-                <span className="text-gray-400">Total</span>
+            <div className="bg-surface rounded-3xl p-8 border border-border animate-slide-up stagger-1">
+              <div className="flex justify-between items-center mb-8 pb-6 border-b border-border">
+                <span className="text-textSecondary">Total</span>
                 <span className="text-3xl font-bold">${template?.price || 0}</span>
               </div>
 
               {/* Payment methods */}
               <div className="mb-8">
-                <p className="text-sm text-gray-500 mb-4">Select payment method</p>
+                <p className="text-sm text-textMuted mb-4">Select payment method</p>
                 <div className="space-y-3">
                   {paymentMethods.map((method) => (
                     <button
                       key={method.id}
                       onClick={() => setPaymentMethod(method.id)}
                       disabled={processing}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all disabled:opacity-50 ${
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 ${
                         paymentMethod === method.id
-                          ? 'border-white bg-white/10'
-                          : 'border-zinc-700 hover:border-zinc-500'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-borderLight'
                       }`}
                     >
-                      <div className="text-gray-400">{method.icon}</div>
-                      <span className="font-medium">{method.name}</span>
+                      <div className="text-textSecondary">{method.icon}</div>
+                      <span className="font-medium text-textPrimary">{method.name}</span>
                       {paymentMethod === method.id && (
-                        <svg className="w-5 h-5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 ml-auto text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
@@ -299,19 +302,21 @@ function Payment({ template, onSuccess, onBack }) {
               <button
                 onClick={handlePay}
                 disabled={processing}
-                className="w-full py-4 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group w-full py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {processing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  `Pay $${template?.price || 0}`
-                )}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {processing ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay $${template?.price || 0}`
+                  )}
+                </span>
               </button>
             </div>
           )}
@@ -323,7 +328,7 @@ function Payment({ template, onSuccess, onBack }) {
           {orderNo && (paymentStatus === 'EXPIRED' || paymentStatus === 'CANCELLED' || paymentStatus === 'FAILED') && (
             <button
               onClick={handleRetry}
-              className="w-full mt-6 py-4 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-all duration-300"
+              className="w-full mt-6 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
             >
               Try Again
             </button>
@@ -338,7 +343,7 @@ function Payment({ template, onSuccess, onBack }) {
                 }
                 onBack()
               }}
-              className="w-full mt-4 py-3 text-gray-400 hover:text-white transition-colors"
+              className="w-full mt-4 py-3 text-textMuted hover:text-textPrimary transition-colors"
             >
               Cancel and go back
             </button>

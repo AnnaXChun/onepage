@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
 import Upload from '../../components/Upload/Upload'
 import TemplateSelect from '../../components/TemplateSelect/TemplateSelect'
 import Preview from '../../components/Preview/Preview'
@@ -43,153 +44,207 @@ function Home() {
     setCurrentStep(STEPS.SUCCESS)
   }
 
-  const renderLanding = () => (
-    <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-        </div>
+  // Animated background blob
+  const Blob = ({ className, delay }) => (
+    <div
+      className={`absolute rounded-full blur-[120px] opacity-30 animate-glow-pulse ${className}`}
+      style={{ animationDelay: `${delay}s` }}
+    />
+  )
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <p className="text-sm uppercase tracking-widest text-gray-400 mb-6">Single Page Website Builder</p>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Create your
-            <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-              online presence
-            </span>
+  const renderLanding = () => (
+    <div className="min-h-screen bg-background text-textPrimary overflow-hidden">
+      {/* Animated background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <Blob className="w-[600px] h-[600px] bg-primary -top-40 -left-40" delay={0} />
+        <Blob className="w-[500px] h-[500px] bg-accent bottom-0 right-0" delay={1.5} />
+        <Blob className="w-[400px] h-[400px] bg-primary/50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" delay={3} />
+      </div>
+
+      {/* Navigation */}
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <span className="text-xl font-bold tracking-tight">Vibe</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8">
+          <button className="text-textSecondary hover:text-textPrimary transition-colors">Templates</button>
+          <button className="text-textSecondary hover:text-textPrimary transition-colors">Pricing</button>
+          <button className="btn-secondary !py-2 !px-6 !text-sm">Sign In</button>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative z-10 pt-20 pb-32 px-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-border text-sm text-textSecondary mb-8 animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            No coding required
+          </div>
+
+          <h1 className="text-fluid-xl font-bold leading-[1.1] mb-8 animate-slide-up">
+            Turn your image into a
+            <span className="block text-gradient"> stunning website</span>
           </h1>
-          <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-            Upload an image. Choose a template. Get a beautiful single-page website in seconds.
-            No code required.
+
+          <p className="text-lg md:text-xl text-textSecondary max-w-2xl mx-auto mb-12 animate-slide-up stagger-1">
+            Upload a photo, pick a template, and get a beautiful single-page blog in seconds.
+            Share your story with the world — no technical skills needed.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up stagger-2">
             <button
               onClick={() => setCurrentStep(STEPS.UPLOAD)}
-              className="px-8 py-4 bg-white text-black font-medium rounded-full hover:bg-gray-100 transition-all duration-300 hover:scale-105"
+              className="group relative px-8 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
             >
-              Start Building — Free
+              <span className="relative z-10 flex items-center gap-2">
+                Start Creating
+                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </span>
             </button>
-            <button className="px-8 py-4 border border-gray-700 text-white font-medium rounded-full hover:border-gray-500 transition-all duration-300">
+            <button className="btn-secondary !py-4">
               View Templates
             </button>
           </div>
         </div>
 
-        <div className="absolute bottom-10 animate-bounce">
-          <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Floating cards preview */}
+        <div className="relative mt-20 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { title: 'Minimal', color: 'from-zinc-800 to-zinc-900' },
+              { title: 'Gallery', color: 'from-purple-900 to-zinc-900' },
+              { title: 'Vintage', color: 'from-amber-900 to-zinc-900' },
+            ].map((template, i) => (
+              <div
+                key={i}
+                className={`aspect-[4/5] rounded-2xl overflow-hidden animate-scale-in stagger-${i + 2}`}
+                style={{ animationDelay: `${(i + 2) * 100}ms` }}
+              >
+                <div className={`w-full h-full bg-gradient-to-br ${template.color} flex items-center justify-center`}>
+                  <span className="text-3xl font-bold text-white/10">{template.title[0]}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <svg className="w-6 h-6 text-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-32 px-6 bg-zinc-950">
+      {/* Features Section - Asymmetric layout */}
+      <section className="relative z-10 py-32 px-8 bg-surface/50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Why choose Vibe Onepage?</h2>
-          <div className="grid md:grid-cols-3 gap-12">
-            {[
-              {
-                icon: (
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                ),
-                title: 'Lightning Fast',
-                desc: 'Generate your website in seconds. No waiting, no complexity.',
-              },
-              {
-                icon: (
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                  </svg>
-                ),
-                title: 'Beautiful Templates',
-                desc: 'Professionally designed templates for every style.',
-              },
-              {
-                icon: (
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                ),
-                title: 'Share Anywhere',
-                desc: 'Get a unique link to share your page with the world.',
-              },
-            ].map((feature, i) => (
-              <div key={i} className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-gray-400 group-hover:text-white group-hover:border-zinc-700 transition-all duration-300">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-gray-500">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-fluid-lg font-bold mb-6">
+                Everything you need to
+                <span className="text-gradient"> stand out</span>
+              </h2>
+              <p className="text-textSecondary text-lg mb-8">
+                Beautiful templates, instant generation, and shareable links that make an impact.
+              </p>
 
-      {/* Templates Preview Section */}
-      <section className="py-32 px-6 bg-black">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Choose your style</h2>
-            <p className="text-gray-500">Browse our collection of handcrafted templates</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: 'Minimal', color: 'from-zinc-800 to-zinc-900', accent: 'Zinc' },
-              { name: 'Gallery', color: 'from-purple-900 to-zinc-900', accent: 'Purple' },
-              { name: 'Vintage', color: 'from-amber-900 to-zinc-900', accent: 'Amber' },
-              { name: 'Ultra', color: 'from-slate-800 to-zinc-900', accent: 'Slate' },
-              { name: 'Creative', color: 'from-blue-900 to-zinc-900', accent: 'Blue' },
-              { name: 'Dark', color: 'from-gray-900 to-zinc-900', accent: 'Dark' },
-            ].map((template, i) => (
-              <div
-                key={i}
-                className="group relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${template.color}`} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white/20">{template.name}</span>
-                </div>
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <button
-                    onClick={() => setCurrentStep(STEPS.UPLOAD)}
-                    className="px-6 py-2 bg-white text-black font-medium rounded-full"
-                  >
-                    Use Template
-                  </button>
+              <div className="space-y-6">
+                {[
+                  {
+                    title: 'Lightning Fast',
+                    desc: 'Generate your website in seconds. No waiting, no complexity.',
+                    icon: (
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    title: 'Beautiful Templates',
+                    desc: 'Professionally designed templates for every style.',
+                    icon: (
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    title: 'Share Anywhere',
+                    desc: 'Get a unique link to share your page with the world.',
+                    icon: (
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    ),
+                  },
+                ].map((feature, i) => (
+                  <div key={i} className="flex gap-4 animate-slide-up" style={{ animationDelay: `${i * 100 + 400}ms` }}>
+                    <div className="w-12 h-12 shrink-0 rounded-xl bg-surface border border-border flex items-center justify-center text-primary">
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-textPrimary mb-1">{feature.title}</h3>
+                      <p className="text-textMuted">{feature.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Feature visual - asymmetric */}
+            <div className="relative">
+              <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 border border-border">
+                <div className="absolute inset-8 bg-surface rounded-2xl border border-border p-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 mb-4" />
+                  <div className="space-y-3">
+                    <div className="h-3 w-3/4 bg-textMuted/30 rounded" />
+                    <div className="h-3 w-1/2 bg-textMuted/20 rounded" />
+                    <div className="h-3 w-5/6 bg-textMuted/20 rounded" />
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-6 bg-zinc-950">
+      <section className="relative z-10 py-32 px-8">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to stand out?</h2>
-          <p className="text-gray-400 mb-10">Join thousands of creators who built their online presence with Vibe Onepage.</p>
+          <h2 className="text-fluid-lg font-bold mb-6">Ready to create your page?</h2>
+          <p className="text-textSecondary text-lg mb-10">
+            Join thousands of creators who built their online presence with Vibe.
+          </p>
           <button
             onClick={() => setCurrentStep(STEPS.UPLOAD)}
-            className="px-10 py-4 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 hover:scale-105"
+            className="group relative px-10 py-5 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
           >
-            Create Your Page Now
+            <span className="relative z-10 flex items-center gap-2">
+              Create Your Page Now
+              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </span>
           </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-black border-t border-zinc-900">
+      <footer className="relative z-10 py-12 px-8 border-t border-border">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm">© 2024 Vibe Onepage. All rights reserved.</p>
-          <div className="flex gap-6 text-sm text-gray-500">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+          <p className="text-textMuted text-sm">© 2024 Vibe Onepage. All rights reserved.</p>
+          <div className="flex gap-6 text-sm text-textMuted">
+            <a href="#" className="hover:text-textPrimary transition-colors">Privacy</a>
+            <a href="#" className="hover:text-textPrimary transition-colors">Terms</a>
+            <a href="#" className="hover:text-textPrimary transition-colors">Contact</a>
           </div>
         </div>
       </footer>
@@ -239,7 +294,7 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-textPrimary">
       {renderStep()}
     </div>
   )
