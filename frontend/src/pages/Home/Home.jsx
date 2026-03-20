@@ -23,15 +23,31 @@ function Home() {
   const [generatedBlog, setGeneratedBlog] = useState(null)
   const [user, setUser] = useState(null)
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount and on storage event
   useEffect(() => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch (e) {
-        console.error('Failed to parse user:', e)
+    const loadUser = () => {
+      const savedUser = localStorage.getItem('user')
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser))
+        } catch (e) {
+          console.error('Failed to parse user:', e)
+        }
+      } else {
+        setUser(null)
       }
+    }
+
+    loadUser()
+
+    // Listen for storage changes (from other tabs/windows)
+    window.addEventListener('storage', loadUser)
+    // Listen for custom storage event (for same-tab updates)
+    window.addEventListener('user-auth-change', loadUser)
+
+    return () => {
+      window.removeEventListener('storage', loadUser)
+      window.removeEventListener('user-auth-change', loadUser)
     }
   }, [])
 

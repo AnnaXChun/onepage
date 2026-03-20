@@ -24,8 +24,10 @@ function Login() {
         // Store user info from form data since backend doesn't return user object
         const userInfo = { username: formData.username }
         localStorage.setItem('user', JSON.stringify(userInfo))
-        // Reload to update auth state
-        window.location.href = '/'
+        // Use navigate for client-side routing
+        navigate('/')
+        // Force re-render by dispatching a custom event
+        window.dispatchEvent(new Event('user-auth-change'))
       } else {
         setError(response.message || '登录失败')
       }
