@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 
+import Header from '../../components/Header/Header'
 import Upload from '../../components/Upload/Upload'
 import TemplateSelect from '../../components/TemplateSelect/TemplateSelect'
 import Preview from '../../components/Preview/Preview'
@@ -21,6 +21,23 @@ function Home() {
   const [uploadedImage, setUploadedImage] = useState(null)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [generatedBlog, setGeneratedBlog] = useState(null)
+  const [user, setUser] = useState(null)
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user')
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser))
+      } catch (e) {
+        console.error('Failed to parse user:', e)
+      }
+    }
+  }, [])
+
+  const handleUserChange = (newUser) => {
+    setUser(newUser)
+  }
 
   const handleImageUpload = (imageData) => {
     setUploadedImage(imageData)
@@ -63,24 +80,7 @@ function Home() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold tracking-tight">Vibe</span>
-        </div>
-        <div className="hidden md:flex items-center gap-8">
-          <button className="text-textSecondary hover:text-textPrimary transition-colors">Templates</button>
-          <button className="text-textSecondary hover:text-textPrimary transition-colors">Pricing</button>
-          <Link to="/login" className="btn-secondary !py-2 !px-6 !text-sm">Sign In</Link>
-          <Link to="/register" className="px-6 py-2 bg-textPrimary text-background font-medium rounded-full hover:scale-[1.02] transition-all text-sm">
-            Get Started
-          </Link>
-        </div>
-      </nav>
+      <Header user={user} onUserChange={handleUserChange} />
 
       {/* Hero Section */}
       <section className="relative z-10 pt-20 pb-32 px-8">
