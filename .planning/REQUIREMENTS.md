@@ -52,12 +52,12 @@
 
 ### Platform Hosting
 
-- [ ] **HOST-01**: User clicks "Publish" to deploy site to platform
-- [ ] **HOST-02**: Published site accessible at `username.vibe.com` (production) or `localhost:port` (dev)
-- [ ] **HOST-03**: Published site is static HTML/CSS output (no server-side rendering)
-- [ ] **HOST-04**: Unique shareable link per published site
-- [ ] **HOST-05**: User can unpublish site (removes from public access)
-- [ ] **HOST-06**: Subdomain DNS routing configured in production
+- [x] **HOST-01**: User clicks "Publish" to deploy site to platform
+- [x] **HOST-02**: Published site accessible at `username.vibe.com` (production) or `localhost:port` (dev)
+- [x] **HOST-03**: Published site is static HTML/CSS output (no server-side rendering)
+- [x] **HOST-04**: Unique shareable link per published site
+- [x] **HOST-05**: User can unpublish site (removes from public access)
+- [x] **HOST-06**: Subdomain DNS routing configured in production
 
 ### PDF Export
 
@@ -157,12 +157,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORCH-02 | Phase 3 | Pending |
 | ORCH-03 | Phase 3 | Pending |
 | ORCH-04 | Phase 3 | Pending |
-| HOST-01 | Phase 4 | Pending |
-| HOST-02 | Phase 4 | Pending |
-| HOST-03 | Phase 4 | Pending |
-| HOST-04 | Phase 4 | Pending |
-| HOST-05 | Phase 4 | Pending |
-| HOST-06 | Phase 4 | Pending |
+| HOST-01 | Phase 4 | Complete |
+| HOST-02 | Phase 4 | Complete |
+| HOST-03 | Phase 4 | Complete |
+| HOST-04 | Phase 4 | Complete |
+| HOST-05 | Phase 4 | Complete |
+| HOST-06 | Phase 4 | Complete |
 | PDF-01 | Phase 4 | Pending |
 | PDF-02 | Phase 4 | Pending |
 | PDF-03 | Phase 4 | Pending |
