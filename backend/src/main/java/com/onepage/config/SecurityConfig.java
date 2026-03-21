@@ -65,7 +65,8 @@ public class SecurityConfig {
                                 "/api/payment/status/**",
                                 "/api/payment/detail/**",
                                 "/api/payment/notify",
-                                "/ws/**"
+                                "/ws/**",
+                                "/host/**"
                         ).permitAll()
                         // Static resources and error pages
                         .requestMatchers("/error", "/favicon.ico", "/static/**", "/public/**").permitAll()
