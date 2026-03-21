@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Enable simple broker for /topic prefix (used by GenerationMessageConsumer)
         registry.enableSimpleBroker("/topic");
         // Set application destination prefix for messages from client to server
-        registry.setApplicationDestinationPrefix("/app");
+        registry.setApplicationDestinationPrefixes("/app");
     }
 
     @Override

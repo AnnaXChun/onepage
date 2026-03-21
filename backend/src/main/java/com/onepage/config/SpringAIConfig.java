@@ -1,9 +1,8 @@
 package com.onepage.config;
 
-import org.springframework.ai.openai.OpenAiApi;
-import org.springframework.ai.openai.chat.ChatModel;
-import org.springframework.ai.openai.chat.OpenAiChatModel;
-import org.springframework.ai.openai.chat.OpenAiChatOptions;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +25,6 @@ public class SpringAIConfig {
     public ChatModel chatModel(OpenAiApi openAiApi) {
         return OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
-                .defaultOptions(OpenAiChatOptions.builder()
-                        .model("MiniMax-M2.7")
-                        .temperature(0.7)
-                        .build())
                 .build();
     }
 }

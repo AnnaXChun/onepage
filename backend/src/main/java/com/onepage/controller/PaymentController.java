@@ -13,6 +13,8 @@ import com.onepage.service.WeChatPayService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -250,13 +252,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "1") int months,
             @AuthenticationPrincipal JwtUserPrincipal principal) {
         Order order = orderService.createVipOrder(principal.getUserId(), months);
-        Map<String, String> qrCode = weChatPayService.getPayQrCode(order.getOutTradeNo());
-        OrderDetailDTO dto = new OrderDetailDTO();
-        dto.setOrderNo(order.getOutTradeNo());
-        dto.setAmount(order.getAmount());
-        dto.setSubject(order.getSubject());
-        dto.setQrCode(qrCode.get("code_url"));
-        dto.setStatus(order.getOrderStatus().name());
+        OrderDetailDTO dto = orderService.getOrderDetail(order.getOrderNo());
         return Result.success(dto);
     }
 
@@ -288,13 +284,7 @@ public class PaymentController {
             new BigDecimal(creditsAmount),
             price
         );
-        Map<String, String> qrCode = weChatPayService.getPayQrCode(order.getOutTradeNo());
-        OrderDetailDTO dto = new OrderDetailDTO();
-        dto.setOrderNo(order.getOutTradeNo());
-        dto.setAmount(order.getAmount());
-        dto.setSubject(order.getSubject());
-        dto.setQrCode(qrCode.get("code_url"));
-        dto.setStatus(order.getOrderStatus().name());
+        OrderDetailDTO dto = orderService.getOrderDetail(order.getOrderNo());
         return Result.success(dto);
     }
 

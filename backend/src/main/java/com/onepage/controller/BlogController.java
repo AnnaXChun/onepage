@@ -118,7 +118,8 @@ public class BlogController {
         }
 
         // Parse existing blocks JSON
-        List<Map<String, Object>> blocks = JSON.parseArray(blog.getBlocks(), Map.class);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> blocks = (List<Map<String, Object>>) (List<?>) JSON.parseArray(blog.getBlocks(), Object.class);
         if (blocks == null) {
             blocks = new java.util.ArrayList<>();
         }

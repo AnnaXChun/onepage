@@ -34,13 +34,12 @@ public class GenerationMessageConsumer {
         try {
             sendProgress(blogId, "STARTING", 0);
 
-            GenerationRequest request = GenerationRequest.builder()
-                .blogId(blogId)
-                .imageUrl(message.imageUrl())
-                .description(message.description())
-                .colorPalette(message.colorPalette())
-                .dominantColor(message.dominantColor())
-                .build();
+            GenerationRequest request = new GenerationRequest();
+            request.setBlogId(blogId);
+            request.setImageUrl(message.imageUrl());
+            request.setDescription(message.description());
+            request.setColorPalette(message.colorPalette());
+            request.setDominantColor(message.dominantColor());
 
             sendProgress(blogId, "GENERATING", 25);
             GenerationResult result = generationService.generate(request);
@@ -63,12 +62,11 @@ public class GenerationMessageConsumer {
         try {
             sendProgress(blogId, "STARTING", 0);
 
-            GenerationRequest request = GenerationRequest.builder()
-                .blogId(blogId)
-                .description(message.description())
-                .colorPalette(message.colorPalette())
-                .dominantColor(message.dominantColor())
-                .build();
+            GenerationRequest request = new GenerationRequest();
+            request.setBlogId(blogId);
+            request.setDescription(message.description());
+            request.setColorPalette(message.colorPalette());
+            request.setDominantColor(message.dominantColor());
 
             sendProgress(blogId, "GENERATING", 25);
             GenerationResult result = generationService.generate(request);

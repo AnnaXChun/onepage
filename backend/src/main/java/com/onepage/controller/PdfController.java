@@ -49,7 +49,7 @@ public class PdfController {
             throw BusinessException.blogNotFound();
         }
         if (!blog.getUserId().equals(principal.getUserId())) {
-            throw BusinessException.forbidden();
+            throw BusinessException.forbidden("Access denied");
         }
 
         String jobId = pdfJobProducer.queuePdfGeneration(
@@ -86,7 +86,7 @@ public class PdfController {
             throw BusinessException.blogNotFound();
         }
         if (!blog.getUserId().equals(principal.getUserId())) {
-            throw BusinessException.forbidden();
+            throw BusinessException.forbidden("Access denied");
         }
 
         // CRITICAL: Deduct credits BEFORE queueing job to prevent race condition
@@ -183,7 +183,7 @@ public class PdfController {
         if (!job.getUserId().equals(principal.getUserId())) {
             log.warn("Unauthorized preview access attempt: userId={}, jobOwner={}, jobId={}",
                 principal.getUserId(), job.getUserId(), jobId);
-            throw BusinessException.forbidden();
+            throw BusinessException.forbidden("Access denied");
         }
 
         // Verify job is for preview (jobType = 1)
@@ -223,7 +223,7 @@ public class PdfController {
         if (!job.getUserId().equals(principal.getUserId())) {
             log.warn("Unauthorized PDF download attempt: userId={}, jobOwner={}, jobId={}",
                 principal.getUserId(), job.getUserId(), jobId);
-            throw BusinessException.forbidden();
+            throw BusinessException.forbidden("Access denied");
         }
 
         // Verify job is completed
