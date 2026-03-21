@@ -21,16 +21,16 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.1 — Phase 6 ready to plan
+**Current Milestone:** v1.1 — Phase 6 complete
 
 ## Current Position
 
-Phase: 06 (ai-generation-editor-polish) — EXECUTING
+Phase: 06 (ai-generation-editor-polish) — COMPLETE
 Plan: 2 of 2
 
 ## Next Steps
 
-Run `/gsd:plan-phase 6` to plan Phase 6.
+Run `/gsd:plan-phase 7` to plan Phase 7.
 
 ## Accumulated Context
 
