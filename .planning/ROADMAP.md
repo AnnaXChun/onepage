@@ -150,8 +150,8 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
 | 2. Block Editor Core | 3/3 | Complete   | 2026-03-21 |
-| 3. AI Generation Pipeline | 0/3 | Not started | - |
-| 4. Publishing, Payments & PDF | 2/4 | In Progress|  |
+| 3. AI Generation Pipeline | 3/3 | Completed | 2026-03-21 |
+| 4. Publishing, Payments & PDF | 4/4 | Completed | 2026-03-21 |
 | 5. Polish & Performance | 0/3 | Not started | - |
 
 ---

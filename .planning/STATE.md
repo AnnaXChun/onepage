@@ -21,14 +21,14 @@ progress:
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Phase:** 04
+**Current Phase:** 05
 
 **Current Milestone:** v1 MVP
 
 ## Current Position
 
-Phase: 04 (Publishing, Payments & PDF) — EXECUTING
-Plan: 4 of 4
+Phase: 05 (Polish & Performance) — READY
+Plan: 1 of 3
 
 ## Performance Metrics
 
