@@ -90,7 +90,7 @@
 - [x] **PERF-02**: Redis caching for template listing (24h TTL) and blog pages
 - [x] **PERF-03**: Database indexes on frequently queried fields (userId, shareCode)
 - [x] **PERF-04**: HikariCP connection pool tuning for high concurrency
-- [ ] **PERF-05**: Async job processing via RabbitMQ for PDF generation and AI generation
+- [x] **PERF-05**: Async job processing via RabbitMQ for PDF generation and AI generation
 
 ## v2 Requirements
 
@@ -183,7 +183,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-02 | Phase 5 | Complete |
 | PERF-03 | Phase 5 | Complete |
 | PERF-04 | Phase 5 | Complete |
-| PERF-05 | Phase 5 | Pending |
+| PERF-05 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 52 total (3 existing, 49 to build)
