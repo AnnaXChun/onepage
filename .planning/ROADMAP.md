@@ -114,8 +114,8 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md -- Static site publishing: publish/unpublish, Thymeleaf HTML generation, subdomain routing
-- [ ] 04-02-PLAN.md -- PDF export system: async PDF generation, user credits, preview before charge
-- [ ] 04-03-PLAN.md -- VIP & Payments core: VIP subscriptions, template purchases, VipService, TemplatePurchaseService
+- [x] 04-02-PLAN.md -- PDF export system: async PDF generation, user credits, preview before charge
+- [x] 04-03-PLAN.md -- VIP & Payments core: VIP subscriptions, template purchases, VipService, TemplatePurchaseService
 - [x] 04-04-PLAN.md -- VIP/credits UI: PaymentController endpoints, VipBanner, BalanceDisplay components
 
 ---
