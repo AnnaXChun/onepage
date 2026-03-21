@@ -66,6 +66,10 @@ cors:
 upload:
   path: ${UPLOAD_PATH:./uploads}
 
+minimax:
+  api:
+    key: ${MINIMAX_API_KEY:}
+
 logging:
   level:
     com.onepage: debug
