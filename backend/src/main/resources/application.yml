@@ -55,7 +55,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 jwt:
-  secret: ${JWT_SECRET:}
+  secret: ${JWT_SECRET:onepage-dev-secret-key-change-in-production-32chars}
   expiration: ${JWT_EXPIRATION:604800000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}
 
