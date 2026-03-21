@@ -14,6 +14,7 @@ import TemplateSelect from './components/TemplateSelect/TemplateSelect'
 import Preview from './components/Preview/Preview'
 import Payment from './components/Payment/Payment'
 import ShareLink from './components/ShareLink/ShareLink'
+import Editor from './components/Editor/Editor'
 import type { User } from '@/types/models'
 import type { TemplateConfig } from './config/templates'
 
@@ -123,7 +124,7 @@ function TemplatePage() {
   const handleSelect = (template: TemplateConfig) => {
     console.log('[TemplatePage] handleSelect:', { template, uploadedImage });
     setSelectedTemplate(template)
-    navigate('/preview', {
+    navigate('/editor', {
       state: {
         uploadedImage,
         selectedTemplate: template
@@ -238,6 +239,81 @@ function PreviewPage() {
   )
 }
 
+// Editor page - block editor
+function EditorPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { blogId } = useParams<{ blogId?: string }>()
+  const { currentBlog } = useBlog()
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null)
+  const [blocksJson, setBlocksJson] = useState<any>(null)
+
+  // Load uploadedImage and selectedTemplate from navigation state
+  useEffect(() => {
+    const state = location.state as LocationState | null
+    if (state?.uploadedImage) setUploadedImage(state.uploadedImage)
+    if (state?.selectedTemplate) setSelectedTemplate(state.selectedTemplate)
+    if (state?.blocksJson) setBlocksJson(state.blocksJson)
+  }, [location.state])
+
+  // Load blocks.json from selected template
+  useEffect(() => {
+    const loadBlocksJson = async () => {
+      if (selectedTemplate?.blocksJsonPath && !blocksJson) {
+        try {
+          const response = await fetch(selectedTemplate.blocksJsonPath)
+          const data = await response.json()
+          setBlocksJson(data)
+        } catch (err) {
+          console.error('Failed to load blocks.json:', err)
+        }
+      }
+    }
+    loadBlocksJson()
+  }, [selectedTemplate, blocksJson])
+
+  const handleDone = () => {
+    // Navigate to preview/payment flow
+    if (currentBlog?.id) {
+      navigate(`/preview/${currentBlog.id}`, {
+        state: { uploadedImage, selectedTemplate }
+      })
+    } else {
+      navigate('/template', { state: { uploadedImage } })
+    }
+  }
+
+  const handleBack = () => {
+    navigate('/template', { state: { uploadedImage } })
+  }
+
+  return (
+    <ProtectedRoute requireAuth>
+      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+        <Editor
+          blogId={blogId || currentBlog?.id?.toString() || ''}
+          initialBlocks={blocksJson}
+        />
+        <div className="absolute top-4 right-4 flex gap-2 z-50">
+          <button
+            onClick={handleBack}
+            className="px-4 py-2 bg-surface border border-border rounded-lg hover:bg-background transition-colors"
+          >
+            ← Back
+          </button>
+          <button
+            onClick={handleDone}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Done Editing →
+          </button>
+        </div>
+      </div>
+    </ProtectedRoute>
+  )
+}
+
 // Payment page
 function PaymentPage() {
   const navigate = useNavigate()
@@ -339,6 +415,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/template" element={<TemplatePage />} />
+            <Route path="/editor/:blogId?" element={<EditorPage />} />
             <Route path="/preview/:blogId?" element={<PreviewPage />} />
             <Route path="/payment/:blogId" element={<PaymentPage />} />
             <Route path="/success/:blogId" element={<SuccessPage />} />
