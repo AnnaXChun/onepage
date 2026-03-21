@@ -1,11 +1,13 @@
 package com.onepage.controller;
 
 import com.onepage.config.JwtUserPrincipal;
+import com.onepage.dto.BlockConfigDTO;
 import com.onepage.dto.BlogDTO;
 import com.onepage.dto.Result;
 import com.onepage.exception.BusinessException;
 import com.onepage.model.Blog;
 import com.onepage.service.BlogService;
+import com.alibaba.fastjson2.JSON;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +93,70 @@ public class BlogController {
         // Convert to JSON and save
         String blocksJson = com.alibaba.fastjson2.JSON.toJSONString(blocks);
         blogService.updateBlogBlocks(id, blocksJson);
+
+        return Result.success();
+    }
+
+    @PutMapping("/{blogId}/blocks/{blockId}/config")
+    public Result<Void> updateBlockConfig(
+            @PathVariable Long blogId,
+            @PathVariable String blockId,
+            @RequestBody BlockConfigDTO configDTO) {
+
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+
+        // Verify blog belongs to user
+        Blog blog = blogService.getBlogById(blogId);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to modify this blog");
+        }
+
+        // Parse existing blocks JSON
+        List<Map<String, Object>> blocks = JSON.parseArray(blog.getBlocks(), Map.class);
+        if (blocks == null) {
+            blocks = new java.util.ArrayList<>();
+        }
+
+        // Find and update the matching block
+        for (Map<String, Object> block : blocks) {
+            if (blockId.equals(block.get("id"))) {
+                // Update config
+                @SuppressWarnings("unchecked")
+                Map<String, Object> config = (Map<String, Object>) block.get("config");
+                if (config == null) {
+                    config = new HashMap<>();
+                }
+
+                if (configDTO.getAlign() != null) {
+                    config.put("align", configDTO.getAlign());
+                }
+                if (configDTO.getBackgroundColor() != null) {
+                    config.put("backgroundColor", configDTO.getBackgroundColor());
+                }
+                if (configDTO.getTextColor() != null) {
+                    config.put("textColor", configDTO.getTextColor());
+                }
+                if (configDTO.getVisible() != null) {
+                    config.put("visible", configDTO.getVisible());
+                }
+                if (configDTO.getAdditionalSettings() != null) {
+                    config.putAll(configDTO.getAdditionalSettings());
+                }
+
+                block.put("config", config);
+                break;
+            }
+        }
+
+        // Save updated blocks
+        String blocksJson = JSON.toJSONString(blocks);
+        blogService.updateBlogBlocks(blogId, blocksJson);
 
         return Result.success();
     }
