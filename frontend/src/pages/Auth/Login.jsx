@@ -32,8 +32,8 @@ function Login() {
 
     try {
       const response = await login(formData)
-      if (response.code === 200 && response.data?.token) {
-        localStorage.setItem('token', response.data.token)
+      if (response.code === 200 && response.data?.accessToken) {
+        localStorage.setItem('token', response.data.accessToken)
         const userInfo = { username: formData.username }
         localStorage.setItem('user', JSON.stringify(userInfo))
         navigate(returnUrl, { state: location.state })

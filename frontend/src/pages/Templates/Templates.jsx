@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
-import { templates } from '../../components/TemplateGallery/TemplateGallery'
+import { TEMPLATES } from '../../config/templates'
 import { useTranslation } from '../../i18n'
 
 function TemplatesPage() {
@@ -15,7 +15,7 @@ function TemplatesPage() {
 
   useEffect(() => {
     if (templateId) {
-      const template = templates.find(t => t.id === templateId)
+      const template = TEMPLATES.find(t => t.id === Number(templateId))
       if (template) {
         setPreviewTemplate(template)
       }
@@ -246,7 +246,7 @@ function TemplatesPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {templates.map((template, i) => (
+            {TEMPLATES.map((template, i) => (
               <div
                 key={template.id}
                 onClick={() => handleTemplateClick(template)}
@@ -322,7 +322,7 @@ function TemplatePreview({ template, uploadedImage }) {
     setError(null)
     setPreviewHTML(null)
 
-    const templateBase = `/templates/${template.id}`
+    const templateBase = `/templates/${template.slug}`
 
     Promise.all([
       fetch(`${templateBase}/index.html`).then(r => {

@@ -31,8 +31,8 @@ function Register() {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError(t('passwordTooShort'))
+    if (formData.password.length < 8 || formData.password.length > 20) {
+      setError('Password must be 8-20 characters')
       return
     }
 
@@ -44,8 +44,8 @@ function Register() {
         password: formData.password,
         email: formData.email
       })
-      if (response.code === 200 && response.data?.token) {
-        localStorage.setItem('token', response.data.token)
+      if (response.code === 200 && response.data?.accessToken) {
+        localStorage.setItem('token', response.data.accessToken)
         const userInfo = { username: formData.username, email: formData.email }
         localStorage.setItem('user', JSON.stringify(userInfo))
         navigate('/')
@@ -128,7 +128,7 @@ function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourPassword')}
                 />
@@ -142,7 +142,7 @@ function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('confirmYourPassword')}
                 />

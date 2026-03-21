@@ -7,13 +7,13 @@ export interface ApiResponse<T = unknown> {
 
 // Auth types
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface LoginResponse {
-  token: string;
-  user: import('./models').User;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface RegisterRequest {

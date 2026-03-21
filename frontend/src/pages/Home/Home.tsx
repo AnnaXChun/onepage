@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import Features from './components/Features';
 import TemplatePreview from './components/TemplatePreview';
 import CTA from './components/CTA';
+import { useTranslation } from '../../i18n';
 
 function Home() {
   const { t } = useTranslation();
