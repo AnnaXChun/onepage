@@ -182,4 +182,10 @@ export const getCredits = async (): Promise<number> => {
   return response.data.data || 0;
 };
 
+// Credit top-up
+export const createCreditTopup = async (credits: number) => {
+  const response = await api.post('/credit/topup', { credits });
+  return response.data.data;
+};
+
 export default api;

@@ -6,6 +6,7 @@ import { getBlogById } from './services/api'
 import Home from './pages/Home/Home'
 import Orders from './pages/Orders/Orders'
 import BlogView from './pages/BlogView/BlogView'
+import CreditTopup from './pages/Credit/CreditTopup'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import TemplatesPage from './pages/Templates/Templates'
@@ -420,6 +421,7 @@ function App() {
             <Route path="/payment/:blogId" element={<PaymentPage />} />
             <Route path="/success/:blogId" element={<SuccessPage />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/credit/topup" element={<CreditTopup />} />
             <Route path="/blog/:shareCode" element={<BlogView />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
