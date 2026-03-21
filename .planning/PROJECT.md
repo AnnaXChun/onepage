@@ -52,12 +52,13 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Block Editor Polish — configuration panel, block-level settings persistence — v1.1 (Phase 6)
 - ✓ Credit System — user_credits table, Redis atomic deduction, WeChat Pay top-up flow — v1.1 (Phase 7)
 - ✓ PDF Export Full — Free preview (1h), paid export (0.3 credits), 24h expiring links — v1.1 (Phase 8)
+- ✓ VIP & Payments Full — FulfillmentService dispatch, WeChat Pay callback fulfillment, VIP activation, template purchase — v1.1 (Phase 10)
 
 ### Active
 
 <!-- Next milestone priorities -->
 
-- [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
+- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish (covered by Phase 9)
 - [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
 
 ### Out of Scope
