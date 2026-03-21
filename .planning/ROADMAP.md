@@ -28,7 +28,7 @@
 
 ### 🚧 v1.1 Completion (In Progress)
 
-- [ ] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel
+- [x] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel (completed 2026-03-21)
 - [ ] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up
 - [ ] **Phase 8: PDF Export** - Two-phase PDF export with free preview and paid full export via credit deduction
 - [ ] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
@@ -58,8 +58,8 @@
   9. Block settings (alignment, colors, visibility) persist to backend and reload correctly
 
 **Plans**: 2 plans
-- [ ] 06-01-PLAN.md - AI Generation Pipeline (GEN-01~05, WRT-01~03)
-- [ ] 06-02-PLAN.md - Editor Polish & Block Config (EDI-01~02)
+- [x] 06-01-PLAN.md - AI Generation Pipeline (GEN-01~05, WRT-01~03)
+- [x] 06-02-PLAN.md - Editor Polish & Block Config (EDI-01~02)
 
 ### Phase 7: Credit System
 
@@ -128,7 +128,7 @@
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. AI Generation & Editor Polish | 2/TBD | In progress | - |
+| 6. AI Generation & Editor Polish | 2/2 | Complete   | 2026-03-21 |
 | 7. Credit System | 0/TBD | Not started | - |
 | 8. PDF Export | 0/TBD | Not started | - |
 | 9. Platform Hosting | 0/TBD | Not started | - |

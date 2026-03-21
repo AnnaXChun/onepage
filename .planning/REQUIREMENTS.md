@@ -7,17 +7,17 @@
 
 ### AI Generation Pipeline
 
-- [ ] **GEN-01**: User uploads one main image and enters a one-sentence description to trigger AI generation
-- [ ] **GEN-02**: AI pipeline runs asynchronously via RabbitMQ with WebSocket progress updates
-- [ ] **GEN-03**: Each generated block has a confidence score; blocks with score < 0.7 are highlighted amber for user review
-- [ ] **GEN-04**: User can preview generated blocks before accepting into editor
-- [ ] **GEN-05**: User can regenerate individual blocks or accept all blocks into the editor
+- [x] **GEN-01**: User uploads one main image and enters a one-sentence description to trigger AI generation
+- [x] **GEN-02**: AI pipeline runs asynchronously via RabbitMQ with WebSocket progress updates
+- [x] **GEN-03**: Each generated block has a confidence score; blocks with score < 0.7 are highlighted amber for user review
+- [x] **GEN-04**: User can preview generated blocks before accepting into editor
+- [x] **GEN-05**: User can regenerate individual blocks or accept all blocks into the editor
 
 ### AI Writing Assist
 
-- [ ] **WRT-01**: Each text block shows sparkle button on hover
-- [ ] **WRT-02**: Clicking sparkle opens Replace/Append modal
-- [ ] **WRT-03**: AI Write uses existing block content as context for generation
+- [x] **WRT-01**: Each text block shows sparkle button on hover
+- [x] **WRT-02**: Clicking sparkle opens Replace/Append modal
+- [x] **WRT-03**: AI Write uses existing block content as context for generation
 
 ### Block Editor Polish
 
@@ -85,14 +85,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | Phase 6 | Pending |
-| GEN-02 | Phase 6 | Pending |
-| GEN-03 | Phase 6 | Pending |
-| GEN-04 | Phase 6 | Pending |
-| GEN-05 | Phase 6 | Pending |
-| WRT-01 | Phase 6 | Pending |
-| WRT-02 | Phase 6 | Pending |
-| WRT-03 | Phase 6 | Pending |
+| GEN-01 | Phase 6 | Complete |
+| GEN-02 | Phase 6 | Complete |
+| GEN-03 | Phase 6 | Complete |
+| GEN-04 | Phase 6 | Complete |
+| GEN-05 | Phase 6 | Complete |
+| WRT-01 | Phase 6 | Complete |
+| WRT-02 | Phase 6 | Complete |
+| WRT-03 | Phase 6 | Complete |
 | EDI-01 | Phase 6 | Pending |
 | EDI-02 | Phase 6 | Pending |
 | PDF-01 | Phase 8 | Pending |
