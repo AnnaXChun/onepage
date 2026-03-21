@@ -138,4 +138,15 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     public void logout(Long userId) {
         redisTemplate.delete("user:token:" + userId);
     }
+
+    /**
+     * Find user by username.
+     * @param username The username to search for
+     * @return The user or null if not found
+     */
+    public User findByUsername(String username) {
+        return this.lambdaQuery()
+                .eq(User::getUsername, username)
+                .one();
+    }
 }
