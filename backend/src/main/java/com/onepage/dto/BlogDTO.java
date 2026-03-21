@@ -19,8 +19,8 @@ public class BlogDTO {
     @Size(max = 50000, message = "Content exceeds maximum length")
     private String content;
 
-    @Size(max = 500, message = "Cover image URL is too long")
-    @Pattern(regexp = "^(http[s]?://.*|/.*)?$", message = "Invalid cover image URL format")
+    @Size(max = 5000000, message = "Cover image URL is too long")
+    @Pattern(regexp = "^(http[s]?://.*|/.*|data:.*)?$", message = "Invalid cover image URL format")
     private String coverImage;
 
     @Size(max = 100, message = "Template ID is too long")

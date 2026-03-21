@@ -49,7 +49,7 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+    <div className="min-h-screen bg-background text-primary flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
@@ -71,7 +71,7 @@ function Login() {
           <div className="bg-surface rounded-3xl p-8 border border-border">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold mb-2">{t('welcomeBack')}</h1>
-              <p className="text-textSecondary">{t('signInToContinue')}</p>
+              <p className="text-secondary">{t('signInToContinue')}</p>
             </div>
 
             {error && (
@@ -82,27 +82,27 @@ function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('username')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('username')}</label>
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourUsername')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('password')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('password')}</label>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourPassword')}
                 />
               </div>
@@ -110,14 +110,14 @@ function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-textPrimary text-background font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-primary text-text-primary-btn font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? t('signingIn') : t('signInButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-textSecondary text-sm">
+              <p className="text-secondary text-sm">
                 {t('dontHaveAccount')}{' '}
                 <Link to="/register" className="text-primary hover:underline">
                   {t('signUp')}
@@ -129,7 +129,7 @@ function Login() {
       </main>
 
       <footer className="py-8 text-center">
-        <p className="text-textMuted text-sm">© 2024 Vibe Onepage. {t('allRightsReserved')}</p>
+        <p className="text-muted text-sm">© 2024 Vibe Onepage. {t('allRightsReserved')}</p>
       </footer>
     </div>
   )

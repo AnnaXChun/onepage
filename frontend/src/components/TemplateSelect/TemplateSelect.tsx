@@ -32,12 +32,12 @@ function TemplateSelect({ onSelect, onBack, selectedTemplate: initialTemplate }:
   const selectedTemplateItem = TEMPLATES.find((t) => t.id === selectedId);
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary">
+    <div className="min-h-screen bg-background text-primary">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -59,9 +59,9 @@ function TemplateSelect({ onSelect, onBack, selectedTemplate: initialTemplate }:
           </div>
 
           <div className="text-center mb-12">
-            <p className="text-sm uppercase tracking-widest text-textMuted mb-3">{t('step2of3')}</p>
+            <p className="text-sm uppercase tracking-widest text-muted mb-3">{t('step2of3')}</p>
             <h2 className="text-fluid-lg font-bold mb-4">{t('selectYourTemplate')}</h2>
-            <p className="text-textSecondary">{t('chooseTemplateStyle')}</p>
+            <p className="text-secondary">{t('chooseTemplateStyle')}</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,7 +111,7 @@ function TemplateSelect({ onSelect, onBack, selectedTemplate: initialTemplate }:
 
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <h3 className="text-xl font-bold mb-1">{template.name}</h3>
-                    <p className="text-sm text-textSecondary">{template.description}</p>
+                    <p className="text-sm text-secondary">{template.description}</p>
                     <div className="mt-2">
                       <span className={`text-lg font-bold ${template.price === 0 ? 'text-success' : 'text-primary'}`}>
                         {template.price === 0 ? t('free') : `$${template.price}`}
@@ -127,7 +127,7 @@ function TemplateSelect({ onSelect, onBack, selectedTemplate: initialTemplate }:
             <button
               onClick={handleConfirm}
               disabled={!selectedId}
-              className="group relative px-12 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="group relative px-12 py-4 bg-primary text-text-primary-btn font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <span className="relative z-10 flex items-center gap-2">
                 {t('continueWith')} {selectedTemplateItem?.name || t('selectedTemplate')}

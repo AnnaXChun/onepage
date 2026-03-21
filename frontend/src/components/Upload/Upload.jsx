@@ -51,12 +51,12 @@ function Upload({ onUpload, onBack }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+    <div className="min-h-screen bg-background text-primary flex flex-col">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -107,18 +107,18 @@ function Upload({ onUpload, onBack }) {
                       className="max-h-72 mx-auto rounded-2xl object-cover shadow-2xl"
                     />
                     <div className="absolute inset-0 bg-background/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-sm text-textSecondary">{t('clickToChange')}</span>
+                      <span className="text-sm text-secondary">{t('clickToChange')}</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-textMuted text-sm">{t('yourImageLooksGreat')}</p>
+                <p className="text-muted text-sm">{t('yourImageLooksGreat')}</p>
               </div>
             ) : (
               <div className="space-y-6">
                 <div className="relative">
                   <div className="w-24 h-24 mx-auto bg-surface rounded-2xl border border-border flex items-center justify-center">
                     <svg
-                      className="w-10 h-10 text-textMuted"
+                      className="w-10 h-10 text-muted"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -138,10 +138,10 @@ function Upload({ onUpload, onBack }) {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xl font-semibold text-textPrimary mb-2">
+                  <p className="text-xl font-semibold text-primary mb-2">
                     {t('dropYourImageHere')}
                   </p>
-                  <p className="text-textMuted text-sm">
+                  <p className="text-muted text-sm">
                     {t('orClickToBrowse')}
                   </p>
                 </div>
@@ -154,7 +154,7 @@ function Upload({ onUpload, onBack }) {
               <button
                 onClick={handleSubmit}
                 disabled={uploading}
-                className="group relative px-10 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="group relative px-10 py-4 bg-primary text-text-primary-btn font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <span className="relative z-10 flex items-center gap-2">
                   {uploading ? t('processing') : t('continue')}

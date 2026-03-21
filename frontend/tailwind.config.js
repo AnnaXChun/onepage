@@ -12,10 +12,19 @@ export default {
         surface: 'var(--color-surface)',
         'surface-elevated': 'var(--color-surface-elevated)',
 
-        // Text colors
+        // Text colors - all variants for compatibility
         'text-primary': 'var(--color-text-primary)',
+        'text-textPrimary': 'var(--color-text-primary)',
         'text-secondary': 'var(--color-text-secondary)',
+        'text-textSecondary': 'var(--color-text-secondary)',
         'text-muted': 'var(--color-text-muted)',
+        'text-textMuted': 'var(--color-text-muted)',
+        'text-text-muted': 'var(--color-text-muted)',
+
+        // Background colors - text colors used as background
+        'bg-textPrimary': 'var(--color-text-primary)',
+        'bg-textSecondary': 'var(--color-text-secondary)',
+        'bg-textMuted': 'var(--color-text-muted)',
 
         // Primary - Purple
         primary: 'var(--color-primary)',
@@ -33,6 +42,9 @@ export default {
         // Semantic
         success: 'var(--color-success)',
         error: 'var(--color-error)',
+
+        // Button text
+        'text-primary-btn': 'var(--color-text-primary-btn)',
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],

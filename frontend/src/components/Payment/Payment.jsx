@@ -163,11 +163,11 @@ function Payment({ template, onSuccess, onBack }) {
         )}
       </div>
 
-      <p className="text-textSecondary text-sm mb-4">
+      <p className="text-secondary text-sm mb-4">
         {paymentMethod === 'wechat' ? t('scanWithWeChat') : t('scanWithAlipay')}
       </p>
 
-      <div className="flex justify-between items-center text-sm text-textMuted mb-6">
+      <div className="flex justify-between items-center text-sm text-muted mb-6">
         <span>{t('order')}: {orderNo?.slice(-8)}</span>
         <span className={expireMinutes <= 5 ? 'text-error font-medium' : ''}>
           {t('expiresIn')}: {expireMinutes}:00
@@ -185,18 +185,18 @@ function Payment({ template, onSuccess, onBack }) {
 
       {orderDetail && (
         <div className="mt-6 bg-surface rounded-xl p-4 text-left border border-border">
-          <h4 className="text-sm font-medium text-textMuted mb-3">{t('orderDetails')}</h4>
+          <h4 className="text-sm font-medium text-muted mb-3">{t('orderDetails')}</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-textMuted">{t('template')}</span>
-              <span className="text-textPrimary">{orderDetail.templateName}</span>
+              <span className="text-muted">{t('template')}</span>
+              <span className="text-primary">{orderDetail.templateName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-textMuted">{t('amount')}</span>
-              <span className="text-textPrimary font-semibold">${orderDetail.amount}</span>
+              <span className="text-muted">{t('amount')}</span>
+              <span className="text-primary font-semibold">${orderDetail.amount}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-textMuted">{t('status')}</span>
+              <span className="text-muted">{t('status')}</span>
               <span className="text-success">{orderDetail.statusText}</span>
             </div>
           </div>
@@ -206,7 +206,7 @@ function Payment({ template, onSuccess, onBack }) {
   )
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+    <div className="min-h-screen bg-background text-primary flex flex-col">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
@@ -216,7 +216,7 @@ function Payment({ template, onSuccess, onBack }) {
               }
               onBack()
             }}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -242,18 +242,18 @@ function Payment({ template, onSuccess, onBack }) {
               )}
             </div>
             <h2 className="text-2xl font-bold mb-2">{template?.name} {t('template')}</h2>
-            <p className="text-textMuted">{t('premiumTemplate')}</p>
+            <p className="text-muted">{t('premiumTemplate')}</p>
           </div>
 
           {!orderNo && (
             <div className="bg-surface rounded-3xl p-8 border border-border animate-slide-up stagger-1">
               <div className="flex justify-between items-center mb-8 pb-6 border-b border-border">
-                <span className="text-textSecondary">{t('total')}</span>
+                <span className="text-secondary">{t('total')}</span>
                 <span className="text-3xl font-bold">${template?.price || 0}</span>
               </div>
 
               <div className="mb-8">
-                <p className="text-sm text-textMuted mb-4">{t('selectPaymentMethod')}</p>
+                <p className="text-sm text-muted mb-4">{t('selectPaymentMethod')}</p>
                 <div className="space-y-3">
                   {paymentMethods.map((method) => (
                     <button
@@ -266,8 +266,8 @@ function Payment({ template, onSuccess, onBack }) {
                           : 'border-border hover:border-borderLight'
                       }`}
                     >
-                      <div className="text-textSecondary">{method.icon}</div>
-                      <span className="font-medium text-textPrimary">{method.name}</span>
+                      <div className="text-secondary">{method.icon}</div>
+                      <span className="font-medium text-primary">{method.name}</span>
                       {paymentMethod === method.id && (
                         <svg className="w-5 h-5 ml-auto text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -281,7 +281,7 @@ function Payment({ template, onSuccess, onBack }) {
               <button
                 onClick={handlePay}
                 disabled={processing}
-                className="group w-full py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group w-full py-4 bg-primary text-text-primary-btn font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {processing ? (
@@ -305,7 +305,7 @@ function Payment({ template, onSuccess, onBack }) {
           {orderNo && (paymentStatus === 'EXPIRED' || paymentStatus === 'CANCELLED' || paymentStatus === 'FAILED') && (
             <button
               onClick={handleRetry}
-              className="w-full mt-6 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
+              className="w-full mt-6 py-4 bg-primary text-text-primary-btn font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
             >
               {t('tryAgain')}
             </button>
@@ -319,7 +319,7 @@ function Payment({ template, onSuccess, onBack }) {
                 }
                 onBack()
               }}
-              className="w-full mt-4 py-3 text-textMuted hover:text-textPrimary transition-colors"
+              className="w-full mt-4 py-3 text-muted hover:text-primary transition-colors"
             >
               {t('cancelAndGoBack')}
             </button>

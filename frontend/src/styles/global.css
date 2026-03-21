@@ -9,34 +9,34 @@
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* Base colors - OKLCH with purple tint */
-    --color-background: oklch(12% 0.02 280);
-    --color-surface: oklch(18% 0.02 280);
-    --color-surface-elevated: oklch(22% 0.02 280);
+    /* Refined SaaS color palette - warm neutrals with subtle blue tint */
+    --color-background: oklch(15% 0.015 260);
+    --color-surface: oklch(20% 0.015 260);
+    --color-surface-elevated: oklch(25% 0.015 260);
 
-    /* Text colors */
-    --color-text-primary: oklch(95% 0.01 280);
-    --color-text-secondary: oklch(75% 0.02 280);
-    --color-text-muted: oklch(55% 0.02 280);
-    --color-text-primary-btn: oklch(10% 0.01 280);
-    --color-text-secondary-btn: oklch(75% 0.02 280);
+    /* Text colors - warm off-white */
+    --color-text-primary: oklch(98% 0.005 260);
+    --color-text-secondary: oklch(75% 0.01 260);
+    --color-text-muted: oklch(55% 0.01 260);
+    --color-text-primary-btn: oklch(98% 0.005 260);
+    --color-text-secondary-btn: oklch(75% 0.01 260);
 
-    /* Primary - Purple */
-    --color-primary: oklch(65% 0.18 280);
-    --color-primary-hover: oklch(70% 0.2 280);
-    --color-primary-light: oklch(80% 0.15 280);
+    /* Primary - Refined indigo/violet */
+    --color-primary: oklch(55% 0.12 275);
+    --color-primary-hover: oklch(60% 0.14 275);
+    --color-primary-light: oklch(70% 0.1 275);
 
-    /* Accent - Blue-Purple */
-    --color-accent: oklch(75% 0.15 200);
-    --color-accent-hover: oklch(80% 0.18 200);
+    /* Accent - Warm coral/orange */
+    --color-accent: oklch(70% 0.14 50);
+    --color-accent-hover: oklch(65% 0.16 50);
 
-    /* Border */
-    --color-border: oklch(30% 0.02 280);
-    --color-border-light: oklch(40% 0.02 280);
+    /* Border - Subtle warm gray */
+    --color-border: oklch(30% 0.01 260);
+    --color-border-light: oklch(40% 0.01 260);
 
     /* Semantic */
-    --color-success: oklch(70% 0.15 150);
-    --color-error: oklch(65% 0.18 20);
+    --color-success: oklch(65% 0.12 145);
+    --color-error: oklch(60% 0.16 25);
   }
 
   * {
@@ -103,7 +103,7 @@
     @apply rounded-2xl shadow-lg;
     background-color: var(--color-surface-elevated);
     border-color: var(--color-border);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
   }
 
   /* Input styles */
@@ -143,7 +143,7 @@
 
   /* Glow effect */
   .glow {
-    box-shadow: 0 0 40px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--color-primary) 20%, transparent);
   }
 
   /* Smooth transitions */

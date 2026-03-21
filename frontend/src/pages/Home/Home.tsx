@@ -47,7 +47,7 @@ function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary overflow-hidden">
+    <div className="min-h-screen bg-background text-primary overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <Blob className="w-[600px] h-[600px] bg-primary -top-40 -left-40" delay={0} />
         <Blob className="w-[500px] h-[500px] bg-accent bottom-0 right-0" delay={1.5} />
@@ -63,11 +63,11 @@ function Home() {
 
       <footer className="relative z-10 py-12 px-8 border-t border-border">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-textMuted text-sm">{t('allRightsReserved')}</p>
-          <div className="flex gap-6 text-sm text-textMuted">
-            <a href="#" className="hover:text-textPrimary transition-colors">{t('privacy')}</a>
-            <a href="#" className="hover:text-textPrimary transition-colors">{t('terms')}</a>
-            <a href="#" className="hover:text-textPrimary transition-colors">{t('contact')}</a>
+          <p className="text-muted text-sm">{t('allRightsReserved')}</p>
+          <div className="flex gap-6 text-sm text-muted">
+            <a href="#" className="hover:text-primary transition-colors">{t('privacy')}</a>
+            <a href="#" className="hover:text-primary transition-colors">{t('terms')}</a>
+            <a href="#" className="hover:text-primary transition-colors">{t('contact')}</a>
           </div>
         </div>
       </footer>

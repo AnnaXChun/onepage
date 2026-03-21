@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "blocks": [
+    {
+      "id": "user-image",
+      "type": "image-single",
+      "selector": ".hero-image img",
+      "placeholder": "{{USER_IMAGE}}",
+      "defaultContent": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=800&fit=crop",
+      "config": {
+        "aspectRatio": "16/9",
+        "rounded": false
+      }
+    },
+    {
+      "id": "user-name",
+      "type": "text-h1",
+      "selector": ".title",
+      "placeholder": "{{USER_NAME}}",
+      "defaultContent": "Your Name",
+      "config": {}
+    },
+    {
+      "id": "user-bio",
+      "type": "text-paragraph",
+      "selector": ".subtitle",
+      "placeholder": "{{USER_BIO}}",
+      "defaultContent": "Welcome to my personal blog",
+      "config": {}
+    },
+    {
+      "id": "blog-content",
+      "type": "text-container",
+      "selector": ".gallery",
+      "placeholder": "{{BLOG_CONTENT}}",
+      "defaultContent": "<p>Your blog content will appear here...</p>",
+      "config": {
+        "allowedBlockTypes": ["text-h1", "text-h2", "text-paragraph", "text-list", "image-single", "image-gallery", "divider"]
+      }
+    }
+  ]
+}

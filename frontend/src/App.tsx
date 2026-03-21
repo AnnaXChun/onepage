@@ -114,12 +114,14 @@ function TemplatePage() {
 
   useEffect(() => {
     const state = location.state as LocationState | null
+    console.log('[TemplatePage] location.state:', state);
     if (state?.uploadedImage) {
       setUploadedImage(state.uploadedImage)
     }
   }, [location.state])
 
   const handleSelect = (template: TemplateConfig) => {
+    console.log('[TemplatePage] handleSelect:', { template, uploadedImage });
     setSelectedTemplate(template)
     navigate('/preview', {
       state: {
@@ -148,6 +150,8 @@ function PreviewPage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  console.log('[PreviewPage] Render:', { blogId, currentBlog, uploadedImage, selectedTemplate, locationState: location.state });
 
   // Load existing blog if blogId is in URL
   useEffect(() => {
@@ -188,17 +192,34 @@ function PreviewPage() {
     }
   }, [location.state])
 
+  // Sync uploadedImage from currentBlog when it changes
+  useEffect(() => {
+    if (currentBlog?.coverImage && !uploadedImage) {
+      setUploadedImage(currentBlog.coverImage)
+    }
+  }, [currentBlog, uploadedImage])
+
   // Handle successful blog creation
   const handleGenerated = (blog: { id: number }) => {
+    // Update currentBlog in context with the new blog (includes coverImage)
     setCurrentBlog(blog as never)
-    // Navigate to URL with blogId so it can be shared
-    navigate(`/preview/${blog.id}`, { replace: true })
+    // Navigate to URL with blogId - but keep the current image and template in state
+    navigate(`/preview/${blog.id}`, {
+      replace: true,
+      state: { uploadedImage, selectedTemplate }
+    })
   }
 
   // Handle publish - go to success page with blogId
-  const handleSuccess = () => {
-    if (currentBlog) {
-      navigate(`/success/${currentBlog.id}`)
+  const handleSuccess = (blog: { id: number; coverImage?: string; templateId?: string; title?: string; content?: string }) => {
+    console.log('handleSuccess called with blog:', blog);
+    console.log('handleSuccess coverImage:', blog?.coverImage ? 'present (length=' + blog.coverImage.length + ')' : 'NULL');
+    if (blog?.id) {
+      setCurrentBlog(blog as never)
+      // Pass full blog data via navigation state
+      navigate(`/success/${blog.id}`, {
+        state: { blog }
+      })
     }
   }
 
@@ -251,14 +272,30 @@ function PaymentPage() {
 function SuccessPage() {
   const { blogId } = useParams<{ blogId: string }>()
   const { currentBlog, setCurrentBlog } = useBlog()
+  const location = useLocation()
   const [loading, setLoading] = useState(false)
+
+  // Get blog from navigation state first (passed directly from handleSuccess)
+  const blogFromState = location.state?.blog as { id: number; coverImage?: string; templateId?: string; title?: string; content?: string } | null
+
+  console.log('SuccessPage blogFromState:', blogFromState);
+  console.log('SuccessPage currentBlog:', currentBlog);
 
   useEffect(() => {
     const loadBlog = async () => {
+      // If we have blog from navigation state, use it directly
+      if (blogFromState && blogFromState.id === Number(blogId)) {
+        console.log('Using blogFromState');
+        setCurrentBlog(blogFromState as never)
+        return
+      }
+      // Otherwise fetch from API
       if (blogId && (!currentBlog || currentBlog.id !== Number(blogId))) {
         setLoading(true)
         try {
+          console.log('Fetching blog from API:', blogId);
           const response = await getBlogById(blogId)
+          console.log('API response:', response);
           if (response.code === 200 && response.data) {
             setCurrentBlog(response.data)
           }
@@ -270,16 +307,19 @@ function SuccessPage() {
       }
     }
     loadBlog()
-  }, [blogId])
+  }, [blogId, blogFromState])
 
   const handleRestart = () => {
     navigate('/')
   }
 
+  // Use blog from state if available, otherwise fall back to currentBlog from context
+  const blog = blogFromState || currentBlog
+
   return (
     <ProtectedRoute requireAuth>
       <ShareLink
-        blog={currentBlog}
+        blog={blog}
         onRestart={handleRestart}
       />
     </ProtectedRoute>

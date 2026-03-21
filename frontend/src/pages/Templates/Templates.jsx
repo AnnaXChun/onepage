@@ -97,19 +97,19 @@ function TemplatesPage() {
 
   if (previewTemplate) {
     return (
-      <div className="min-h-screen bg-background text-textPrimary">
+      <div className="min-h-screen bg-background text-primary">
         <header className="fixed top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border">
           <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
             <button
               onClick={handleClosePreview}
-              className="flex items-center gap-2 text-textSecondary hover:text-textPrimary transition-colors"
+              className="flex items-center gap-2 text-secondary hover:text-primary transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               <span>{t('allTemplates')}</span>
             </button>
-            <h1 className="text-base font-semibold text-textPrimary">
+            <h1 className="text-base font-semibold text-primary">
               {previewTemplate.name} {t('template')}
             </h1>
             <div className="w-16" />
@@ -126,10 +126,10 @@ function TemplatesPage() {
           <div className="w-80 p-6 border-l border-border bg-background/50 backdrop-blur-lg overflow-y-auto">
             <div className="bg-surface/80 backdrop-blur-2xl rounded-2xl border border-border p-6">
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-textPrimary mb-1">
+                <h3 className="text-lg font-semibold text-primary mb-1">
                   {previewTemplate.name}
                 </h3>
-                <p className="text-sm text-textMuted">
+                <p className="text-sm text-muted">
                   {previewTemplate.price === 0 ? t('free') : `$${previewTemplate.price}`}
                 </p>
               </div>
@@ -164,7 +164,7 @@ function TemplatesPage() {
                         className="max-h-40 mx-auto rounded-xl object-cover shadow-lg"
                       />
                       <div className="absolute inset-0 bg-background/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-sm text-textSecondary">{t('clickToChange')}</span>
+                        <span className="text-sm text-secondary">{t('clickToChange')}</span>
                       </div>
                     </div>
                     <p className="text-sm text-success">{t('imageUploaded')}</p>
@@ -173,7 +173,7 @@ function TemplatesPage() {
                   <div className="space-y-3">
                     <div className="w-16 h-16 mx-auto bg-background rounded-xl border border-border flex items-center justify-center">
                       <svg
-                        className="w-8 h-8 text-textMuted"
+                        className="w-8 h-8 text-muted"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -187,10 +187,10 @@ function TemplatesPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-textPrimary mb-1">
+                      <p className="text-sm font-medium text-primary mb-1">
                         {t('uploadYourImage')}
                       </p>
-                      <p className="text-xs text-textMuted">
+                      <p className="text-xs text-muted">
                         {t('clickOrDragToUpload')}
                       </p>
                     </div>
@@ -201,14 +201,14 @@ function TemplatesPage() {
               <button
                 onClick={handleUseTemplate}
                 disabled={!uploadedImage}
-                className="w-full mt-6 py-3 bg-textPrimary text-background font-medium rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full mt-6 py-3 bg-primary text-text-primary-btn font-medium rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {previewTemplate.price > 0 ? `${t('buyFor')} $${previewTemplate.price}` : t('useThisTemplate')}
               </button>
 
               <button
                 onClick={handleClosePreview}
-                className="w-full mt-3 py-2 text-sm text-textMuted hover:text-textPrimary transition-colors"
+                className="w-full mt-3 py-2 text-sm text-muted hover:text-primary transition-colors"
               >
                 {t('chooseAnotherTemplate')}
               </button>
@@ -225,7 +225,7 @@ function TemplatesPage() {
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -240,7 +240,7 @@ function TemplatesPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 animate-slide-up">{t('exploreTemplates')}</h2>
-            <p className="text-textSecondary text-lg animate-slide-up stagger-1">
+            <p className="text-secondary text-lg animate-slide-up stagger-1">
               {t('choosePerfectTemplate')}
             </p>
           </div>

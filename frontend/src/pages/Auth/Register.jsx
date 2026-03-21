@@ -61,7 +61,7 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+    <div className="min-h-screen bg-background text-primary flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
@@ -83,7 +83,7 @@ function Register() {
           <div className="bg-surface rounded-3xl p-8 border border-border">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold mb-2">{t('createAccount')}</h1>
-              <p className="text-textSecondary">{t('startCreatingToday')}</p>
+              <p className="text-secondary">{t('startCreatingToday')}</p>
             </div>
 
             {error && (
@@ -94,7 +94,7 @@ function Register() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('username')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('username')}</label>
                 <input
                   type="text"
                   name="username"
@@ -102,26 +102,26 @@ function Register() {
                   onChange={handleChange}
                   required
                   minLength={3}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourUsername')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('email')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('email')}</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourEmail')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('password')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('password')}</label>
                 <input
                   type="password"
                   name="password"
@@ -129,13 +129,13 @@ function Register() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('enterYourPassword')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">{t('confirmPassword')}</label>
+                <label className="block text-sm font-medium text-secondary mb-2">{t('confirmPassword')}</label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -143,7 +143,7 @@ function Register() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-primary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('confirmYourPassword')}
                 />
               </div>
@@ -151,14 +151,14 @@ function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-textPrimary text-background font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                className="w-full py-4 bg-primary text-text-primary-btn font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
               >
                 {loading ? t('creatingAccount') : t('createAccountButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-textSecondary text-sm">
+              <p className="text-secondary text-sm">
                 {t('alreadyHaveAccount')}{' '}
                 <Link to="/login" className="text-primary hover:underline">
                   {t('signInLink')}
@@ -170,7 +170,7 @@ function Register() {
       </main>
 
       <footer className="py-8 text-center">
-        <p className="text-textMuted text-sm">© 2024 Vibe Onepage. {t('allRightsReserved')}</p>
+        <p className="text-muted text-sm">© 2024 Vibe Onepage. {t('allRightsReserved')}</p>
       </footer>
     </div>
   )

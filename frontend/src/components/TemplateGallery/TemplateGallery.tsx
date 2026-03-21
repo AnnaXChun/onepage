@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { TEMPLATES, type TemplateConfig } from '../../config/templates';
+import { type BlockManifest } from '../../types/block';
 
 interface TemplateGalleryProps {
   onClose: () => void;
@@ -16,6 +17,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewHTML, setPreviewHTML] = useState<string | null>(null);
+  const [blocksJson, setBlocksJson] = useState<BlockManifest | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -32,6 +34,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
   useEffect(() => {
     if (!selectedTemplate) {
       setPreviewHTML(null);
+      setBlocksJson(null);
       return;
     }
 
@@ -41,8 +44,9 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
     Promise.all([
       fetch(`${templateBase}/index.html`).then((r) => r.text()),
       fetch(`${templateBase}/styles.css`).then((r) => r.text()),
+      fetch(`${templateBase}/blocks.json`).then((r) => r.json()).catch(() => null),
     ])
-      .then(([htmlText, cssText]) => {
+      .then(([htmlText, cssText, blocksJsonData]) => {
         const modifiedHtml = htmlText
           .replace(/{{USER_IMAGE}}/g, userImage)
           .replace(/{{USER_NAME}}/g, 'Your Name')
@@ -50,10 +54,12 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
           .replace(/{{BLOG_CONTENT}}/g, '<p>Your blog content will appear here...</p>')
           .replace('</head>', `<style>${cssText}</style></head>`);
         setPreviewHTML(modifiedHtml);
+        setBlocksJson(blocksJsonData);
       })
       .catch((err) => {
         console.error('Failed to load template:', err);
         setPreviewHTML(null);
+        setBlocksJson(null);
       });
   }, [selectedTemplate, uploadedImage]);
 
@@ -77,6 +83,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
     setPreviewMode(false);
     setSelectedTemplate(null);
     setUploadedImage(null);
+    setBlocksJson(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -121,6 +128,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
           returnUrl: '/preview',
           uploadedImage,
           selectedTemplate,
+          blocksJson,
         },
       });
       return;
@@ -134,6 +142,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
       state: {
         uploadedImage,
         selectedTemplate,
+        blocksJson,
       },
     });
   };
@@ -154,10 +163,10 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
   const renderUploadCard = () => (
     <div className="bg-surface/80 backdrop-blur-2xl rounded-2xl border border-border p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-textPrimary mb-1">
+        <h3 className="text-lg font-semibold text-primary mb-1">
           {selectedTemplate?.name}
         </h3>
-        <p className="text-sm text-textMuted">
+        <p className="text-sm text-muted">
           {selectedTemplate?.price === 0 ? 'Free' : `$${selectedTemplate?.price}`}
         </p>
       </div>
@@ -192,7 +201,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
                 className="max-h-40 mx-auto rounded-xl object-cover shadow-lg"
               />
               <div className="absolute inset-0 bg-background/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-sm text-textSecondary">Click to change</span>
+                <span className="text-sm text-secondary">Click to change</span>
               </div>
             </div>
             <p className="text-sm text-success">Image uploaded!</p>
@@ -201,7 +210,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
           <div className="space-y-3">
             <div className="w-16 h-16 mx-auto bg-background rounded-xl border border-border flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-textMuted"
+                className="w-8 h-8 text-muted"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -215,10 +224,10 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-textPrimary mb-1">
+              <p className="text-sm font-medium text-primary mb-1">
                 Upload your image
               </p>
-              <p className="text-xs text-textMuted">
+              <p className="text-xs text-muted">
                 Click or drag to upload
               </p>
             </div>
@@ -229,7 +238,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
       <button
         onClick={handleUseTemplate}
         disabled={!uploadedImage}
-        className="w-full mt-6 py-3 bg-textPrimary text-background font-medium rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="w-full mt-6 py-3 bg-primary text-text-primary-btn font-medium rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
         {selectedTemplate?.price && selectedTemplate.price > 0
           ? `Buy for $${selectedTemplate.price}`
@@ -238,7 +247,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
 
       <button
         onClick={handleBack}
-        className="w-full mt-3 py-2 text-sm text-textMuted hover:text-textPrimary transition-colors"
+        className="w-full mt-3 py-2 text-sm text-muted hover:text-primary transition-colors"
       >
         Choose another template
       </button>
@@ -252,14 +261,14 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
           <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-textSecondary hover:text-textPrimary transition-colors"
+              className="flex items-center gap-2 text-secondary hover:text-primary transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               <span>Back</span>
             </button>
-            <h1 className="text-base font-semibold text-textPrimary">
+            <h1 className="text-base font-semibold text-primary">
               {selectedTemplate.name} Template
             </h1>
             <div className="w-16" />
@@ -300,7 +309,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -315,7 +324,7 @@ function TemplateGallery({ onClose, onSelect, initialState }: TemplateGalleryPro
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 animate-slide-up">Explore Our Templates</h2>
-            <p className="text-textSecondary text-lg animate-slide-up stagger-1">
+            <p className="text-secondary text-lg animate-slide-up stagger-1">
               Choose the perfect template for your personal blog
             </p>
           </div>

@@ -18,12 +18,12 @@ export default function CTA() {
     <section className="relative z-10 py-32 px-8">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="text-fluid-lg font-bold mb-6">{t('readyToCreate')}</h2>
-        <p className="text-textSecondary text-lg mb-10">
+        <p className="text-secondary text-lg mb-10">
           {t('joinThousands')}
         </p>
         <button
           onClick={handleStartCreating}
-          className="group relative px-10 py-5 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
+          className="group relative px-10 py-5 bg-primary text-text-primary-btn font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]"
         >
           <span className="relative z-10 flex items-center gap-2">
             {t('createYourPage')}

@@ -14,7 +14,7 @@ export default function AuthButtons({ user, onLogout }: AuthButtonsProps) {
       <div className="flex items-center gap-4">
         <Link
           to="/orders"
-          className="text-textSecondary hover:text-textPrimary transition-colors"
+          className="text-secondary hover:text-primary transition-colors"
         >
           {t('myPages')}
         </Link>
@@ -22,10 +22,10 @@ export default function AuthButtons({ user, onLogout }: AuthButtonsProps) {
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-semibold text-sm">
             {user.username?.[0]?.toUpperCase() || 'U'}
           </div>
-          <span className="font-medium text-textPrimary">{user.username}</span>
+          <span className="font-medium text-primary">{user.username}</span>
           <button
             onClick={onLogout}
-            className="text-textMuted hover:text-textSecondary text-sm transition-colors"
+            className="text-muted hover:text-secondary text-sm transition-colors"
           >
             {t('logout')}
           </button>
@@ -41,7 +41,7 @@ export default function AuthButtons({ user, onLogout }: AuthButtonsProps) {
       </Link>
       <Link
         to="/register"
-        className="px-6 py-2 bg-textPrimary text-background font-medium rounded-full hover:scale-[1.02] transition-all text-sm"
+        className="px-6 py-2 bg-primary text-text-primary-btn font-medium rounded-full hover:scale-[1.02] transition-all text-sm"
       >
         {t('getStarted')}
       </Link>

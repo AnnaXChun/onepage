@@ -19,7 +19,7 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-textPrimary mb-2"
+          className="block text-sm font-medium text-primary mb-2"
         >
           {label}
         </label>
@@ -31,7 +31,7 @@ export default function Input({
           error
             ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
             : 'border-border focus:border-primary focus:ring-1 focus:ring-primary',
-          'bg-surface text-textPrimary placeholder:text-text-muted',
+          'bg-surface text-primary placeholder:text-muted',
           className,
         ].join(' ')}
         {...props}

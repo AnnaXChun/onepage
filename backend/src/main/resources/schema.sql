@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `blogs` (
     `user_id` BIGINT NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `content` TEXT,
-    `cover_image` VARCHAR(255),
+    `cover_image` MEDIUMTEXT,
     `template_id` VARCHAR(50),
     `share_code` VARCHAR(20) UNIQUE,
     `status` TINYINT DEFAULT 1 COMMENT '1:已发布 0:草稿',

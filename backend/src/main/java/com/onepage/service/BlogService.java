@@ -26,12 +26,15 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
     private static final long CACHE_EXPIRE_HOURS = 24;
     private static final int MAX_TITLE_LENGTH = 200;
     private static final int MAX_CONTENT_LENGTH = 50000;
-    private static final int MAX_COVER_IMAGE_LENGTH = 500;
+    private static final int MAX_COVER_IMAGE_LENGTH = 5000000;
 
     /**
      * Create a new blog with comprehensive input validation.
      */
     public Blog createBlog(Long userId, String title, String content, String coverImage, String templateId) {
+        log.info("createBlog called - coverImage length: {}", coverImage != null ? coverImage.length() : "null");
+        log.info("createBlog - coverImage starts with: {}", coverImage != null ? coverImage.substring(0, Math.min(50, coverImage.length())) : "null");
+
         // 1. Validate userId
         if (userId == null) {
             throw BusinessException.badRequest("User ID cannot be null");
@@ -67,11 +70,14 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
             }
         }
 
+        String sanitizedCoverImage = sanitizeUrl(coverImage);
+        log.info("sanitizedCoverImage: {}", sanitizedCoverImage != null ? "not null (length=" + sanitizedCoverImage.length() + ")" : "null");
+
         Blog blog = new Blog();
         blog.setUserId(userId);
         blog.setTitle(trimmedTitle);
         blog.setContent(sanitizeContent(content));
-        blog.setCoverImage(sanitizeUrl(coverImage));
+        blog.setCoverImage(sanitizedCoverImage);
         blog.setTemplateId(templateId);
         blog.setShareCode(generateShareCode());
         blog.setStatus(1);
@@ -267,7 +273,8 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         if (url == null || url.isBlank()) {
             return null;
         }
-        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
+        // Allow http://, https://, relative paths, and data URLs
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/") && !url.startsWith("data:")) {
             return null;
         }
         return url;

@@ -30,11 +30,17 @@ const features = [
   },
 ];
 
+const showcaseTemplate = {
+  name: 'Glass',
+  image: 'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=600&h=750&fit=crop',
+  color: 'from-blue-500 to-zinc-900',
+};
+
 export default function Features() {
   const { t } = useTranslation();
 
   return (
-    <section className="relative z-10 py-32 px-8 bg-surface/50">
+    <section className="relative z-10 py-32 px-8">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div>
@@ -42,7 +48,7 @@ export default function Features() {
               {t('everythingYouNeed')}
               <span className="text-gradient"> {t('standOut')}</span>
             </h2>
-            <p className="text-textSecondary text-lg mb-8">
+            <p className="text-secondary text-lg mb-8">
               {t('beautifulTemplatesDesc')}
             </p>
 
@@ -57,8 +63,8 @@ export default function Features() {
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-textPrimary mb-1">{t(feature.key)}</h3>
-                    <p className="text-textMuted">{t(feature.descKey)}</p>
+                    <h3 className="font-semibold text-primary mb-1">{t(feature.key)}</h3>
+                    <p className="text-muted">{t(feature.descKey)}</p>
                   </div>
                 </div>
               ))}
@@ -66,13 +72,30 @@ export default function Features() {
           </div>
 
           <div className="relative">
-            <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 border border-border">
-              <div className="absolute inset-8 bg-surface rounded-2xl border border-border p-6">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 mb-4" />
-                <div className="space-y-3">
-                  <div className="h-3 w-3/4 bg-textMuted/30 rounded" />
-                  <div className="h-3 w-1/2 bg-textMuted/20 rounded" />
-                  <div className="h-3 w-5/6 bg-textMuted/20 rounded" />
+            {/* Phone Frame */}
+            <div className="relative mx-auto w-64 md:w-72">
+              {/* Phone Body */}
+              <div className="rounded-[3rem] bg-gradient-to-b from-zinc-800 to-zinc-900 p-2 shadow-2xl shadow-primary/20">
+                <div className="rounded-[2.5rem] overflow-hidden bg-background border border-zinc-700">
+                  {/* Status Bar */}
+                  <div className="h-6 bg-zinc-900 flex items-center justify-center">
+                    <div className="w-16 h-3 bg-zinc-800 rounded-full" />
+                  </div>
+
+                  {/* Screen Content */}
+                  <div className="relative aspect-[9/16] overflow-hidden">
+                    <img
+                      src={showcaseTemplate.image}
+                      alt={showcaseTemplate.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${showcaseTemplate.color} opacity-40`} />
+                    <div className="absolute inset-0 flex flex-col justify-end p-4">
+                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm mb-3" />
+                      <div className="h-3 w-3/4 bg-white/30 rounded mb-2" />
+                      <div className="h-2 w-1/2 bg-white/20 rounded" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

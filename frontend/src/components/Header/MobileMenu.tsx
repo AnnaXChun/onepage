@@ -29,7 +29,7 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-textSecondary hover:text-textPrimary transition-all"
+            className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-secondary hover:text-primary transition-all"
             aria-label="Close menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,13 +42,13 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
           <Link
             to="/templates"
             onClick={onClose}
-            className="px-4 py-3 text-textSecondary hover:text-textPrimary hover:bg-background rounded-xl transition-colors"
+            className="px-4 py-3 text-secondary hover:text-primary hover:bg-background rounded-xl transition-colors"
           >
             {t('templates')}
           </Link>
           <button
             onClick={onClose}
-            className="px-4 py-3 text-left text-textSecondary hover:text-textPrimary hover:bg-background rounded-xl transition-colors"
+            className="px-4 py-3 text-left text-secondary hover:text-primary hover:bg-background rounded-xl transition-colors"
           >
             {t('pricing')}
           </button>
@@ -56,7 +56,7 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
             <Link
               to="/orders"
               onClick={onClose}
-              className="px-4 py-3 text-textSecondary hover:text-textPrimary hover:bg-background rounded-xl transition-colors"
+              className="px-4 py-3 text-secondary hover:text-primary hover:bg-background rounded-xl transition-colors"
             >
               {t('myPages')}
             </Link>
@@ -70,14 +70,14 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-semibold text-sm">
                   {user.username?.[0]?.toUpperCase() || 'U'}
                 </div>
-                <span className="font-medium text-textPrimary">{user.username}</span>
+                <span className="font-medium text-primary">{user.username}</span>
               </div>
               <button
                 onClick={() => {
                   onLogout();
                   onClose();
                 }}
-                className="px-4 py-3 text-textMuted hover:text-textSecondary text-sm transition-colors text-left"
+                className="px-4 py-3 text-muted hover:text-secondary text-sm transition-colors text-left"
               >
                 {t('logout')}
               </button>
@@ -87,14 +87,14 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
               <Link
                 to="/login"
                 onClick={onClose}
-                className="w-full text-center px-4 py-3 border border-border text-textSecondary hover:text-textPrimary hover:border-borderLight rounded-xl transition-all text-sm font-medium"
+                className="w-full text-center px-4 py-3 border border-border text-secondary hover:text-primary hover:border-borderLight rounded-xl transition-all text-sm font-medium"
               >
                 {t('signIn')}
               </Link>
               <Link
                 to="/register"
                 onClick={onClose}
-                className="w-full text-center px-4 py-3 bg-textPrimary text-background font-medium rounded-xl hover:scale-[1.02] transition-all text-sm"
+                className="w-full text-center px-4 py-3 bg-primary text-text-primary-btn font-medium rounded-xl hover:scale-[1.02] transition-all text-sm"
               >
                 {t('getStarted')}
               </Link>

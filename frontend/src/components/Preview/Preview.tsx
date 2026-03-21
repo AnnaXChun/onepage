@@ -20,16 +20,16 @@ interface PreviewProps {
   template?: TemplateConfig | null;
   onGenerated?: (blog: Blog) => void;
   onBack?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (blog: Blog) => void;
 }
 
 function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onBack, onSuccess }: PreviewProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [generatedBlog, setGeneratedBlog] = useState<Blog | null>(existingBlog || null);
+  const [generatedBlog, setGeneratedBlog] = useState<Blog | null>(null);
   const [copied, setCopied] = useState(false);
-  const [isCreatingBlog, setIsCreatingBlog] = useState(!existingBlog);
+  const [blogCreated, setBlogCreated] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('wechat');
   const [processing, setProcessing] = useState(false);
@@ -42,13 +42,18 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
 
   const isPaidTemplate = template?.price != null && template.price > 0;
 
+  const defaultContent = 'Welcome to my personal blog! This is a blog generated from your image.\n\nWith advanced AI technology, we extract colors, style, and atmosphere from your photo to create a unique personal blog site. No coding knowledge required.\n\nShare your story with the world.';
+
   const shortPreviewUrl = `${PREVIEW_URL}/preview?template=${template?.slug || 'minimal-simple'}`;
   const localPreviewUrl = image
-    ? `${PREVIEW_URL}/preview?template=${template?.slug || 'minimal-simple'}&name=${encodeURIComponent('My Blog')}&bio=${encodeURIComponent('Welcome to my blog')}&image=${encodeURIComponent(image)}`
+    ? `${PREVIEW_URL}/preview?template=${template?.slug || 'minimal-simple'}&name=${encodeURIComponent('My Blog')}&bio=${encodeURIComponent('Welcome to my blog')}&content=${encodeURIComponent(generatedBlog?.content || defaultContent)}&image=${encodeURIComponent(image)}`
     : shortPreviewUrl;
 
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const shareUrl = generatedBlog?.shareCode
-    ? `https://vibe.page/blog/${generatedBlog.shareCode}`
+    ? isLocalhost
+      ? `http://localhost:5173/blog/${generatedBlog.shareCode}`
+      : `https://vibe.page/blog/${generatedBlog.shareCode}`
     : null;
 
   const handleCopyShareLink = async () => {
@@ -75,23 +80,45 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
     };
   }, []);
 
+  // Handle existing blog from props
   useEffect(() => {
-    const generateAndCreateBlog = async () => {
-      if (!isCreatingBlog || existingBlog) {
-        setLoading(false);
-        return;
-      }
+    if (existingBlog) {
+      setGeneratedBlog(existingBlog);
+      setLoading(false);
+      setBlogCreated(true);
+    }
+  }, [existingBlog]);
 
+  // Create new blog if needed
+  useEffect(() => {
+    // Skip if: already created, no image/template, or existing blog
+    if (blogCreated) {
+      return;
+    }
+    if (!image || !template) {
+      setLoading(false);
+      return;
+    }
+    if (existingBlog) {
+      return;
+    }
+
+    console.log('[Preview] Starting blog creation with image:', !!image, 'template:', template?.name);
+
+    const timer = setTimeout(async () => {
       try {
         const blogData = {
           title: 'My Blog',
-          content: 'Welcome to my personal blog! This is a blog generated from your image.\n\nWith advanced AI technology, we extract colors, style, and atmosphere from your photo to create a unique personal blog site. No coding knowledge required.\n\nShare your story with the world.',
+          content: defaultContent,
           coverImage: image,
-          templateId: template?.id || 'minimal-simple',
+          templateId: template?.slug || 'minimal-simple',
         };
+        console.log('[Preview] API call - templateId:', blogData.templateId);
         const response = await createBlog(blogData);
+        console.log('[Preview] API response:', response);
         if (response.code === 200 && response.data) {
           setGeneratedBlog(response.data);
+          setBlogCreated(true);
           onGenerated?.(response.data);
         } else {
           setError(response.message || t('failedToCreateBlog'));
@@ -102,17 +129,10 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
       } finally {
         setLoading(false);
       }
-    };
+    }, 2000);
 
-    if (isCreatingBlog && image && template && !existingBlog) {
-      const timer = setTimeout(() => {
-        generateAndCreateBlog();
-      }, 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setLoading(false);
-    }
-  }, [image, template, isCreatingBlog, existingBlog]);
+    return () => clearTimeout(timer);
+  }, [image, template, existingBlog, blogCreated]);
 
   const handlePurchase = async () => {
     if (!template) return;
@@ -257,7 +277,7 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
             <button
               onClick={handlePurchase}
               disabled={processing}
-              className="w-full py-4 bg-text-primary text-background font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-primary text-background font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {processing ? (
@@ -373,7 +393,7 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
               <button
                 onClick={handleCopyShareLink}
                 className={`px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-                  copied ? 'bg-success text-white' : 'bg-text-primary text-background hover:bg-text-primary/90'
+                  copied ? 'bg-success text-white' : 'bg-primary text-background hover:bg-primary/90'
                 }`}
               >
                 {copied ? t('copied') : t('copy')}
@@ -398,8 +418,9 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
 
         <div className="mt-6 pt-4 border-t border-border">
           <button
-            onClick={onSuccess}
-            className="w-full py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300"
+            onClick={() => generatedBlog && onSuccess?.(generatedBlog)}
+            className="w-full py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!generatedBlog}
           >
             {t('publishYourPage') || 'Publish Your Page'}
           </button>
@@ -410,7 +431,7 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+      <div className="min-h-screen bg-background text-primary flex flex-col">
         <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
           <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
             <button
@@ -447,7 +468,7 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary">
+    <div className="min-h-screen bg-background text-primary">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button

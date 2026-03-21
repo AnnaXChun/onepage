@@ -6,6 +6,9 @@ function ShareLink({ blog, onRestart }) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
+  console.log('ShareLink received blog:', blog);
+  console.log('ShareLink blog.coverImage:', blog?.coverImage ? 'present (length=' + blog.coverImage.length + ')' : 'NULL');
+
   const isLocalhost = window.location.hostname === 'localhost'
   const shareUrl = blog?.shareCode
     ? isLocalhost
@@ -38,7 +41,7 @@ function ShareLink({ blog, onRestart }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col">
+    <div className="min-h-screen bg-background text-primary flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
@@ -57,23 +60,23 @@ function ShareLink({ blog, onRestart }) {
           </div>
 
           <h1 className="text-fluid-lg font-bold mb-4 animate-slide-up">{t('youreAllSet')}</h1>
-          <p className="text-xl text-textSecondary mb-10 animate-slide-up stagger-1">{t('pageIsLive')}</p>
+          <p className="text-xl text-secondary mb-10 animate-slide-up stagger-1">{t('pageIsLive')}</p>
 
           <div className="bg-surface rounded-2xl p-6 mb-8 border border-border animate-slide-up stagger-2">
-            <p className="text-sm text-textMuted mb-3">{t('yourUniqueLink')}</p>
+            <p className="text-sm text-muted mb-3">{t('yourUniqueLink')}</p>
             <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={shareUrl}
                 readOnly
-                className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-textPrimary text-sm font-mono"
+                className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-primary text-sm font-mono"
               />
               <button
                 onClick={handleCopy}
                 className={`px-6 py-3 font-medium rounded-xl transition-all duration-300 ${
                   copied
                     ? 'bg-success text-white'
-                    : 'bg-textPrimary text-background hover:scale-[1.02]'
+                    : 'bg-primary text-text-primary-btn hover:scale-[1.02]'
                 }`}
               >
                 {copied ? t('copied') : t('copy')}
@@ -83,13 +86,13 @@ function ShareLink({ blog, onRestart }) {
             {/* Local Preview URL - for testing without backend */}
             {localPreviewUrl && (
               <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-sm text-textMuted mb-3">Local Preview (Port 3000)</p>
+                <p className="text-sm text-muted mb-3">Local Preview (Port 3000)</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value={localPreviewUrl}
                     readOnly
-                    className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-textPrimary text-xs font-mono truncate"
+                    className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-primary text-xs font-mono truncate"
                   />
                   <button
                     onClick={() => window.open(localPreviewUrl, '_blank')}
@@ -103,7 +106,7 @@ function ShareLink({ blog, onRestart }) {
           </div>
 
           <div className="mb-10 animate-slide-up stagger-3">
-            <p className="text-sm text-textMuted mb-4">{t('shareOnSocialMedia')}</p>
+            <p className="text-sm text-muted mb-4">{t('shareOnSocialMedia')}</p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => handleShare('twitter')}
@@ -135,13 +138,13 @@ function ShareLink({ blog, onRestart }) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up stagger-4">
             <button
               onClick={onRestart}
-              className="px-8 py-3 border border-border text-textSecondary font-medium rounded-full hover:border-borderLight hover:text-textPrimary transition-all duration-200"
+              className="px-8 py-3 border border-border text-secondary font-medium rounded-full hover:border-borderLight hover:text-primary transition-all duration-200"
             >
               {t('createAnotherPage')}
             </button>
             <Link
               to="/orders"
-              className="px-8 py-3 bg-surface border border-border text-textPrimary font-medium rounded-full hover:border-borderLight transition-all duration-200"
+              className="px-8 py-3 bg-surface border border-border text-primary font-medium rounded-full hover:border-borderLight transition-all duration-200"
             >
               {t('viewMyOrders')}
             </Link>
@@ -150,7 +153,7 @@ function ShareLink({ blog, onRestart }) {
       </main>
 
       <footer className="py-8 text-center">
-        <p className="text-textMuted text-sm">{t('createYourOnlinePresence')}</p>
+        <p className="text-muted text-sm">{t('createYourOnlinePresence')}</p>
       </footer>
     </div>
   )

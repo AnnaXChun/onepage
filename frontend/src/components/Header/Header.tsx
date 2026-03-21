@@ -36,11 +36,11 @@ export default function Header({ user, onUserChange }: HeaderProps) {
         <div className="hidden md:flex items-center gap-8">
           <Link
             to="/templates"
-            className="text-textSecondary hover:text-textPrimary transition-colors"
+            className="text-secondary hover:text-primary transition-colors"
           >
             {t('templates')}
           </Link>
-          <button className="text-textSecondary hover:text-textPrimary transition-colors">
+          <button className="text-secondary hover:text-primary transition-colors">
             {t('pricing')}
           </button>
 
