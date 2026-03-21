@@ -10,6 +10,7 @@
 
 - [x] **v1.0 MVP** — Phases 1-5 (shipped 2026-03-21)
 - [x] **v1.1 Completion** — Phases 6-10 (shipped 2026-03-21)
+- [ ] **v1.2 Analytics** — Phase 11
 
 ---
 
@@ -129,6 +130,21 @@
 **Plans**: 1 plan
 - [x] 10-01-PLAN.md - Payment Fulfillment (PAY-01, PAY-02, PAY-03)
 
+### Phase 11: Analytics
+
+**Goal**: Users can view visitor counts and page views for their published sites
+
+**Depends on**: Phase 9 (platform hosting)
+
+**Requirements**: ANAL-01, ANAL-02, ANAL-03
+
+**Success Criteria** (what must be TRUE):
+  1. User can view visitor counts for their published site
+  2. User can view page views per published site
+  3. Analytics data displays in user dashboard
+
+**Plans**: Not yet planned
+
 ---
 
 ## v1.1 Progress
@@ -141,6 +157,12 @@
 | 9. Platform Hosting | 1/1 | Complete    | 2026-03-21 |
 | 10. Payments & VIP | 1/1 | Complete    | 2026-03-21 |
 
+## v1.2 Progress
+
+| Phase | Plans | Status | Completed |
+|-------|-------|--------|-----------|
+| 11. Analytics | 0/0 | Not Started | — |
+
 ---
 
-*Last updated: 2026-03-21 after Phase 09 plan 01 creation*
+*Last updated: 2026-03-22 after v1.2 milestone setup*

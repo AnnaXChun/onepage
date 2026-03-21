@@ -1,48 +1,20 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-21T15:04:15.725Z",
-  "milestone": "v1.1",
-  "phase": "09",
-  "phase_name": "platform-hosting",
-  "phase_dir": ".planning/phases/09-platform-hosting",
-  "plan": "09-01",
-  "task": null,
-  "total_tasks": 7,
+  "timestamp": "2026-03-22T00:00:00.000Z",
+  "milestone": "v1.2",
+  "phase": null,
+  "phase_name": "analytics",
   "status": "paused",
   "completed_tasks": [],
-  "remaining_tasks": [],
-  "blockers": [
-    {
-      "description": "Phase 9 verified complete but Phase 10 not yet planned",
-      "type": "planning",
-      "workaround": "None needed - this is a natural pause point"
-    },
-    {
-      "description": "Spring AI MiniMax API key needs to be set via MINIMAX_API_KEY environment variable",
-      "type": "external",
-      "workaround": "Set MINIMAX_API_KEY env var before starting backend"
-    }
-  ],
-  "human_actions_pending": [
-    {
-      "action": "Set MINIMAX_API_KEY environment variable and start backend to test hosting",
-      "context": "Spring Boot app requires MINIMAX_API_KEY to start without errors",
-      "blocking": false
-    }
-  ],
+  "remaining_tasks": ["Define requirements", "Create roadmap", "Execute Phase 11"],
+  "blockers": [],
   "decisions": [
     {
-      "decision": "Phase 9 subdomain hosting infrastructure built with SubdomainFilter, SiteController, SiteService",
-      "rationale": "Serve published blogs at /host/{username} endpoint",
-      "phase": "09"
-    },
-    {
-      "decision": "Spring AI uses spring.ai.openai.api-key config (not minimax.api.key)",
-      "rationale": "Spring AI 1.0.0-M6 autoconfiguration requires spring.ai.openai.api-key",
-      "phase": "09"
+      "decision": "v1.2 focuses on Analytics — visitor counts and page views dashboard",
+      "rationale": "User selected analytics first among 6 options",
+      "phase": "11"
     }
   ],
-  "uncommitted_files": [],
-  "next_action": "Run /gsd:plan-phase 10 to plan Phase 10 (Payments & VIP)",
-  "context_notes": "v1.1 milestone: Phases 6-9 complete. Phase 10 (Payments & VIP) is last phase. Compilation issues fixed (duplicate spring: key, Spring AI API compatibility, missing dependencies). Backend compiles and starts if MINIMAX_API_KEY is set."
+  "next_action": "Run /gsd:plan-phase 11 to plan Phase 11 (Analytics)",
+  "context_notes": "v1.2 milestone started. PROJECT.md updated with ANAL-01~03 requirements. Need to create REQUIREMENTS.md and ROADMAP.md for v1.2, then plan Phase 11."
 }

@@ -49,6 +49,14 @@
 - [x] **PAY-02**: VIP subscription (10 RMB/month) grants access to all templates
 - [x] **PAY-03**: Template purchases give lifetime one-time access to that template
 
+## v1.2 Requirements
+
+### Analytics
+
+- [ ] **ANAL-01**: User can view visitor counts for published site
+- [ ] **ANAL-02**: User can view page views per published site
+- [ ] **ANAL-03**: Analytics data displays in user dashboard
+
 ## v2 Requirements
 
 ### Additional Features
@@ -108,12 +116,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-01 | Phase 10 | Complete |
 | PAY-02 | Phase 10 | Complete |
 | PAY-03 | Phase 10 | Complete |
+| ANAL-01 | Phase 11 | Pending |
+| ANAL-02 | Phase 11 | Pending |
+| ANAL-03 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 21 total
 - Mapped to phases: 21
+- v1.2 requirements: 3 total
+- Mapped to phases: 1
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after v1.1 requirements definition*
+*Last updated: 2026-03-22 after v1.2 requirements definition*
