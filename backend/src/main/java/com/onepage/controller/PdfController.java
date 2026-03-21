@@ -74,7 +74,7 @@ public class PdfController {
 
     /**
      * Request final PDF (charged to user balance).
-     * PDF-01, PDF-04, PDF-06
+     * PDF-01, PDF-04, PDF-06: CRITICAL - credits deducted BEFORE queuing job
      */
     @PostMapping("/export/{blogId}")
     public Result<PdfPreviewResponse> requestExport(
@@ -89,10 +89,38 @@ public class PdfController {
             throw BusinessException.forbidden();
         }
 
+        // CRITICAL: Deduct credits BEFORE queueing job to prevent race condition
+        // If user doesn't have enough credits, they get immediate error without job being queued
         if (!userCreditsService.hasEnoughCredits(principal.getUserId(), PDF_COST)) {
             throw BusinessException.insufficientCredits();
         }
 
+        // Atomic check-and-deduct using Redis lock
+        String lockValue = creditLockService.tryLock(principal.getUserId());
+        if (lockValue == null) {
+            throw BusinessException.badRequest("Credit operation in progress, please retry");
+        }
+
+        try {
+            // Re-check balance inside lock
+            if (!userCreditsService.hasEnoughCredits(principal.getUserId(), PDF_COST)) {
+                throw BusinessException.insufficientCredits();
+            }
+            // Deduct credits atomically
+            userCreditsService.deductCredits(principal.getUserId(), PDF_COST);
+            log.info("Deducted {} credits from user {} for PDF export", PDF_COST, principal.getUserId());
+        } catch (BusinessException e) {
+            creditLockService.unlock(principal.getUserId(), lockValue);
+            throw e;
+        } catch (Exception e) {
+            creditLockService.unlock(principal.getUserId(), lockValue);
+            throw BusinessException.badRequest("Failed to process credit, please retry");
+        } finally {
+            // Always release lock
+            creditLockService.unlock(principal.getUserId(), lockValue);
+        }
+
+        // Only queue job AFTER successful credit deduction
         String jobId = pdfJobProducer.queuePdfGeneration(
             principal.getUserId(),
             blogId,
@@ -100,10 +128,16 @@ public class PdfController {
             false
         );
 
+        // Create job record with 24h expiration
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
+        pdfJobService.createJob(jobId, principal.getUserId(), blogId, 2, expiresAt);
+
         PdfPreviewResponse response = new PdfPreviewResponse();
         response.setJobId(jobId);
         response.setPreviewUrl("/api/pdf/status/" + jobId);
-        response.setMessage("PDF generation queued. You will be charged " + PDF_COST + " credits upon completion.");
+        response.setDownloadUrl("/api/pdf/download/" + jobId);  // NEW: direct download URL
+        response.setMessage("PDF generation queued. You were charged " + PDF_COST + " credits.");
+        response.setExpiresAt(expiresAt);
 
         return Result.success(response);
     }
