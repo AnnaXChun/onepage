@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 public class UserCreditsService {
 
     private final UserCreditsMapper userCreditsMapper;
+    private final CreditLockService creditLockService;
 
     private static final BigDecimal DEFAULT_CREDITS = new BigDecimal("0.00");
 
@@ -60,6 +61,7 @@ public class UserCreditsService {
     /**
      * Deduct credits from user balance.
      * PAY-03, PAY-05: Template purchase deducts credits
+     * Uses Redis distributed lock to prevent race conditions.
      */
     @Transactional
     public void deductCredits(Long userId, BigDecimal amount) {
@@ -67,13 +69,24 @@ public class UserCreditsService {
             throw BusinessException.badRequest("Invalid deduction amount");
         }
 
-        BigDecimal currentBalance = getCredits(userId);
-        if (currentBalance.compareTo(amount) < 0) {
-            throw BusinessException.badRequest("Insufficient credits balance");
+        // Acquire distributed lock for atomic credit operation
+        String lockValue = creditLockService.tryLock(userId);
+        if (lockValue == null) {
+            throw BusinessException.badRequest("Credit operation in progress, please retry");
         }
 
-        UserCredits credits = userCreditsMapper.selectByUserId(userId);
-        if (credits != null) {
+        try {
+            // Double-check balance inside lock (defensive)
+            BigDecimal currentBalance = getCredits(userId);
+            if (currentBalance.compareTo(amount) < 0) {
+                throw BusinessException.badRequest("Insufficient credits balance");
+            }
+
+            UserCredits credits = userCreditsMapper.selectByUserId(userId);
+            if (credits == null) {
+                throw BusinessException.badRequest("User credits record not found");
+            }
+
             credits.setBalance(credits.getBalance().subtract(amount));
             // Track total spent
             if (credits.getTotalSpent() != null) {
@@ -82,9 +95,12 @@ public class UserCreditsService {
                 credits.setTotalSpent(amount);
             }
             userCreditsMapper.updateById(credits);
-        }
 
-        log.info("Deducted {} credits from user {}", amount, userId);
+            log.info("Atomically deducted {} credits from user {}", amount, userId);
+        } finally {
+            // ALWAYS release lock in finally block
+            creditLockService.unlock(userId, lockValue);
+        }
     }
 
     /**
