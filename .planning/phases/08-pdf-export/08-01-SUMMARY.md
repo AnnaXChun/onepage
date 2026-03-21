@@ -109,3 +109,16 @@ None.
 ---
 *Phase: 08-pdf-export*
 *Completed: 2026-03-21*
+
+## Self-Check: PASSED
+
+All key files exist and all commit hashes verified:
+- PdfJobConsumer.java - FOUND
+- PdfController.java - FOUND
+- PdfGenerationService.java - FOUND
+- PdfJobService.java - FOUND
+- UserCreditsService.java - FOUND
+- Commit 8430ac3 (Task 1) - FOUND
+- Commit 4f11d1c (Task 2) - FOUND
+- Commit 45e3734 (Task 3) - FOUND
+- Commit 87fb252 (Task 4) - FOUND
