@@ -30,6 +30,10 @@ public class Blog {
 
     private String blocks;
 
+    private String htmlContent;
+
+    private LocalDateTime publishTime;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
