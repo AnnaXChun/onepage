@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
+milestone: v1.1
+milestone_name: ""
 current_phase: none
-status: milestone_complete
-stopped_at: Milestone v1.0 shipped 2026-03-21
-last_updated: "2026-03-21T12:44:00.000Z"
+status: defining_requirements
+stopped_at: Milestone v1.1 started 2026-03-21
+last_updated: "2026-03-21T12:50:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Vibe Onepage - Project State
@@ -19,22 +19,22 @@ progress:
 
 ## Project Reference
 
+See: .planning/PROJECT.md (updated 2026-03-21)
+
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.0 MVP — SHIPPED
+**Current Milestone:** v1.1 — Defining requirements
 
-**Current Focus:** Planning next milestone (v1.1)
+## Current Position
 
-## Milestone v1.0 Summary
-
-- 5 phases, 13 plans executed via GSD workflow
-- 320 files changed, 35,164 insertions
-- Shipped: 2026-03-21
-- Git tag: v1.0
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-21 — Milestone v1.1 started
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start v1.1 planning.
+Run `/gsd:new-milestone` to continue v1.1 planning.
 
 ## Accumulated Context
 

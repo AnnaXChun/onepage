@@ -10,6 +10,18 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
+## Current Milestone: v1.1
+
+**Goal:** Complete the core user value loop — AI generation, editor polish, and payments/hosting integration to make the product shippable.
+
+**Target features:**
+- Complete AI Website Generation pipeline (image upload → AI style extraction → full page generation)
+- AI Writing Assist polish (sparkle button per text block, Replace/Append modes, confidence highlighting)
+- Block Editor polish (configuration panel, block settings persistence)
+- PDF Export completion (preview before charge, 24h expiring download links)
+- VIP & Payments completion (WeChat Pay flow, credit deduction)
+- Platform Hosting completion (subdomain DNS routing, publish/unpublish)
+
 ## Requirements
 
 ### Validated
@@ -105,5 +117,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-21 after v1.0 milestone*
+*Last updated: 2026-03-21 after v1.1 milestone started*
 
