@@ -176,4 +176,10 @@ export const logout = async (): Promise<void> => {
   localStorage.removeItem('user');
 };
 
+// Get user credits balance
+export const getCredits = async (): Promise<number> => {
+  const response = await api.get('/user/credits');
+  return response.data.data || 0;
+};
+
 export default api;

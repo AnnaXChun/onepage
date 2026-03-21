@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
+import { useState, useEffect } from 'react';
+import { getCredits } from '../../services/api';
 
 interface AuthButtonsProps {
-  user: { username: string } | null;
+  user: { username: string; credits?: number } | null;
   onLogout: () => void;
 }
 
 export default function AuthButtons({ user, onLogout }: AuthButtonsProps) {
   const { t } = useTranslation();
+  const [credits, setCredits] = useState<number>(0);
+
+  useEffect(() => {
+    if (user) {
+      getCredits().then(setCredits).catch(() => {});
+    }
+  }, [user]);
 
   if (user) {
     return (
@@ -23,6 +32,9 @@ export default function AuthButtons({ user, onLogout }: AuthButtonsProps) {
             {user.username?.[0]?.toUpperCase() || 'U'}
           </div>
           <span className="font-medium text-primary">{user.username}</span>
+          <span className="text-sm text-muted">
+            {credits.toFixed(1)} credits
+          </span>
           <button
             onClick={onLogout}
             className="text-muted hover:text-secondary text-sm transition-colors"
