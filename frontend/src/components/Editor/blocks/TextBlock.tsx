@@ -140,11 +140,25 @@ export default function TextBlock({
     ${isLowConfidence ? 'ring-2 ring-amber-400/50' : ''}
   `.trim().replace(/\s+/g, ' ');
 
+  // Apply config styles
+  const alignmentClass = {
+    'left': 'text-left',
+    'center': 'text-center',
+    'right': 'text-right',
+  }[block.config?.align || 'left'];
+
+  const containerStyle: React.CSSProperties = {
+    backgroundColor: block.config?.backgroundColor,
+    color: block.config?.textColor,
+    display: block.config?.visible === false ? 'none' : 'block',
+  };
+
   return (
     <>
       <div
         onClick={handleClick}
-        className={containerClass}
+        className={`${containerClass} ${alignmentClass}`}
+        style={containerStyle}
         title={isLowConfidence ? 'This content was generated with low confidence' : undefined}
       >
         {aiButton}

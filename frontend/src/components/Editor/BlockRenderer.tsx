@@ -20,6 +20,11 @@ export default function BlockRenderer({
   isSelected,
   onSelect,
 }: BlockRendererProps) {
+  // Don't render hidden blocks
+  if (block.config?.visible === false) {
+    return null;
+  }
+
   const commonProps = {
     block,
     content,
