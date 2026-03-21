@@ -83,7 +83,12 @@ Plans:
 7. Generated blocks with low confidence scores are visually highlighted for user review
 8. AI pipeline stages (Image Analysis, Style Extraction, Content Generation, Block Assembly) execute sequentially with validation gates
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md -- AI foundation: color extraction, Spring AI config, AIGenerationService
+- [ ] 03-02-PLAN.md -- Async generation: RabbitMQ messaging, progress UI, block assembly
+- [ ] 03-03-PLAN.md -- AI Writing Assist: sparkle button, Replace/Append modal, confidence highlighting
 
 ---
 
@@ -105,7 +110,12 @@ Plans:
 7. User can export current page as PDF; PDF generates server-side and is downloadable via link (expires 24h)
 8. User sees PDF preview before being charged
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md -- AI foundation: color extraction, Spring AI config, AIGenerationService
+- [ ] 03-02-PLAN.md -- Async generation: RabbitMQ messaging, progress UI, block assembly
+- [ ] 03-03-PLAN.md -- AI Writing Assist: sparkle button, Replace/Append modal, confidence highlighting
 
 ---
 
@@ -124,7 +134,12 @@ Plans:
 4. HikariCP connection pool is tuned for high concurrency
 5. Async job processing via RabbitMQ handles PDF and AI generation without blocking
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md -- AI foundation: color extraction, Spring AI config, AIGenerationService
+- [ ] 03-02-PLAN.md -- Async generation: RabbitMQ messaging, progress UI, block assembly
+- [ ] 03-03-PLAN.md -- AI Writing Assist: sparkle button, Replace/Append modal, confidence highlighting
 
 ---
 
