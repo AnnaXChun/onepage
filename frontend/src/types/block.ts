@@ -8,6 +8,13 @@ export interface BlockConfig {
   aspectRatio?: string;
   rounded?: boolean;
   allowedBlockTypes?: BlockType[];
+  // New - alignment
+  align?: 'left' | 'center' | 'right';
+  // New - colors
+  backgroundColor?: string;  // hex color e.g., "#ffffff"
+  textColor?: string;        // hex color e.g., "#000000"
+  // New - visibility
+  visible?: boolean;         // default true
 }
 
 export interface BlockDefinition {
