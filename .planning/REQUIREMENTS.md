@@ -127,21 +127,69 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TEMPLATE-01 | TBD | Pending |
-| EDIT-01 | TBD | Pending |
-| AI-01 | TBD | Pending |
-| WRT-01 | TBD | Pending |
-| ORCH-01 | TBD | Pending |
-| HOST-01 | TBD | Pending |
-| PDF-01 | TBD | Pending |
-| PAY-01 | TBD | Pending |
-| PERF-01 | TBD | Pending |
+| TPL-01 | Phase 1 | Pending |
+| TPL-02 | Phase 1 | Pending |
+| TPL-03 | Phase 1 | Pending |
+| TPL-04 | Phase 1 | Pending |
+| TPL-05 | Phase 1 | Pending |
+| EDIT-01 | Phase 2 | Pending |
+| EDIT-02 | Phase 2 | Pending |
+| EDIT-03 | Phase 2 | Pending |
+| EDIT-04 | Phase 2 | Pending |
+| EDIT-05 | Phase 2 | Pending |
+| EDIT-06 | Phase 2 | Pending |
+| EDIT-07 | Phase 2 | Pending |
+| EDIT-08 | Phase 2 | Pending |
+| EDIT-09 | Phase 2 | Pending |
+| AI-01 | Phase 3 | Pending |
+| AI-02 | Phase 3 | Pending |
+| AI-03 | Phase 3 | Pending |
+| AI-04 | Phase 3 | Pending |
+| AI-05 | Phase 3 | Pending |
+| AI-06 | Phase 3 | Pending |
+| AI-07 | Phase 3 | Pending |
+| WRT-01 | Phase 3 | Pending |
+| WRT-02 | Phase 3 | Pending |
+| WRT-03 | Phase 3 | Pending |
+| WRT-04 | Phase 3 | Pending |
+| WRT-05 | Phase 3 | Pending |
+| ORCH-01 | Phase 3 | Pending |
+| ORCH-02 | Phase 3 | Pending |
+| ORCH-03 | Phase 3 | Pending |
+| ORCH-04 | Phase 3 | Pending |
+| HOST-01 | Phase 4 | Pending |
+| HOST-02 | Phase 4 | Pending |
+| HOST-03 | Phase 4 | Pending |
+| HOST-04 | Phase 4 | Pending |
+| HOST-05 | Phase 4 | Pending |
+| HOST-06 | Phase 4 | Pending |
+| PDF-01 | Phase 4 | Pending |
+| PDF-02 | Phase 4 | Pending |
+| PDF-03 | Phase 4 | Pending |
+| PDF-04 | Phase 4 | Pending |
+| PDF-05 | Phase 4 | Pending |
+| PDF-06 | Phase 4 | Pending |
+| PAY-01 | Phase 4 | Pending |
+| PAY-02 | Phase 4 | Pending |
+| PAY-03 | Phase 4 | Pending |
+| PAY-04 | Phase 4 | Pending |
+| PAY-05 | Phase 4 | Pending |
+| PAY-06 | Phase 4 | Pending |
+| PAY-07 | Phase 4 | Pending |
+| AUTH-01 | Existing | Existing |
+| AUTH-02 | Existing | Existing |
+| AUTH-03 | Phase 4 | Pending |
+| PERF-01 | Phase 5 | Pending |
+| PERF-02 | Phase 5 | Pending |
+| PERF-03 | Phase 5 | Pending |
+| PERF-04 | Phase 5 | Pending |
+| PERF-05 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 50 total
-- Mapped to phases: 0
-- Unmapped: 50 ⚠️
+- v1 requirements: 52 total (3 existing, 49 to build)
+- Mapped to phases: 52
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation*
