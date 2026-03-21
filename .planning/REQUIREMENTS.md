@@ -27,8 +27,8 @@
 ### PDF Export
 
 - [ ] **PDF-01**: User can preview PDF free (low-resolution, link expires 1h)
-- [ ] **PDF-02**: Full PDF export deducts 0.3 credits from user balance
-- [ ] **PDF-03**: Generated PDF downloadable via link (expires 24h after generation)
+- [x] **PDF-02**: Full PDF export deducts 0.3 credits from user balance
+- [x] **PDF-03**: Generated PDF downloadable via link (expires 24h after generation)
 
 ### Credit System
 
@@ -96,8 +96,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EDI-01 | Phase 6 | Pending |
 | EDI-02 | Phase 6 | Pending |
 | PDF-01 | Phase 8 | Pending |
-| PDF-02 | Phase 8 | Pending |
-| PDF-03 | Phase 8 | Pending |
+| PDF-02 | Phase 8 | Complete |
+| PDF-03 | Phase 8 | Complete |
 | CRD-01 | Phase 7 | Pending |
 | CRD-02 | Phase 7 | Pending |
 | CRD-03 | Phase 7 | Pending |

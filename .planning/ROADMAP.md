@@ -92,7 +92,9 @@
   2. Full PDF export deducts 0.3 credits atomically from user balance
   3. Generated PDF is downloadable via link that expires 24 hours after generation
 
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 08-01-PLAN.md - PDF Preview (PDF-01)
+- [x] 08-02-PLAN.md - PDF Export with Credit (PDF-02, PDF-03)
 
 ### Phase 9: Platform Hosting
 
@@ -133,10 +135,10 @@
 |-------|-------|--------|-----------|
 | 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
 | 7. Credit System | 3/3 | Complete    | 2026-03-21 |
-| 8. PDF Export | 0/TBD | Not started | - |
+| 8. PDF Export | 2/TBD | In progress | - |
 | 9. Platform Hosting | 0/TBD | Not started | - |
 | 10. Payments & VIP | 0/TBD | Not started | - |
 
 ---
 
-*Last updated: 2026-03-21 after Phase 7 planning*
+*Last updated: 2026-03-21 after Phase 8 planning*
