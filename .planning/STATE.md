@@ -21,7 +21,7 @@ progress:
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Phase:** 1 - Template System Foundation
+**Current Phase:** 3 - AI Generation Pipeline
 
 **Current Milestone:** v1 MVP
 
