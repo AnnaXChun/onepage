@@ -71,6 +71,17 @@ CREATE TABLE IF NOT EXISTS `templates` (
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- User credits table
+CREATE TABLE IF NOT EXISTS `user_credits` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT NOT NULL UNIQUE,
+    `balance` DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Current credits balance',
+    `total_spent` DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Total credits spent',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert default templates
 INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) VALUES
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
