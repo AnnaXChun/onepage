@@ -98,7 +98,7 @@ Plans:
 
 **Depends on:** Phase 3
 
-**Requirements:** HOST-01, HOST-02, HOST-03, HOST-04, HOST-05, HOST-06, PDF-01, PDF-02, PDF-03, PDF-04, PDF-05, PDF-06, PAY-01, PAY-02, PAY-03, PAY-04, PAY-05, PAY-06, PAY-07
+**Requirements:** HOST-01, HOST-02, HOST-03, HOST-04, HOST-05, HOST-06, PDF-01, PDF-02, PDF-03, PDF-04, PDF-05, PDF-06, PAY-01, PAY-02, PAY-03, PAY-04, PAY-05, PAY-06, PAY-07, AUTH-03
 
 **Success Criteria** (what must be TRUE):
 1. User can click "Publish" to deploy their site to username.vibe.com (or localhost:port in dev)
@@ -113,9 +113,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- AI foundation: color extraction, Spring AI config, AIGenerationService
-- [ ] 03-02-PLAN.md -- Async generation: RabbitMQ messaging, progress UI, block assembly
-- [ ] 03-03-PLAN.md -- AI Writing Assist: sparkle button, Replace/Append modal, confidence highlighting
+- [ ] 04-01-PLAN.md -- Static site publishing: publish/unpublish, Thymeleaf HTML generation, subdomain routing
+- [ ] 04-02-PLAN.md -- PDF export system: async PDF generation, user credits, preview before charge
+- [ ] 04-03-PLAN.md -- Payments & VIP: VIP subscriptions, template purchases, balance tracking
 
 ---
 
@@ -137,9 +137,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- AI foundation: color extraction, Spring AI config, AIGenerationService
-- [ ] 03-02-PLAN.md -- Async generation: RabbitMQ messaging, progress UI, block assembly
-- [ ] 03-03-PLAN.md -- AI Writing Assist: sparkle button, Replace/Append modal, confidence highlighting
+- [ ] 05-01-PLAN.md -- Performance foundation: Redis caching, database indexes, HikariCP tuning
+- [ ] 05-02-PLAN.md -- Hot endpoint optimization: 500 QPS verification with JMeter
+- [ ] 05-03-PLAN.md -- Async job processing: RabbitMQ for PDF and AI generation
 
 ---
 
@@ -149,9 +149,9 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
 | 2. Block Editor Core | 3/3 | Complete   | 2026-03-21 |
-| 3. AI Generation Pipeline | 0/1 | Not started | - |
-| 4. Publishing, Payments & PDF | 0/1 | Not started | - |
-| 5. Polish & Performance | 0/1 | Not started | - |
+| 3. AI Generation Pipeline | 0/3 | Not started | - |
+| 4. Publishing, Payments & PDF | 0/3 | Not started | - |
+| 5. Polish & Performance | 0/3 | Not started | - |
 
 ---
 
@@ -218,3 +218,8 @@ Plans:
 | PERF-05 | Phase 5 | Pending |
 
 **Coverage:** 52/52 requirements mapped (3 existing, 49 to build)
+
+---
+
+*Requirements defined: 2026-03-21*
+*Last updated: 2026-03-21 after Phase 4 planning*
