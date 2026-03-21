@@ -47,9 +47,9 @@ export default function SocialLinksBlock({
   };
 
   // Initialize links from content
-  useState(() => {
+  useEffect(() => {
     parseContent();
-  });
+  }, [content]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

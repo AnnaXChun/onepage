@@ -3,7 +3,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useEditorStore, BlockState } from '../../stores/editorStore';
 import api from '../../services/api';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'http://localhost:8080/api/v1';
 
 interface SaveResult {
   success: boolean;
@@ -13,7 +13,7 @@ interface SaveResult {
 async function saveBlocksToBackend(blogId: string, blocks: BlockState[]): Promise<SaveResult> {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE}/blog/${blogId}/blocks`, {
+    const response = await fetch(`${API_BASE}/blogs/${blogId}/blocks`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export default function useAutoSave(blogId: string | null) {
 
         if (navigator.sendBeacon) {
           navigator.sendBeacon(
-            `${API_BASE}/blog/${blogId}/blocks`,
+            `${API_BASE}/blogs/${blogId}/blocks`,
             new Blob([data], { type: 'application/json' })
           );
         }
