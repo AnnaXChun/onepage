@@ -48,14 +48,16 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ RabbitMQ async job processing for PDF and AI generation — v1.0 (Phase 5)
 - ✓ RGB color extraction + MiniMax AI text generation via Spring AI — v1.0 (Phase 3)
 - ✓ AI Write Assist with Replace/Append modes and low-confidence highlighting — v1.0 (Phase 3)
+- ✓ AI Website Generation full pipeline — image upload → RabbitMQ async → WebSocket progress → block preview with confidence scoring — v1.1 (Phase 6)
+- ✓ Block Editor Polish — configuration panel, block-level settings persistence — v1.1 (Phase 6)
 
 ### Active
 
 <!-- Next milestone priorities -->
 
-- [ ] **AI Website Generation** — Full pipeline: user uploads image → AI extracts style → generates complete editable page via MiniMax API
-- [ ] **AI Writing Assist** — Inline sparkle button on each text block; Replace/Append modes; low-confidence highlighting (Partially done in v1.0 Phase 3)
-- [ ] **Block Editor Polish** — Block configuration panel (right sidebar), block-level settings persistence
+- [ ] **PDF Export Full** — Preview before charge, 24h expiring download links
+- [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
+- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
 - [ ] **PDF Export Full** — Preview before charge, 24h expiring download links
 - [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
 - [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
