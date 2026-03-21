@@ -19,6 +19,14 @@ public class UserCreditsService {
     private final CreditLockService creditLockService;
 
     private static final BigDecimal DEFAULT_CREDITS = new BigDecimal("0.00");
+    private static final BigDecimal PDF_COST = new BigDecimal("0.30");
+
+    /**
+     * Get the cost for PDF export.
+     */
+    public BigDecimal getPdfCost() {
+        return PDF_COST;
+    }
 
     /**
      * Get user credits balance.
