@@ -29,7 +29,7 @@
 ### 🚧 v1.1 Completion (In Progress)
 
 - [x] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel (completed 2026-03-21)
-- [ ] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up
+- [x] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up (completed 2026-03-21)
 - [ ] **Phase 8: PDF Export** - Two-phase PDF export with free preview and paid full export via credit deduction
 - [ ] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
 - [ ] **Phase 10: Payments & VIP** - WeChat Pay callback handling, VIP subscription, and template purchase
@@ -76,8 +76,8 @@
 
 **Plans**: 3 plans
 - [x] 07-01-PLAN.md - Credit Balance Display (CRD-01)
-- [ ] 07-02-PLAN.md - Atomic Credit Deduction (CRD-02)
-- [ ] 07-03-PLAN.md - WeChat Pay Top-up (CRD-03)
+- [x] 07-02-PLAN.md - Atomic Credit Deduction (CRD-02)
+- [x] 07-03-PLAN.md - WeChat Pay Top-up (CRD-03)
 
 ### Phase 8: PDF Export
 
@@ -132,7 +132,7 @@
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
-| 7. Credit System | 1/3 | In progress | - |
+| 7. Credit System | 3/3 | Complete    | 2026-03-21 |
 | 8. PDF Export | 0/TBD | Not started | - |
 | 9. Platform Hosting | 0/TBD | Not started | - |
 | 10. Payments & VIP | 0/TBD | Not started | - |
