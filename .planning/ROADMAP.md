@@ -7,7 +7,7 @@
 ## Phases
 
 - [ ] **Phase 1: Template System Foundation** - Define 10 templates with block structures, establish component library
-- [ ] **Phase 2: Block Editor Core** - Drag-and-drop editor with dnd-kit, click-to-edit, state persistence
+- [x] **Phase 2: Block Editor Core** - Drag-and-drop editor with dnd-kit, click-to-edit, state persistence (completed 2026-03-21)
 - [ ] **Phase 3: AI Generation Pipeline** - Image analysis, style extraction, content generation, block assembly
 - [ ] **Phase 4: Publishing, Payments & PDF** - Static site generation, subdomain hosting, WeChat Pay, PDF export
 - [ ] **Phase 5: Polish & Performance** - Redis caching, 500 QPS optimization, animations, load testing
@@ -56,12 +56,12 @@ Plans:
 7. Editor state auto-saves to backend (debounced 500ms) and backs up to localStorage
 8. User can undo/redo changes via keyboard shortcuts or buttons
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md -- Editor foundation: block components, Zustand store with undo/redo, BlockRenderer
 - [x] 02-02-PLAN.md -- Editor canvas: dnd-kit integration, SortableBlock, click-to-edit, drag handles
-- [ ] 02-03-PLAN.md -- Editor polish: BlockConfigPanel, EditorToolbar, auto-save hook, main Editor orchestrator
+- [x] 02-03-PLAN.md -- Editor polish: BlockConfigPanel, EditorToolbar, auto-save hook, main Editor orchestrator
 
 ---
 
@@ -133,7 +133,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
-| 2. Block Editor Core | 2/3 | In progress | - |
+| 2. Block Editor Core | 3/3 | Complete   | 2026-03-21 |
 | 3. AI Generation Pipeline | 0/1 | Not started | - |
 | 4. Publishing, Payments & PDF | 0/1 | Not started | - |
 | 5. Polish & Performance | 0/1 | Not started | - |
