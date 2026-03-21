@@ -9,7 +9,7 @@
 ## Milestones
 
 - [x] **v1.0 MVP** — Phases 1-5 (shipped 2026-03-21)
-- [ ] **v1.1 Completion** — Phases 6-10 (in progress)
+- [x] **v1.1 Completion** — Phases 6-10 (shipped 2026-03-21)
 
 ---
 
@@ -26,7 +26,7 @@
 
 </details>
 
-### 🚧 v1.1 Completion (In Progress)
+### ✅ v1.1 Completion (SHIPPED 2026-03-21)
 
 - [x] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel (completed 2026-03-21)
 - [x] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up (completed 2026-03-21)
