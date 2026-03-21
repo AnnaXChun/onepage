@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.OrderDetailDTO;
 import com.onepage.exception.BusinessException;
 import com.onepage.mapper.OrderMapper;
+import com.onepage.mapper.TemplateMapper;
 import com.onepage.model.Order;
 import com.onepage.model.OrderStatus;
+import com.onepage.model.Template;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,6 +28,9 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final IdempotentService idempotentService;
+    private final VipService vipService;
+    private final TemplateMapper templateMapper;
+    private final TemplatePurchaseService templatePurchaseService;
 
     private static final String PAYMENT_LOCK_PREFIX = "lock:order:";
     private static final String PAYMENT_IDEMPOTENT_PREFIX = "idempotent:payment:";
@@ -404,6 +409,82 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         }
         String key = PAYMENT_IDEMPOTENT_PREFIX + idempotentKey;
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    /**
+     * Create a VIP subscription order.
+     * PAY-01
+     */
+    public Order createVipOrder(Long userId, int months) {
+        BigDecimal amount = vipService.getVipMonthlyPrice().multiply(new BigDecimal(months));
+
+        Order order = new Order();
+        order.setOrderNo(generateOrderNo());
+        order.setUserId(userId);
+        order.setTemplateId(null);
+        order.setTemplateName("VIP Subscription - " + months + " month(s)");
+        order.setAmount(amount);
+        order.setStatus(OrderStatus.PENDING.getCode());
+        order.setCreateTime(LocalDateTime.now());
+        order.setUpdateTime(LocalDateTime.now());
+        order.setExpireTime(LocalDateTime.now().plusMinutes(ORDER_EXPIRE_MINUTES));
+
+        this.save(order);
+        log.info("Created VIP order: orderNo={}, userId={}, amount={}", order.getOrderNo(), userId, amount);
+        return order;
+    }
+
+    /**
+     * Create a template purchase order.
+     * PAY-03
+     */
+    public Order createTemplatePurchaseOrder(Long userId, String templateId) {
+        Template template = templateMapper.selectById(templateId);
+        if (template == null) {
+            throw BusinessException.badRequest("Template not found");
+        }
+        BigDecimal amount = template.getPrice();
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw BusinessException.badRequest("Template is free");
+        }
+
+        Order order = new Order();
+        order.setOrderNo(generateOrderNo());
+        order.setUserId(userId);
+        order.setTemplateId(templateId);
+        order.setTemplateName("Template Purchase: " + template.getName());
+        order.setAmount(amount);
+        order.setStatus(OrderStatus.PENDING.getCode());
+        order.setCreateTime(LocalDateTime.now());
+        order.setUpdateTime(LocalDateTime.now());
+        order.setExpireTime(LocalDateTime.now().plusMinutes(ORDER_EXPIRE_MINUTES));
+
+        this.save(order);
+        log.info("Created template purchase order: orderNo={}, userId={}, templateId={}, amount={}",
+            order.getOrderNo(), userId, templateId, amount);
+        return order;
+    }
+
+    /**
+     * Create a credits purchase order.
+     * PAY-06
+     */
+    public Order createCreditsOrder(Long userId, BigDecimal creditsAmount, BigDecimal price) {
+        Order order = new Order();
+        order.setOrderNo(generateOrderNo());
+        order.setUserId(userId);
+        order.setTemplateId(null);
+        order.setTemplateName("Credits: " + creditsAmount);
+        order.setAmount(price);
+        order.setStatus(OrderStatus.PENDING.getCode());
+        order.setCreateTime(LocalDateTime.now());
+        order.setUpdateTime(LocalDateTime.now());
+        order.setExpireTime(LocalDateTime.now().plusMinutes(ORDER_EXPIRE_MINUTES));
+
+        this.save(order);
+        log.info("Created credits order: orderNo={}, userId={}, credits={}, price={}",
+            order.getOrderNo(), userId, creditsAmount, price);
+        return order;
     }
 
     private String generateOrderNo() {
