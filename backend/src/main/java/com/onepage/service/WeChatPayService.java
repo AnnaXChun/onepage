@@ -16,6 +16,9 @@ import java.util.Map;
 @Slf4j
 public class WeChatPayService {
 
+    private final PaymentLockService paymentLockService;
+    private final UserCreditsService userCreditsService;
+
     @Value("${wechat.appid:}")
     private String appId;
 
@@ -30,6 +33,11 @@ public class WeChatPayService {
 
     @Value("${wechat.sandbox:false}")
     private boolean sandbox;
+
+    public WeChatPayService(PaymentLockService paymentLockService, UserCreditsService userCreditsService) {
+        this.paymentLockService = paymentLockService;
+        this.userCreditsService = userCreditsService;
+    }
 
     /**
      * 创建预支付订单，返回支付二维码链接
@@ -135,6 +143,48 @@ public class WeChatPayService {
         result.put("message", "模拟支付环境");
         log.info("创建模拟支付订单: {}, 金额: {}", orderNo, amount);
         return result;
+    }
+
+    /**
+     * Process credit top-up callback from WeChat Pay.
+     * Called by PaymentController callback endpoint.
+     * @param params callback parameters from WeChat
+     * @return true if processed successfully
+     */
+    public boolean processCreditTopupCallback(Map<String, String> params) {
+        String orderNo = params.get("out_trade_no");
+        String tradeState = params.get("trade_state");
+
+        // Only process successful payments
+        if (!"SUCCESS".equals(tradeState)) {
+            log.info("Credit topup order {} not success: {}", orderNo, tradeState);
+            return false;
+        }
+
+        // Check if already processed (idempotency)
+        if (paymentLockService.checkIdempotentKey(orderNo)) {
+            log.info("Credit topup order {} already processed", orderNo);
+            return true;
+        }
+
+        // Extract credits from order metadata
+        // Order format: CRD{timestamp}{userId}
+        // In production, store credits in order metadata
+        String orderInfo = orderNo.substring(3); // Remove CRD prefix
+        long userId = Long.parseLong(orderInfo.substring(13)); // Extract userId from order
+
+        // Parse amount - 1 credit = 1 RMB
+        String totalFee = params.get("total_fee");
+        BigDecimal credits = new BigDecimal(totalFee).divide(new BigDecimal("100"));
+
+        // Add credits to user
+        userCreditsService.addCredits(userId, credits);
+
+        // Mark as processed
+        paymentLockService.storeIdempotentKey(orderNo, "CREDIT_TOPUP");
+
+        log.info("Processed credit topup for user {}: {} credits", userId, credits);
+        return true;
     }
 
     /**
