@@ -279,4 +279,27 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         }
         return url;
     }
+
+    /**
+     * Update blog blocks (for block editor persistence).
+     */
+    public void updateBlogBlocks(Long id, String blocksJson) {
+        if (id == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+
+        Blog blog = this.getById(id);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+
+        blog.setBlocks(blocksJson);
+        blog.setUpdateTime(LocalDateTime.now());
+        this.updateById(blog);
+
+        // Invalidate cache
+        redisTemplate.delete(BLOG_CACHE_PREFIX + id);
+        cacheBlog(blog);
+        log.info("Blog blocks updated: id={}", id);
+    }
 }

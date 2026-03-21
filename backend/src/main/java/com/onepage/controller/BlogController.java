@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/blog")
@@ -57,6 +58,39 @@ public class BlogController {
         }
         Blog blog = blogService.updateBlog(id, userId, dto.getTitle(), dto.getContent(), dto.getCoverImage(), dto.getTemplateId());
         return Result.success(blog);
+    }
+
+    @PutMapping("/{id}/blocks")
+    public Result<Void> updateBlogBlocks(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+
+        // Verify blog belongs to user
+        Blog blog = blogService.getBlogById(id);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to modify this blog");
+        }
+
+        // Extract blocks from request
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> blocks = (List<Map<String, Object>>) request.get("blocks");
+        if (blocks == null) {
+            throw BusinessException.badRequest("Blocks are required");
+        }
+
+        // Convert to JSON and save
+        String blocksJson = com.alibaba.fastjson2.JSON.toJSONString(blocks);
+        blogService.updateBlogBlocks(id, blocksJson);
+
+        return Result.success();
     }
 
     @GetMapping("/{id}")

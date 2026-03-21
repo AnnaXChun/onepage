@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `blogs` (
     `template_id` VARCHAR(50),
     `share_code` VARCHAR(20) UNIQUE,
     `status` TINYINT DEFAULT 1 COMMENT '1:已发布 0:草稿',
+    `blocks` MEDIUMTEXT COMMENT 'Block editor JSON data',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX `idx_user_id` (`user_id`),

@@ -28,6 +28,8 @@ public class Blog {
 
     private Integer status;
 
+    private String blocks;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
