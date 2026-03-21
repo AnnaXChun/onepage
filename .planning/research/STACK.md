@@ -1,360 +1,227 @@
-# Technology Stack — Vibe Onepage AI Website Builder
+# Stack Research — v1.1 Additions
 
-**Project:** Vibe Onepage drag-and-drop website builder with AI generation
+**Domain:** Single-page website builder SaaS with AI generation, editor polish, payments, and hosting
 **Researched:** 2026-03-21
-**Confidence:** MEDIUM-HIGH (multiple verified sources, some gaps in 2025-specific data)
+**Confidence:** MEDIUM
+
+## Executive Summary
+
+The v1.0 stack is complete for core features. v1.1 requires **minimal additions** — primarily WebSocket infrastructure for real-time AI progress, a form library for the configuration panel, and a PDF preview component. Most features can be completed with existing infrastructure (RabbitMQ for async, MiniMax via Spring AI for generation, Flying Saucer for PDF).
+
+## What Stays the Same (v1.0 Stack Validated)
+
+| Technology | Current Version | Status | Notes |
+|------------|-----------------|--------|-------|
+| React | 18.2.0 | Keep | Stable, no upgrade needed |
+| Vite | 5.0.8 | Keep | Fast, well-supported |
+| TailwindCSS | 3.3.6 | Keep | Matches design skill guidelines |
+| TypeScript | 5.4 | Keep | Already integrated |
+| Spring Boot | 3.2.0 | Keep | Stable, all starters available |
+| MyBatis-Plus | 3.5.5 | Keep | Active record pattern working |
+| dnd-kit | 6.3.1 | Keep | Already in use |
+| Zustand | 5.0.12 | Keep | Temporal middleware working |
+| ColorThief | 3.3.1 | Keep | Color extraction working |
+| Spring AI | 1.0.0-M6 | Keep | MiniMax integration working |
+| Flying Saucer | 9.3.1 | Keep | PDF generation working |
+| WeChat Pay SDK | 0.0.3 | Keep | Already integrated |
+| RabbitMQ | - | Keep | Already configured for async jobs |
 
 ---
 
-## Executive Recommendation
+## New Additions for v1.1
 
-For a brownfield Spring Boot + React project adding AI generation and drag-and-drop editing:
+### 1. WebSocket — Real-time AI Generation Progress
 
-| Layer | Recommended | Version | Rationale |
-|-------|-------------|---------|-----------|
-| **Frontend Drag-and-Drop** | dnd-kit | ^0.1.0 (2026) | Modular, accessible, React-first; avoids legacy react-dnd complexity |
-| **AI Integration** | Spring AI | ^1.0.0 | First-class Spring Boot integration, built-in MiniMax support, lighter than LangChain4j |
-| **AI Workflow Orchestration** | Spring AI Advisors + ChatClient | — | Sufficient for linear pipelines; use LangChain4j only if complex branching/looping needed |
-| **PDF Generation** | OpenPDF + OpenHTMLToPDF | 3.0.3 / 1.0.0 | Open source (LGPL), HTML-to-PDF, no commercial license costs |
-| **Hosting (Containers)** | Docker + Kubernetes (EKS/GKE) | — | 500 QPS target requires container orchestration, horizontal scaling, Redis integration |
+**Frontend:**
+| Library | Version | Purpose |
+|---------|---------|---------|
+| @stomp/stompjs | 7.3.0 | STOMP over WebSocket client |
+| sockjs-client | 1.6.2 | SockJS fallback for non-WebSocket environments |
 
----
+**Backend:**
+No new Maven dependency needed — `spring-boot-starter-websocket` is already a transitive dependency of `spring-boot-starter-web` in Spring Boot 3.x.
 
-## 1. Frontend Drag-and-Drop Library
+**Why STOMP over socket.io:**
+- STOMP is native to Spring's WebSocket implementation
+- Spring Security integrates with STOMP out-of-the-box
+- No custom server implementation needed
+- Works with Spring's `@MessageMapping` annotated controllers
 
-### Recommended: dnd-kit
+**Why not socket.io:**
+- Requires custom server (not native to Spring)
+- More complex authentication integration
+- Additional maintenance burden
 
-**Why:** dnd-kit is the modern standard for React drag-and-drop in 2025-2026. It is:
-- **Modular**: Sensor system (mouse, touch, keyboard), collision detection algorithms, state management all swappable
-- **Accessible**: Built-in keyboard navigation, ARIA support, focus management
-- **Performant**: Uses CSS transforms only (no layout-thrashing animations)
-- **React-first**: `@dnd-kit/react` is a thin, idiomatic wrapper around the framework-agnostic core
-- **Active maintenance**: 382 releases, 16.8k stars, latest Feb 2026
+**Configuration Required (Backend):**
+```java
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic");
+        registry.setApplicationDestinationPrefix("/app");
+    }
 
-**Installation:**
-```bash
-npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
+    }
+}
 ```
 
-**Core concept:**
+**Security Update:**
+Add `/ws/**` to permitted paths in SecurityConfig.
+
+---
+
+### 2. React Hook Form — Configuration Panel
+
+**Frontend:**
+| Library | Version | Purpose |
+|---------|---------|---------|
+| react-hook-form | 7.71.2 | Form state management |
+| @hookform/resolvers | 5.2.2 | Validation resolver support |
+
+**Why needed:**
+The block configuration panel (right sidebar) requires form handling for block settings (alignment, colors, visibility, etc.). react-hook-form provides:
+- Lightweight (no Redux-like overhead)
+- Built-in validation
+- Uncontrolled inputs (better performance)
+- Integration with existing Zod validation
+
+**Why not Redux Form or Formik:**
+- Too heavy for this use case
+- Zustand is already in use for editor state
+- react-hook-form is the modern standard for React forms
+
+**Alternative:** Plain React state — acceptable if panel is simple, but react-hook-form scales better.
+
+---
+
+### 3. PDF Preview — React PDF Rendering
+
+**Frontend:**
+| Library | Version | Purpose |
+|---------|---------|---------|
+| react-pdf | 3.4.1 | In-browser PDF preview |
+
+**Why needed:**
+PDF export completion requires preview before charge. User should see PDF in a modal before confirming download/credit deduction.
+
+**Alternative considered: pdfjs-dist**
+- Lower-level (Mozilla's PDF.js)
+- More boilerplate for React integration
+- react-pdf provides better React component API
+
+**Note:** react-pdf requires a PDF worker. Configure in your app entry:
 ```tsx
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-
-// Draggable block component
-function Block({ id, children }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
-    </div>
-  );
-}
-
-// In editor:
-<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-  <SortableContext items={blockIds} strategy={verticalListSortingStrategy}>
-    {blocks.map(block => <Block key={block.id} id={block.id} />)}
-  </SortableContext>
-</DndContext>
+import { PdfWorker } from 'react-pdf';
+PdfWorker.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 ```
-
-**Alternative considered: react-dnd**
-- Older API (pre-Hooks era), steeper learning curve
-- No built-in collision detection strategies
-- More boilerplate for equivalent functionality
-- Not recommended for new projects in 2025
-
-**Alternative considered: GrapesJS**
-- Full website builder framework, not a component library
-- Ships with its own storage, asset management, and plugin ecosystem
-- Overkill if you just need drag-and-drop block reordering within existing React app
-- Better if building a from-scratch page builder with plugin extensibility
-- Not recommended for this project (existing React app with TailwindCSS)
-
-**Alternative considered: Builder.io**
-- Enterprise-focused visual development platform
-- Heavy SDK dependency, opinionated about component structure
-- Better for e-commerce/headless CMS use cases
-- Not recommended for this project's scope
 
 ---
 
-## 2. AI Integration — Spring AI (not LangChain4j)
+### 4. AI Pipeline Completion (Implementation, Not Libraries)
 
-### Recommended: Spring AI + MiniMax
+No new libraries needed. The existing stack handles the full pipeline:
 
-**Why Spring AI over LangChain4j for this project:**
+| Component | Current Status | What's Needed |
+|-----------|---------------|---------------|
+| ColorThief | Working (3.3.1) | Extracts dominant colors client-side |
+| MiniMax via Spring AI | Working (1.0.0-M6) | Generate block content from prompts |
+| Image upload | Working | Send to backend for analysis |
+| Block assembly | Stub in AIService | Implement prompt engineering for full page |
 
-| Criterion | Spring AI | LangChain4j |
-|-----------|-----------|-------------|
-| **MiniMax support** | Built-in (`spring.ai.minimax.*`) | Requires custom model definition |
-| **Spring Boot integration** | Auto-configured via starters | Manual bean wiring |
-| **Complexity** | Lightweight, focused on model access | Richer ecosystem (agents, tools, memory) |
-| **Project fit** | Sufficient for linear image→style→content→layout pipeline | Overkill unless complex branching/looping needed |
-| **Learning curve** | Lower for Spring Boot developers | Steeper |
-| **Maintenance** | Spring team + community | Active but smaller community |
+**Implementation approach:**
+1. Client uploads image, ColorThief extracts palette
+2. Image + palette sent to `/api/ai/generate` endpoint
+3. RabbitMQ queues job for async processing
+4. MiniMax analyzes image and generates block content (structured JSON)
+5. WebSocket pushes progress updates to client
+6. Blocks assembled and returned for editor
 
-**The project already specifies SpringAI + MiniMax in PROJECT.md.** The research confirms this is the correct choice. LangChain4j would add complexity without value for a linear AI pipeline.
-
-**Spring AI MiniMax Configuration:**
-```properties
-spring.ai.minimax.chat.api-key=${MINIMAX_API_KEY}
-spring.ai.minimax.chat.base-url=https://api.minimax.chat/v1
-spring.ai.minimax.chat.options.model=abab6-chat
-```
-
-**Usage:**
-```java
-ChatClient chatClient = ChatClient.builder(minimaxChatModel).build();
-String content = chatClient.prompt()
-    .user("Analyze this image and extract RGB color palette and mood")
-    .call()
-    .content();
-```
-
-### AI Workflow Orchestration
-
-For the image analysis → style extraction → content generation → block mapping pipeline:
-
-**Recommended approach:** Spring AI ChatClient with a **sequential prompt chain** using Java `CompletableFuture` or Spring's `@Async`.
-
-```java
-// Sequential chain via CompletableFuture
-CompletableFuture<String> imageAnalysis = CompletableFuture.supplyAsync(() -> analyzeImage(image));
-CompletableFuture<String> styleExtraction = imageAnalysis.thenApply(this::extractStyle);
-CompletableFuture<String> contentGeneration = styleExtraction.thenCompose(this::generateContent);
-CompletableFuture<BlogPage> blockMapping = contentGeneration.thenCompose(this::mapToBlocks);
-```
-
-**Why not LangChain4j?** The pipeline is linear (no branching, no loops, no tool-calling agents). LangChain4j's agent and memory features would be unused complexity. The project's "LangChain for chaining" decision should be revisited — Spring AI's sequential prompts achieve the same result with less overhead.
-
-**If complex branching is needed later** (e.g., different content strategies based on detected template type), upgrade to LangChain4j at that point.
+**No additional AI libraries needed.** Spring AI ChatClient handles prompts; MiniMax provides generation.
 
 ---
 
-## 3. PDF Generation — OpenPDF + OpenHTMLToPDF
+### 5. Hosting — Subdomain Routing (No Libraries)
 
-### Recommended: OpenPDF (HTML-to-PDF module) + OpenHTMLToPDF
+Subdomain routing is a **deployment concern**, not a library concern.
 
-**Why OpenPDF:**
+**What's needed:**
+1. **DNS configuration** — Wildcard CNAME record pointing to server
+2. **Spring Boot request routing** — Filter requests by subdomain
+3. **Blog lookup** — Map subdomain to blog shareCode
 
-| Library | License | HTML-to-PDF | 2025 Status | Verdict |
-|---------|---------|-------------|-------------|---------|
-| **OpenPDF** | LGPL + MPL | Yes (openpdf-html module) | Active, v3.0.3 Jan 2025 | **Recommended** |
-| **iText 7** | AGPL (commercial license required) | Yes | Active | Too expensive for low-budget project |
-| **Flying Saucer (xhtmlrenderer)** | LGPL | Yes (XHTML only) | Low activity | Legacy, XHTML strict |
-| **OpenHTMLToPDF** | MIT | Yes | Active | **Strong alternative** |
-
-**OpenPDF (recommended):**
-```xml
-<dependency>
-    <groupId>com.github.librepdf</groupId>
-    <artifactId>openpdf</artifactId>
-    <version>3.0.3</version>
-</dependency>
-<dependency>
-    <groupId>com.github.librepdf</groupId>
-    <artifactId>openpdf-html</artifactId>
-    <version>3.0.3</version>
-</dependency>
-```
-
+**Implementation:**
 ```java
-// HTML to PDF
-Document document = new Document(PageSize.A4);
-PdfWriter writer = new PdfWriter(new FileOutputStream("output.pdf"));
-HtmlTransformer htmlTransformer = new HtmlTransformer(document, writer);
-htmlTransformer.transform(htmlString);
-```
-
-**OpenHTMLToPDF (alternative, better CSS support):**
-```xml
-<dependency>
-    <groupId>com.openhtmltopdf</groupId>
-    <artifactId>openhtmltopdf-core</artifactId>
-    <version>1.0.10</version>
-</dependency>
-<dependency>
-    <groupId>com.openhtmltopdf</groupId>
-    <artifactId>openhtmltopdf-pdfbox</artifactId>
-    <version>1.0.10</version>
-</dependency>
-```
-
-**Why not Puppeteer/headless Chrome?**
-- Puppeteer is Node.js, not Java — would require separate microservice
-- Higher resource consumption (full Chrome instance per PDF)
-- Overkill for static HTML-to-PDF conversion
-- Only needed if advanced web features (WebGL, complex JS) required
-
-**PDF Generation Flow:**
-1. Render website as HTML string (from React frontend or backend template)
-2. Transform HTML to PDF via OpenPDF/OpenHTMLToPDF
-3. Store in OSS/S3, serve via signed URL
-4. Return PDF URL to user (paid feature as specified)
-
----
-
-## 4. High-Concurrency Hosting Architecture
-
-### Target: 500 QPS on hot endpoints (template listing, blog view)
-
-### Recommended Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Containers** | Docker + Kubernetes (EKS/GKE/ACK) | Horizontal scaling, auto-scaling |
-| **CDN** | Cloudflare or Aliyun CDN | Static asset caching, DDoS protection |
-| **Load Balancer** | Cloud provider LB (ALB/CLB) | Traffic distribution |
-| **Backend** | Spring Boot (existing) + HikariCP | Connection pooling, async processing |
-| **Cache** | Redis (existing) | Hot data caching, payment idempotency |
-| **Database** | MySQL 8 (existing) + read replicas | Horizontal read scaling |
-| **Object Storage** | Aliyun OSS / AWS S3 | Static file storage (PDFs, images) |
-| **Message Queue** | RabbitMQ (existing, unused) | Async job processing (PDF generation) |
-
-### Scaling Strategy by Load Level
-
-| QPS | Strategy |
-|-----|----------|
-| **< 50** | Single container, no scaling needed |
-| **50-500** | Enable HPA (Horizontal Pod Autoscaler), Redis caching for hot endpoints |
-| **500+** | Read replicas for MySQL, CDN for static assets, connection pooling tuning |
-| **1000+** | Database sharding, multi-region deployment, advanced caching (Redis Cluster) |
-
-### Key Optimizations for 500 QPS Target
-
-**1. Caching (already in place):**
-- Template listing: Redis cache with 24h TTL
-- Blog view: Redis cache with 24h TTL (invalidated on update)
-- Use `@Cacheable` annotations + Spring Cache abstraction
-
-**2. Database:**
-```properties
-# application.yml
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-```
-
-**3. Async Processing for PDF:**
-```java
-@Async
-public CompletableFuture<String> generatePdfAsync(BlogPage page) {
-    // PDF generation is I/O-bound — run in separate thread pool
-    return CompletableFuture.supplyAsync(() -> pdfService.generate(page));
+@Component
+public class SubdomainFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, ...) {
+        String host = request.getHeader("Host");
+        String subdomain = extractSubdomain(host); // e.g., "user1" from "user1.onepage.com"
+        if (subdomain != null && !subdomain.equals("www")) {
+            // Look up blog by subdomain, forward to blog controller
+        }
+    }
 }
 ```
 
-**4. Connection Pooling:**
-- Use HikariCP (default in Spring Boot 2+) — proven, high-performance
-- MySQL max_connections should be: `(num_cores * 2) + effective_spindle_count`
-- With containerized MySQL and SSD: 100-200 max_connections is typical
-
-**5. CDN for Static Assets:**
-- Blog pages should be served via CDN when possible
-- Use `Cache-Control: public, max-age=86400` for published blogs
-- Invalidate CDN cache on blog update
-
-### Hosting Platform Recommendation
-
-**For low-budget, Tencent Cloud user:**
-| Component | Recommended | Why |
-|-----------|-------------|-----|
-| **Container Platform** | Tencent Cloud EKS (Elastic Kubernetes) or TKE | Native Tencent Cloud integration, BT Panel mentioned in project |
-| **Alternative** | Aliyun ACK | Good K8s offering if staying in China |
-| **Cost-effective option** | Docker Compose + cloud VMs | Sufficient for < 500 QPS, simpler than K8s |
-| **Managed option** | Render / Railway / Fly.io | Faster startup, less ops, but less control |
-
-**Recommended for this project:**
-Given the 500 QPS requirement, low budget, and existing Docker setup:
-1. **Short term:** Docker Compose on cloud VMs with Redis + MySQL in Docker
-2. **Medium term:** Migrate to Kubernetes (EKS/ACK) when DAU grows
-3. **CDN:** Use Aliyun CDN (if in China) or Cloudflare for static assets
+**No new libraries needed.** Spring MVC handles routing.
 
 ---
 
-## 5. What NOT to Use and Why
+## What NOT to Add
 
-| Avoid | Reason |
-|-------|--------|
-| **react-dnd** | Pre-Hooks API, steeper learning curve, less accessible than dnd-kit |
-| **GrapesJS** | Full framework, not a component — overkill for block reordering in existing React app |
-| **Builder.io** | Enterprise-focused, heavy SDK, over-engineered for this project's scope |
-| **LangChain4j** | Richer than needed for linear pipeline; Spring AI is sufficient and better integrated |
-| **iText 7** | AGPL license requires commercial license for proprietary use — too expensive |
-| **Puppeteer for PDF** | Node.js only, high resource usage, overkill for static HTML conversion |
-| **Glassmorphism/everywhere** | Generic AI aesthetic — violates project design direction |
-| **Elastic Beanstalk** | Higher cost than EKS/ACK, less flexibility, vendor lock-in |
-| **Session-based auth** | Already using JWT — correct choice for stateless API scaling |
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| socket.io | Requires custom server; Spring native STOMP is sufficient | @stomp/stompjs |
+| Redux / MobX | Zustand is sufficient; heavy for this use case | Zustand (existing) |
+| react-query | Not needed for this app's server state complexity | Zustand + existing API layer |
+| Builder.io / GrapesJS | Full frameworks; overkill for block editing | Existing dnd-kit + React |
+| LangChain4j | Spring AI is sufficient for linear pipeline | Spring AI ChatClient |
+| iText 7 | AGPL license; Flying Saucer is working | Flying Saucer (existing) |
 
 ---
 
-## 6. Version Compatibility Matrix
-
-| Technology | Version | Notes |
-|------------|---------|-------|
-| React | 18.x | Existing, do not upgrade to 19 yet (Vite 5.x compatibility) |
-| Vite | 5.x | Compatible with React 18 |
-| TailwindCSS | 3.x | Existing, 4.x is new but 3.x is stable |
-| dnd-kit | ^0.1.0 | Check npm for latest (382 releases) |
-| Spring Boot | 3.x | Existing, do not upgrade |
-| Spring AI | 1.x | Use latest 1.x (check Maven Central) |
-| MySQL | 8.x | Existing |
-| Redis | 7.x | Existing |
-| OpenPDF | 3.0.3 | Latest stable as of Jan 2025 |
-| OpenHTMLToPDF | 1.0.10 | Latest stable |
-
----
-
-## 7. Installation Summary
+## Installation Commands
 
 ```bash
-# Frontend (already exists, just adding dnd-kit)
-npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+# Frontend
+npm install @stomp/stompjs sockjs-client react-hook-form @hookform/resolvers react-pdf
 
-# Backend — add to pom.xml or build.gradle
-# Spring AI (if not already present)
-implementation 'org.springframework.ai:spring-ai-spring-boot-starter'
-
-# OpenPDF for PDF generation
-implementation 'com.github.librepdf:openpdf:3.0.3'
-implementation 'com.github.librepdf:openpdf-html:3.0.3'
-
-# Or OpenHTMLToPDF (alternative)
-implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+# Backend
+# No new dependencies — spring-boot-starter-websocket is transitive
+# Just add @Configuration class to enable
 ```
+
+---
+
+## Version Compatibility
+
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| @stomp/stompjs@7.3.0 | React 18, SockJS 1.6.x | TypeScript types included |
+| sockjs-client@1.6.2 | All modern browsers | WebSocket fallback |
+| react-hook-form@7.71.2 | React 18 | UseFormContext for complex forms |
+| @hookform/resolvers@5.2.2 | react-hook-form@7.x | Supports Zod |
+| react-pdf@3.4.1 | React 18 | Worker loaded separately |
 
 ---
 
 ## Sources
 
 | Technology | Source | Confidence |
-|------------|--------|------------|
-| dnd-kit | GitHub (clauderic/dnd-kit) + dndkit.com | HIGH — Verified 2026, 382 releases |
-| Spring AI MiniMax | docs.spring.io/spring-ai/reference | HIGH — Official documentation |
-| GrapesJS | grapesjs.com/docs | HIGH — Official documentation |
-| Builder.io | github.com/BuilderIO/builder | MEDIUM — GitHub page |
-| OpenPDF | github.com/LibrePDF/OpenPDF | HIGH — Official repository |
-| PDF alternatives | Training data (Baeldung, InfoQ) | MEDIUM — Community sources |
-| High concurrency | Training data + cloud documentation | MEDIUM — General best practices |
-| Spring AI vs LangChain4j | Training data + docs | MEDIUM — Requires verification |
+|-----------|--------|------------|
+| Spring WebSocket | [docs.spring.io/spring-framework/reference/web/websocket](https://docs.spring.io/spring-framework/reference/web/websocket.html) | HIGH |
+| Spring STOMP | [docs.spring.io/spring-framework/reference/web/websocket/stomp](https://docs.spring.io/spring-framework/reference/web/websocket/stomp.html) | HIGH |
+| @stomp/stompjs | npm registry (verified 7.3.0) | HIGH |
+| react-hook-form | npm registry (verified 7.71.2) | HIGH |
+| react-pdf | npm registry (verified 3.4.1) | HIGH |
 
 ---
 
-## Open Questions / Gaps
-
-1. **LangChain4j vs Spring AI for workflow**: The PROJECT.md specifies LangChain, but research suggests Spring AI is sufficient for linear pipelines. Recommend testing Spring AI first, migrating to LangChain4j only if workflow complexity requires it.
-
-2. **OpenPDF HTML-to-PDF CSS support**: OpenPDF's HTML module has limited CSS support compared to OpenHTMLToPDF. Recommend benchmarking both with actual template output.
-
-3. **Containerization approach**: Project mentions Docker on Tencent Cloud via BT Panel. If scaling to 500 QPS, Kubernetes may be needed. Recommend evaluating Docker Compose sufficiency first before introducing K8s complexity.
-
-4. **PDF generation async queue**: RabbitMQ is already in stack but unused. PDF generation (I/O-bound, ~0.1-0.5 RMB each) is a good fit for async queue processing.
+*Stack research for: Vibe Onepage v1.1 additions*
+*Researched: 2026-03-21*

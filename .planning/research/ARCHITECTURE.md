@@ -1,482 +1,770 @@
-# Architecture Research
+# Architecture Research: AI Generation, Editor Polish, Payments & Hosting
 
-**Domain:** Drag-and-Drop Website Builder SaaS
+**Domain:** Single-page website builder SaaS with AI generation
 **Researched:** 2026-03-21
-**Confidence:** MEDIUM (derived from documented frameworks, open-source patterns, and official documentation; limited peer-reviewed sources)
+**Confidence:** MEDIUM (training knowledge + partial web verification; WebSearch unavailable for full verification)
 
-## Standard Architecture
+## Executive Summary
 
-### System Overview
+This architecture document addresses five integration challenges for completing the Vibe Onepage v1.1 milestone. Each section identifies new components needed, modified components, explicit integration points with the existing 3-layer Spring Boot architecture (Controller-Service-Repository), and the build order that respects dependencies.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT LAYER                                   │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
-│  │  Page Editor │  │  AI Assistant │  │  Preview     │                  │
-│  │  (Drag-Drop) │  │  (Inline)     │  │  Renderer    │                  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                  │
-│         │                 │                  │                           │
-│         └─────────────────┼──────────────────┘                           │
-│                           ▼                                               │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │                    Editor State Store (Zustand/Context)             │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-                            │
-                            │ REST API + WebSocket
-                            ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           SERVER LAYER                                   │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
-│  │  Auth        │  │  Blog        │  │  Payment     │                  │
-│  │  Service     │  │  Service     │  │  Service     │                  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                  │
-│         │                 │                  │                           │
-│         └─────────────────┼──────────────────┘                           │
-│                           ▼                                               │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │                    Spring Boot Application                           │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │  │
-│  │  │ AI Pipeline  │  │ Static Site  │  │ PDF Export   │              │  │
-│  │  │ (LangChain)  │  │ Generator    │  │ Service      │              │  │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         DATA LAYER                                       │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
-│  │  MySQL 8     │  │  Redis       │  │  RabbitMQ    │                  │
-│  │  (Primary)   │  │  (Cache/     │  │  (Async      │                  │
-│  │              │  │   Sessions)  │  │   Jobs)      │                  │
-│  └──────────────┘  └──────────────┘  └──────────────┘                  │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+The existing architecture has: RabbitMQ consumers for PDF/AI async jobs, Redis caching (24h TTL), JWT stateless auth, WeChat Pay with order state machine (PENDING->PAYING->PAID->REFUNDING->REFUNDED), WebSocket via SimpMessagingTemplate, and existing AIService with MiniMax integration.
 
-### Component Responsibilities
+---
 
-| Component | Responsibility | Implementation |
-|-----------|----------------|----------------|
-| **Page Editor** | Drag-drop block manipulation, in-place editing, component selection | React + dnd-kit or react-dnd |
-| **Editor State Store** | Page structure state, undo/redo history, selection state | Zustand or React Context + Reducer |
-| **AI Assistant** | Inline content generation, style extraction | SpringAI + LangChain |
-| **Preview Renderer** | Real-time page preview, breakpoint simulation | React iframe or shadow DOM |
-| **AI Pipeline** | Orchestrates image analysis -> style extraction -> content generation -> block mapping | LangChain with MiniMax |
-| **Static Site Generator** | Transform page data into deployable HTML/CSS | Custom template renderer |
-| **PDF Export Service** | Generate PDF from rendered page | Puppeteer/Playwright headless |
-| **Hosting Service** | Serve published sites on subdomain | CDN + object storage |
+## 1. AI Generation Pipeline Integration
 
-## Recommended Project Structure
+### Existing Components
+
+| Component | Status |
+|-----------|--------|
+| AIService | EXISTS - has color extraction + text generation via Spring AI |
+| RabbitMQ consumers | EXISTS - configured for PDF and AI generation |
+| ColorThief client-side | EXISTS - RGB extraction already implemented |
+| BlogService | EXISTS - manages blog CRUD and content persistence |
+
+### Target Architecture
 
 ```
-backend/src/main/java/com/onepage/
-├── controller/
-│   ├── BlogController.java
-│   ├── PaymentController.java
-│   └── AIGenerateController.java       # NEW: AI generation endpoints
-├── service/
-│   ├── BlogService.java
-│   ├── AI/
-│   │   ├── AIGenerateService.java    # NEW: LangChain orchestration
-│   │   ├── ImageAnalysisService.java  # NEW: Style extraction
-│   │   └── ContentGeneratorService.java
-│   ├── staticgen/
-│   │   ├── StaticSiteGenerator.java   # NEW: HTML generation
-│   │   └── TemplateRenderer.java       # NEW: Template processing
-│   └── pdf/
-│       └── PdfExportService.java      # NEW: PDF generation
-├── model/
-│   ├── Blog.java
-│   ├── Block.java                     # NEW: Block component model
-│   └── Template.java
-├── dto/
-│   ├── BlockDTO.java                  # NEW: Block data transfer
-│   └── PageDTO.java                   # NEW: Full page structure
-└── config/
-    ├── LangChainConfig.java           # NEW: AI pipeline config
-    └── RabbitMQConfig.java
-
-frontend/src/
-├── components/
-│   ├── Editor/
-│   │   ├── EditorCanvas.tsx           # NEW: Main editor area
-│   │   ├── BlockRenderer.tsx          # NEW: Renders blocks
-│   │   ├── BlockToolbar.tsx          # NEW: Block actions
-│   │   ├── DragDropProvider.tsx      # NEW: dnd-kit wrapper
-│   │   └── blocks/
-│   │       ├── TextBlock.tsx
-│   │       ├── ImageBlock.tsx
-│   │       ├── SocialBlock.tsx
-│   │       └── ContactBlock.tsx
-│   ├── AIAssistant/
-│   │   ├── InlineAIButton.tsx         # NEW: Per-block AI
-│   │   └── AIWritePanel.tsx          # NEW: AI writing modal
-│   └── Preview/
-│       └── PreviewFrame.tsx           # NEW: Preview iframe
-├── hooks/
-│   ├── useEditorStore.ts              # NEW: Zustand store
-│   ├── useDragDrop.ts                # NEW: Drag-drop logic
-│   └── useAIAssist.ts                # NEW: AI generation hook
-├── pages/
-│   └── Editor/
-│       └── PageEditor.tsx            # NEW: Full editor page
-└── services/
-    ├── api.ts
-    ├── aiService.ts                   # NEW: AI API calls
-    └── staticGenService.ts            # NEW: Static site API
+Frontend                         Backend                          RabbitMQ                   MiniMax API
+   │                                │                                 │                          │
+   │ POST /api/ai/generate          │                                 │                          │
+   │ {imageBase64, templateId}      │                                 │                          │
+   │───────────────────────────────>│                                 │                          │
+   │                                │ ┌────────────────────────────┐  │                          │
+   │                                │ │ AIGenerationController     │  │                          │
+   │                                │ │ validate() → publish()     │  │                          │
+   │                                │ └─────────────┬──────────────┘  │                          │
+   │                                │               │                 │                          │
+   │                                │               ▼                 │ publish                  │
+   │                                │ ┌────────────────────────────┐  │──────────────────────────>│
+   │                                │ │ ai.generation.queue         │  │                          │
+   │                                │ └─────────────┬──────────────┘  │                          │
+   │ 202 Accepted                   │               │                 │                          │
+   │ {jobId, statusUrl}             │               │ <-- ack --     │                          │
+   │<──────────────────────────────│               │                 │                          │
+   │                                │               │                 │                          │
+   │ GET /api/ai/status/{jobId}    │               │                 │                          │
+   │<─────────────────────────────>│               │                 │                          │
+   │                                │ ┌────────────────────────────┐  │ consume                  │
+   │                                │ │ AIGenerationConsumer       │  │<──────────────────────────│
+   │                                │ │ 1. extractColors(image)   │  │                          │
+   │                                │ │ 2. buildPrompt(colors,cfg)│  │                          │
+   │                                │ │ 3. callMiniMax(prompt)     │  │                          │
+   │                                │ │ 4. parseResponse()        │  │                          │
+   │                                │ │ 5. saveBlocks(result)     │  │                          │
+   │                                │ │ 6. notify WebSocket        │  │                          │
+   │                                │ └─────────────┬──────────────┘  │                          │
+   │                                │               │                 │                          │
+   │ WebSocket /topic/ai/{userId}  │               │                 │                          │
+   │<──────────────────────────────│               │                 │                          │
 ```
 
-### Structure Rationale
+### New Components
 
-- **Editor/blocks/:** Block components are isolated for independent rendering in both editor and preview
-- **AI/ folder:** AI services grouped by responsibility (pipeline, analysis, generation)
-- **hooks/useEditorStore.ts:** Centralized state with Zustand for predictable updates
-- **staticgen/:** Separated from core business logic for testability
+| Component | Package | Responsibility |
+|-----------|---------|----------------|
+| AIGenerationController | controller/ | Receives generation request, validates, publishes job, returns jobId |
+| AIGenerationMessage | dto/ | Message payload: userId, imageUrl, templateId, settings |
+| AIGenerationConsumer | messaging/ | RabbitMQ listener; orchestrates full pipeline with existing AIService |
+| BlockAssemblyService | service/ | Parses AI JSON response into editor block structures |
+| AIGenerationJobService | service/ | Job status tracking in Redis (PENDING -> PROCESSING -> COMPLETED/FAILED) |
 
-## Architectural Patterns
+### Modified Components
 
-### Pattern 1: Block Component Pattern
+| Component | Change |
+|-----------|--------|
+| AIService | ADD: `generateBlocks(prompt)` method returning structured block JSON |
+| BlogService | ADD: `applyGeneratedBlocks(blogId, blocks)` - persists AI output to existing blocks |
+| WebSocketConfig | ADD: `/topic/ai/{userId}` destination for real-time job progress notifications |
+| RabbitMQConfig | ADD: `ai.generation.queue` queue declaration |
 
-**What:** Page content is decomposed into typed blocks (Text, Image, Social, Contact) with consistent interfaces.
+### Block Schema (AI Output Contract)
 
-**When:** Building any structured content editor where users compose pages from predefined components.
-
-**Trade-offs:**
-- Pros: Consistent UX, easy to add new block types, clear serialization format
-- Cons: Limited to block-based layouts (acceptable per project requirements)
-
-**Example:**
-```typescript
-interface Block {
-  id: string;
-  type: 'text' | 'image' | 'social' | 'contact';
-  content: BlockContent;  // Type-specific content
-  style: BlockStyle;      // Shared styling properties
-  order: number;
-}
-
-// Editor state shape
-interface EditorState {
-  blocks: Block[];
-  selectedBlockId: string | null;
-  history: { blocks: Block[] }[];
+```json
+{
+  "blocks": [
+    { "type": "HERO", "content": { "title": "...", "subtitle": "...", "imageUrl": "..." } },
+    { "type": "TEXT", "content": { "body": "..." } },
+    { "type": "IMAGE", "content": { "url": "...", "caption": "..." } },
+    { "type": "SOCIAL_LINKS", "content": { "links": [...] } },
+    { "type": "CONTACT", "content": { "email": "...", "phone": "..." } }
+  ],
+  "style": {
+    "primaryColor": "#6366F1",
+    "fontFamily": "Plus Jakarta Sans",
+    "layout": "centered"
+  }
 }
 ```
 
-### Pattern 2: Drag-Drop Orchestration
+### Integration Points Summary
 
-**What:** Centralized manager coordinates sensors (input methods), modifiers (constraints), and droppable targets.
+| From | To | Protocol/Message |
+|------|----|-----------------|
+| AIGenerationController | ai.generation.queue | RabbitMQ Message |
+| AIGenerationConsumer | MiniMax API | REST via Spring AI (existing AIService) |
+| AIGenerationConsumer | BlogService | Direct method call (same JVM) |
+| AIGenerationConsumer | WebSocket | STOMP to /topic/ai/{userId} |
+| Frontend | Backend REST | Polling or WebSocket subscription |
 
-**When:** Implementing drag-and-drop with multiple input methods (mouse, touch, keyboard).
+---
 
-**Trade-offs:**
-- Pros: Handles all input types uniformly, extensible via modifiers/plugins
-- Cons: Adds abstraction layer complexity
+## 2. Block Assembly After AI Generation
 
-**Example (dnd-kit style):**
-```typescript
-// Sensors abstract input methods
-const mouseSensor = useSensor(SensorMeta.Mouse, {
-  activationConstraint: { distance: 5 },
-});
-const touchSensor = useSensor(SensorMeta.Touch, {
-  activationConstraint: { delay: 250, tolerance: 5 },
-});
+### Design Decision: Structured JSON Blocks, Not Raw HTML
 
-// DragOverlay for visual feedback
-<DragOverlay>
-  {activeBlock && <BlockRenderer block={activeBlock} isDragging />}
-</DragOverlay>
-```
+AI generation MUST output structured block data (JSON), not rendered HTML. The editor owns rendering. This keeps AI generation template-agnostic and allows users to edit after generation.
 
-### Pattern 3: LangChain Pipeline Pattern
+**Anti-pattern:** Having AI directly generate HTML. This removes user editability, couples AI to template styling, and requires re-generation for every edit.
 
-**What:** AI workflow chains image analysis -> style extraction -> content generation -> block mapping as sequential steps with typed outputs.
+### Block Type Definitions
 
-**When:** Multi-step AI generation where each step's output feeds the next.
+| Block Type | Content Fields | Config Fields |
+|------------|---------------|---------------|
+| HERO | title, subtitle, backgroundImage | layout (centered/split/overlay) |
+| TEXT | body (markdown) | fontSize, alignment, textColor |
+| IMAGE | url, caption, alt | aspectRatio, shadow, borderRadius |
+| SOCIAL_LINKS | links[{platform, url, icon}] | style (icon-only/labeled), arrangement |
+| CONTACT | email, phone, address, formId | showForm, privacyText |
+| DIVIDER | - | style (line/gradient/spacer), thickness |
 
-**Trade-offs:**
-- Pros: Clear debugging, easy to modify steps, built-in streaming/checkpointing
-- Cons: More latency than single-step generation, infrastructure overhead
+### BlockAssemblyService Interface
 
-**Example:**
 ```java
-// LangChain chain definition
-Chain chain = Chain.Builder
-  .pipe(imageAnalysisStep)      // Extract mood/colors from image
-  .pipe(styleMappingStep)       // Map to template styles
-  .pipe(contentGenerationStep)  // Generate text content
-  .pipe(blockMappingStep)      // Create Block objects
-  .build();
+public class BlockAssemblyService {
+    // Parse AI JSON response into typed Block objects
+    public List<Block> parseAIResponse(AIGenerationResult result);
 
-// Streaming response for UX
-chain.stream(input).subscribe(chunk -> {
-  // Progressive UI updates
-});
-```
+    // Validate required fields per block type
+    public ValidationResult validate(List<Block> blocks);
 
-### Pattern 4: Optimistic UI with Server Reconciliation
+    // Apply defaults based on selected template
+    public List<Block> applyTemplateDefaults(List<Block> blocks, String templateId);
 
-**What:** Update local state immediately, then sync with server. On conflict, server wins and local state corrects.
-
-**When:** Interactive editors where responsiveness matters more than perfect consistency.
-
-**Trade-offs:**
-- Pros: Instant feedback, handles network latency gracefully
-- Cons: Requires careful conflict resolution, potential brief inconsistencies
-
-**Example:**
-```typescript
-// Optimistic block reorder
-function moveBlockUp(blockId: string) {
-  const previousBlocks = store.getState().blocks;
-
-  // Optimistic update
-  store.dispatch({ type: 'MOVE_BLOCK_UP', blockId });
-
-  // Server sync
-  api.reorderBlocks(blockId, 'up')
-    .catch(() => {
-      // Rollback on failure
-      store.setState({ blocks: previousBlocks });
-    });
+    // Persist to blog - calls BlogService
+    public void applyToBlog(Long blogId, List<Block> blocks);
 }
 ```
 
-### Pattern 5: Template-Output Separation
+### Editor State Integration
 
-**What:** Template defines structure/rendering; content data defines page structure. Render at request time or build time.
+After AI generation completes via WebSocket notification:
 
-**When:** Multiple output formats needed (preview, published site, PDF) from same data.
+1. Frontend receives block JSON on `/topic/ai/{userId}`
+2. Zustand store receives `SET_BLOCKS` action (replaces current blocks)
+3. Editor re-renders with new block structure
+4. User can immediately edit, reorder, or delete AI-generated blocks
+5. Auto-save (500ms debounce, existing) persists user edits
 
-**Trade-offs:**
-- Pros: Single source of truth, consistent across outputs
-- Cons: Template bugs affect all outputs, rendering complexity
-
-## Data Flow
-
-### AI Generation Flow
-
-```
-[User uploads image + text]
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  1. Image Analysis (MiniMax Vision)     │
-│     - Extract dominant colors           │
-│     - Identify mood/aesthetic          │
-│     - Output: StyleMetadata            │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  2. Style Mapping                       │
-│     - Match StyleMetadata to template   │
-│     - Select component styles           │
-│     - Output: TemplateStyle             │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  3. Content Generation (MiniMax LLM)   │
-│     - Generate text for each block     │
-│     - Respect template block types     │
-│     - Output: BlockContent[]            │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  4. Block Assembly                      │
-│     - Create Block objects              │
-│     - Assign styles + content          │
-│     - Output: Block[]                  │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  5. Persist + Preview                   │
-│     - Save to database                 │
-│     - Render in editor                 │
-└─────────────────────────────────────────┘
-```
-
-### Page Publishing Flow
-
-```
-[User clicks Publish]
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  1. Generate Static Site                │
-│     - Load page data + template         │
-│     - Render HTML + inline CSS          │
-│     - Optimize assets                   │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  2. Upload to Storage                  │
-│     - Upload to object storage (OSS)   │
-│     - Set cache headers                │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  3. Update DNS/CDN                      │
-│     - Invalidate CDN cache             │
-│     - Verify subdomain routing         │
-└─────────────────────────────────────────┘
-```
-
-### Request Flow (Page View)
-
-```
-[Visitor requests username.vibe.com]
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  CDN Edge                              │
-│  - Check cache (Redis)                │
-│  - HIT: Return cached HTML            │
-│  - MISS: Continue to origin           │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────┐
-│  Origin Server                          │
-│  - Load from OSS if not cached         │
-│  - Apply edge caching                  │
-└─────────────────┬───────────────────────┘
-                  │
-                  ▼
-[Static HTML + CSS returned]
-```
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users | Monolith sufficient; single Spring Boot instance; single MySQL |
-| 1k-10k users | Add Redis for full-page caching; read replicas for MySQL |
-| 10k-100k users | CDN for static assets; multiple Spring Boot instances behind LB; Redis cluster |
-| 100k+ users | Consider static site pre-generation at publish time; edge caching strategy |
-
-### Scaling Priorities
-
-1. **First bottleneck: Database reads**
-   - Blog page views are cacheable (500 QPS requirement)
-   - Solution: Redis full-page cache with 24h TTL (already in place)
-
-2. **Second bottleneck: AI generation latency**
-   - LangChain chains add sequential latency
-   - Solution: Async job queue for generation; webhook/polling for results
-
-3. **Third bottleneck: Static site generation**
-   - Publish-time CPU intensive
-   - Solution: Background job via RabbitMQ; horizontal scaling of worker nodes
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Storing Rendered HTML in Database
-
-**What people do:** Pre-render pages to HTML strings and store in `blog.html_content` column.
-
-**Why it's wrong:** Cache invalidation becomes complex; hard to edit published content; version control on templates breaks stored HTML.
-
-**Do this instead:** Store structured Block data; render at request time or publish time.
-
-### Anti-Pattern 2: Direct DOM Manipulation in Editor
-
-**What people do:** Use `contentEditable` or direct `ref.current.innerHTML` for text editing.
-
-**Why it's wrong:** State diverges from DOM; undo/redo breaks; cross-platform behavior inconsistent.
-
-**Do this instead:** Use controlled components with hidden text areas or contentEditable backed by React state.
-
-### Anti-Pattern 3: Blocking AI Generation
-
-**What people do:** Wait for full AI generation before showing any UI.
-
-**Why it's wrong:** Poor UX for long generations (10-30 seconds); user abandonment.
-
-**Do this instead:** Stream generation progress; show skeleton blocks; allow editing while AI runs.
-
-### Anti-Pattern 4: Monolithic AI Prompts
-
-**What people do:** Single huge prompt with all instructions for generating entire page.
-
-**Why it's wrong:** Token limits; inconsistent outputs; hard to debug which step failed.
-
-**Do this instead:** Use LangChain pipeline with discrete steps and typed outputs between steps.
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| MiniMax API | LangChain with custom parsers | SpringAI provides abstraction; implement custom output parsers for structured generation |
-| WeChat Pay | Existing REST endpoints | Already integrated; no changes needed |
-| CDN/OSS | Object storage + invalidation API | Use Tencent Cloud COS + CDN for production |
-
-### Internal Boundaries
+### Integration Points
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| Editor <-> Spring Boot | REST API + WebSocket | REST for CRUD; WebSocket for AI progress streaming |
-| AI Pipeline <-> Block Store | Direct service call | No queue needed for generation under 30s |
-| Static Generator <-> CDN | Async job (RabbitMQ) | Publish is background job; return immediately to UX |
+| AIGenerationConsumer -> BlockAssemblyService | Direct method call | Same JVM, no network |
+| BlockAssemblyService -> BlogService | Direct method call | Persists to DB |
+| BlockAssemblyService -> Frontend | WebSocket STOMP | Job completion notification |
+| Frontend editor -> BlogService | REST API | Auto-save on edits |
 
-## Build Order Implications
+---
 
-Given dependencies between components:
+## 3. PDF Preview-Before-Charge Flow
+
+### Architectural Pattern: Two-Phase Generation
 
 ```
-Phase 1: Block Editor Foundation
-├── Implement Block component model
-├── Create EditorState store (Zustand)
-├── Build basic drag-drop with dnd-kit
-└── REST endpoints for block CRUD
+Phase 1: Preview (Free/Low-Cost)
+├── User clicks "Export PDF"
+├── Backend generates low-res preview (300px max, compressed images)
+├── PDF stored with 1-hour expiration (Redis or OSS)
+├── User sees preview in browser
+└── User decides: "Download Free Preview" or "Full PDF (1 Credit)"
 
-Phase 2: Template Rendering
-├── Create TemplateRenderer service
-├── Implement static HTML generation
-├── Backend template system
-└── Preview iframe in editor
-
-Phase 3: AI Generation Pipeline
-├── LangChain integration with MiniMax
-├── Image analysis step
-├── Content generation step
-└── Block assembly step
-
-Phase 4: Publishing + Hosting
-├── Static site upload to OSS
-├── Subdomain DNS routing
-├── CDN cache invalidation
-└── PDF export with Puppeteer
-
-Phase 5: Polish + Scale
-├── Redis full-page caching for published sites
-├── Edge caching strategy
-└── Performance optimization
+Phase 2: Full Export (Charged)
+├── User confirms purchase
+├── Credit deducted from balance (atomic operation)
+├── Backend generates full-resolution PDF
+├── PDF stored with 24-hour expiration
+├── Download URL returned
+└── If generation fails: credit refunded automatically
 ```
 
-**Critical path:** Phase 1 must complete before Phase 2; Phase 2 before Phase 3 is optional (AI can be added anytime); Phase 4 depends on Phase 2.
+### New Components
+
+| Component | Package | Responsibility |
+|-----------|---------|----------------|
+| PdfPreviewController | controller/ | GET preview, POST full generation request |
+| PdfPreviewService | service/ | Low-res preview generation |
+| CreditDeductionService | service/ | Atomic credit deduction with rollback on failure |
+| PdfGenerationTask | messaging/ | RabbitMQ task for full PDF generation (extends existing) |
+
+### Modified Components
+
+| Component | Change |
+|-----------|--------|
+| OrderService | ADD: CREDIT_DEDUCTION order type; deduct/rollback methods |
+| PaymentController | MODIFY: Credit top-up flow via WeChat Pay (Phase 3) |
+| PdfGenerationTask | ADD: Preview generation variant; failure handling with credit refund |
+
+### Credit Deduction Flow
+
+```
+User Balance Check (Redis cache)
+        │
+        ▼
+┌───────────────────────┐     Insufficient      ┌────────────────────┐
+│ Credit >= cost (1)?   │──────────────────────>│ Prompt WeChat Pay  │
+└────────┬──────────────┘                       │ Top-up first       │
+         │ Sufficient                           └────────────────────┘
+         ▼
+┌───────────────────────┐
+│ Atomic deduct         │
+│ (Redis lock + UPDATE  │
+│  WHERE balance >= amt)│
+└────────┬──────────────┘
+         │
+         ▼
+┌───────────────────────┐
+│ Enqueue PDF job       │
+│ (RabbitMQ)            │
+└────────┬──────────────┘
+         │
+    ┌────┴────┐
+    │ Success │               ┌────────────────────┐
+    │         │               │ Refund credit      │
+    │         │               │ (ROLLBACK)         │
+    │         │               └────────────────────┘
+    ▼         ▼
+┌─────────┐ ┌──────────────┐
+│ Store   │ │ Return       │
+│ 24h URL │ │ download URL │
+└─────────┘ └──────────────┘
+```
+
+### State Machine: Credit Deduction
+
+```
+DEDUCTION_PENDING -> DEDUCTION_COMPLETED -> PDF_GENERATING -> PDF_COMPLETED
+       │                   │                   │
+       ▼                   ▼                   ▼
+DEDUCTION_FAILED <--- ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ -> PDF_FAILED (refund triggered)
+```
+
+### API Endpoints
+
+```
+GET  /api/pdf/preview/{blogId}
+Response: { previewUrl: "...", expiresAt: "..." }  // 1-hour link
+
+POST /api/pdf/generate
+Body: { blogId, quality: "full" }
+Response: { orderNo: "...", status: "PENDING" }
+
+GET  /api/pdf/status/{orderNo}
+Response: { status: "COMPLETED", downloadUrl: "...", expiresAt: "..." }
+```
+
+### Integration Points
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| Frontend -> PdfPreviewController | REST | Get preview URL |
+| CreditDeductionService -> Redis | Direct | Distributed lock + balance check |
+| CreditDeductionService -> UserMapper | JDBC | Atomic UPDATE |
+| PdfPreviewController -> OSS/S3 | SDK | Upload preview PDF |
+| PdfGenerationTask -> CreditDeductionService | Callback | Refund on failure |
+
+---
+
+## 4. WeChat Pay Credit Deduction Integration
+
+### Key Distinction: Payment Gateway vs. Credit System
+
+WeChat Pay is a **payment gateway** - it processes real-time payments. It does NOT natively support "credit deduction" or "wallet" workflows. The credit/balance system is a **platform-layer wallet** that uses WeChat Pay only for top-ups.
+
+### Architecture: Platform Wallet + WeChat Pay Gateway
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    User Balance (Platform Wallet)              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  credit_balance: 50 credits                           │   │
+│  │  - Earned from purchases (template purchases)         │   │
+│  │  - Purchased via WeChat Pay top-up                   │   │
+│  │  - Admin grants                                      │   │
+│  └──────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────┘
+                              │
+         ┌────────────────────┴────────────────────┐
+         │                                         │
+         ▼                                         ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│   Credit Deduction      │             │   WeChat Pay Top-up     │
+│   (Platform Logic)       │             │   (Real Payment)         │
+│                          │             │                         │
+│ Deduct from wallet       │             │ JSAPI payment flow      │
+│ on PDF export /         │             │ to add credits          │
+│ template purchase        │             │                         │
+└─────────────────────────┘             └─────────────────────────┘
+```
+
+### Credit Top-Up Flow (WeChat Pay)
+
+```
+User selects credit package (e.g., 10 credits for 10 RMB)
+        │
+        ▼
+Backend: Create Order (type: CREDIT_TOP_UP, amount: 10 RMB)
+        │
+        ▼
+Backend: Call WeChat Pay JSAPI to get payment parameters
+        │
+        ▼
+Frontend: Call wx.chooseWXPay(paymentParams)
+        │
+   ┌────┴────┐
+   │ Success  │
+   │          │
+   ▼          ▼
+WeChat Pay               WeChat Pay
+Callback                 Callback
+(PaymentController)      (async notification)
+        │                        │
+        ▼                        ▼
+Add credits to           Verify signature
+user wallet              Add credits to
+(atomic operation)       user wallet
+        │                        │
+        ▼                        ▼
+Return success           Idempotent check
+to frontend              (prevents duplicate credits)
+```
+
+### New Components
+
+| Component | Package | Responsibility |
+|-----------|---------|----------------|
+| WalletService | service/ | Get balance, add/deduct credits atomically |
+| CreditDeductionService | service/ | Deduct with idempotency key, rollback support |
+| CreditTopUpController | controller/ | Create top-up order, handle WeChat Pay callback |
+
+### Modified Components
+
+| Component | Change |
+|-----------|--------|
+| UserService | ADD: `getBalance()`, `addCredits()`, `deductCredits()` methods |
+| OrderService | ADD: CREDIT_TOP_UP order type; modify callback to credit user on top-up |
+| WeChatPayService | ADD: `createCreditTopUpOrder()` method |
+| PaymentController | MODIFY: `callback` method - credit user account on CREDIT_TOP_UP success |
+| UserMapper | ADD: `updateBalance(Long userId, Integer delta)` - atomic increment |
+
+### Atomic Credit Operations (Critical)
+
+Credit operations must be idempotent to prevent double-deduction or double-credit:
+
+```java
+@Service
+public class CreditDeductionService {
+    @Autowired private UserMapper userMapper;
+    @Autowired private RedisTemplate<String, String> redis;
+
+    private static final String DEDUCT_LOCK_PREFIX = "credit:lock:";
+    private static final String DEDUCT_IDEM_PREFIX = "credit:deduct:";
+
+    @Transactional
+    public boolean deductCredits(Long userId, Integer amount, String idempotencyKey) {
+        // 1. Idempotency check (prevent double-deduction from retries)
+        if (Boolean.TRUE.equals(redis.hasKey(DEDUCT_IDEM_PREFIX + idempotencyKey))) {
+            return false; // Already processed
+        }
+
+        // 2. Distributed lock
+        String lockKey = DEDUCT_LOCK_PREFIX + userId;
+        Boolean acquired = redis.opsForValue().setIfAbsent(lockKey, "1", 10, TimeUnit.SECONDS);
+        if (!Boolean.TRUE.equals(acquired)) {
+            throw BusinessException.concurrentOperation();
+        }
+
+        try {
+            // 3. Atomic deduction with balance check
+            int updated = userMapper.deductBalance(userId, amount);
+            if (updated == 0) {
+                throw BusinessException.insufficientCredits();
+            }
+
+            // 4. Record idempotency key (24h TTL)
+            redis.opsForValue().set(DEDUCT_IDEM_PREFIX + idempotencyKey, "1", 24, TimeUnit.HOURS);
+            return true;
+        } finally {
+            redis.delete(lockKey);
+        }
+    }
+}
+```
+
+### Integration Points
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| Frontend -> CreditTopUpController | REST | Create top-up order |
+| CreditTopUpController -> WeChatPayService | Method call | Get payment params |
+| WeChat Pay -> PaymentController | WeChat Pay callback POST | Async payment notification |
+| PaymentController -> WalletService | Method call | Credit user wallet |
+| CreditDeductionService -> UserMapper | JDBC | Atomic balance update |
+
+---
+
+## 5. Subdomain Routing for Static Site Hosting
+
+### Architecture Pattern: Wildcard DNS + Dynamic Resolution
+
+```
+DNS Query                              Server Processing
+(blog23.onepage.com)                        │
+    │                                        │
+    ▼                                        ▼
+┌─────────────────────┐         ┌─────────────────────────────┐
+│ *.onepage.com      │         │ Host Header: blog23.onepage  │
+│ A record: 1.2.3.4  │         └─────────────┬───────────────┘
+└─────────────────────┘                       │
+    │                                        ▼
+    │                              ┌─────────────────────┐
+    │                              │ SubdomainFilter     │
+    │                              │ (Spring Filter)     │
+    │                              └─────────┬───────────┘
+    │                                        │
+    ▼                                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. Extract subdomain: "blog23"                             │
+│  2. Lookup blog by subdomain in DB                         │
+│  3. Blog not found -> return 404                           │
+│  4. Blog found -> load content from Redis cache / DB       │
+│  5. Render via Thymeleaf or serve pre-built static HTML    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Two Hosting Modes
+
+| Mode | How It Works | Performance | Use Case |
+|------|--------------|-------------|----------|
+| **Dynamic (Default)** | Every request renders HTML from DB/cache | Slower, always fresh | Real-time edits visible immediately |
+| **Static (Published)** | Pre-rendered HTML served from OSS/S3 | Faster, offload from app | Published sites, high traffic |
+
+### New Components
+
+| Component | Package | Responsibility |
+|-----------|---------|----------------|
+| SubdomainFilter | filter/ | Extract subdomain from Host header, forward to SiteController |
+| SiteController | controller/ | Route subdomain to blog, render page |
+| SiteResolverService | service/ | Map subdomain -> blog, handle 404 |
+| PublishService | service/ | Render blog to static HTML, upload to OSS |
+| StaticSiteService | service/ | Serve pre-built HTML from OSS |
+
+### Modified Components
+
+| Component | Change |
+|-----------|--------|
+| BlogService | ADD: `publish(blogId, subdomain)`, `unpublish(blogId)`, `getPublishedSite(subdomain)` |
+| CorsConfig | ADD: Allow subdomain origins (*.onepage.com) |
+| Application.yml | ADD: OSS/S3 storage configuration |
+| Blog model | ADD: `subdomain` field, `status` (DRAFT/PUBLISHED) |
+
+### Publish Flow
+
+```
+User clicks "Publish"
+        │
+        ▼
+┌───────────────────────────┐
+│ Validate: blog has       │
+│ required blocks          │
+└───────────┬───────────────┘
+            │
+            ▼
+┌───────────────────────────┐
+│ Generate static HTML     │
+│ using Thymeleaf           │
+│ (reuse existing pattern) │
+└───────────┬───────────────┘
+            │
+            ▼
+┌───────────────────────────┐
+│ Upload to OSS/S3          │
+│ Path: /sites/{userId}/{blogId}.html │
+└───────────┬───────────────┘
+            │
+            ▼
+┌───────────────────────────┐
+│ Update blog:             │
+│ status = PUBLISHED       │
+│ subdomain = {uniqueId}   │
+└───────────┬───────────────┘
+            │
+            ▼
+Return: "https://{uniqueId}.onepage.com"
+```
+
+### Subdomain Resolution Filter
+
+```java
+@Component
+public class SubdomainFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     FilterChain chain) throws ServletException, IOException {
+        String host = request.getHeader("Host");
+        String subdomain = extractSubdomain(host); // "blog23" from "blog23.onepage.com"
+
+        // Skip non-subdomain requests (main site, www, API)
+        if (subdomain == null || subdomain.equals("www") || subdomain.equals("api")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // Forward subdomain requests to site controller
+        request.setAttribute("subdomain", subdomain);
+        request.getRequestDispatcher("/site/" + subdomain).forward(request, response);
+    }
+
+    private String extractSubdomain(String host) {
+        if (host == null) return null;
+        // "blog23.onepage.com" -> "blog23"
+        // "blog23.onepage.com:8080" -> "blog23"
+        String[] parts = host.split("\\.");
+        if (parts.length >= 3) {
+            return parts[0];
+        }
+        return null;
+    }
+}
+
+@Controller
+public class SiteController {
+    @Autowired private SiteResolverService siteResolver;
+
+    @GetMapping("/site/{subdomain}")
+    public String serveSite(@PathVariable String subdomain, Model model) {
+        BlogSite site = siteResolver.resolve(subdomain);
+        if (site == null) {
+            return "error/404"; // Branded 404 page
+        }
+        model.addAttribute("content", site.getContent());
+        return "site-template"; // Thymeleaf template
+    }
+}
+```
+
+### DNS Configuration Required (Production)
+
+```
+Type    Name    Value
+─────────────────────────────────
+A       *       1.2.3.4        (wildcard - catches all subdomains)
+A       @       1.2.3.4        (bare domain)
+CNAME   www     your-app.com   (optional www redirect)
+```
+
+### Integration Points
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| Browser -> SubdomainFilter | HTTP (Host header) | Wildcard DNS must point to server |
+| SubdomainFilter -> SiteController | Forward/Dispatcher | No network hop |
+| SiteController -> SiteResolverService | Method call | Subdomain -> blog lookup |
+| SiteResolverService -> Redis | Cache read | Blog content cache |
+| SiteResolverService -> BlogMapper | JDBC | Cache miss -> DB |
+| PublishService -> OSS/S3 | SDK upload | Static HTML storage |
+
+---
+
+## Cross-Cutting Integration Matrix
+
+### All New Components by Feature
+
+| Feature | New Components | Modified Components |
+|---------|---------------|---------------------|
+| AI Pipeline | AIGenerationController, AIGenerationMessage, AIGenerationConsumer, BlockAssemblyService, AIGenerationJobService | AIService, BlogService, WebSocketConfig, RabbitMQConfig |
+| Block Assembly | BlockAssemblyService | BlogService (shared block schema with frontend) |
+| PDF Preview | PdfPreviewController, PdfPreviewService, CreditDeductionService | OrderService, PaymentController, PdfGenerationTask |
+| Credit System | WalletService, CreditDeductionService, CreditTopUpController | UserService, OrderService, WeChatPayService, PaymentController, UserMapper |
+| Subdomain Routing | SubdomainFilter, SiteController, SiteResolverService, PublishService, StaticSiteService | BlogService, CorsConfig, Blog model |
+
+### Component Dependency Graph
+
+```
+RabbitMQ
+    │
+    ├──> AIGenerationConsumer ──────> BlockAssemblyService ──> BlogService ──> MySQL
+    │         │                                                    │
+    │         │                                                    ▼
+    │         └──────────────────────────────────────────────────> Redis Cache
+    │
+    └──> PdfGenerationTask ──────────> CreditDeductionService ──> UserMapper ──> MySQL
+                   │                        │
+                   │                        ▼
+                   │                   WeChat Pay (top-up)
+                   │
+                   ▼
+              OSS/S3 Storage ◄── PublishService
+                   │
+                   ▼
+            SubdomainFilter ◄── DNS (*.onepage.com)
+                   │
+                   ▼
+            SiteController ──> SiteResolverService
+```
+
+---
+
+## Build Order (ARCH-02)
+
+### Phase 1: Block Schema Contract (Foundation - DO FIRST)
+
+**Rationale:** Frontend editor and backend AI pipeline must agree on block JSON schema before any implementation.
+
+1. Define `Block` interface in frontend (TypeScript)
+2. Define `Block` model in backend (Java)
+3. Define `AIGenerationResult` response schema (JSON contract)
+4. Create `BlockAssemblyService` with parsing/validation logic
+5. Test schema agreement between frontend and backend
+
+**Dependencies:** None (pure contract)
+
+### Phase 2: AI Generation Pipeline
+
+**Rationale:** Depends on block schema from Phase 1; provides value early for user testing.
+
+1. AIGenerationController + Redis job tracking (PENDING/PROCESSING/COMPLETED/FAILED)
+2. RabbitMQ message definition (AIGenerationMessage)
+3. AIGenerationConsumer integrating existing AIService
+4. WebSocket notification to frontend (/topic/ai/{userId})
+5. Frontend WebSocket subscription + block rendering from AI result
+
+**Dependencies:** Phase 1 (block schema)
+
+### Phase 3: Credit System (Prerequisite - DO BEFORE PDF/Payments)
+
+**Rationale:** PDF preview-before-charge and all paid features depend on credits; must be solid before building on top.
+
+1. User model: add `credit_balance` field
+2. UserMapper: atomic `updateBalance(Long userId, Integer delta)`
+3. Redis: credit balance cache with 1h TTL
+4. WalletService: getBalance(), addCredits() methods
+5. CreditDeductionService: deductCredits() with idempotency key and distributed lock
+6. WeChat Pay CREDIT_TOP_UP flow: create order -> JSAPI -> callback -> credit user
+
+**Dependencies:** None (core wallet infrastructure)
+
+### Phase 4: PDF Preview-Before-Charge
+
+**Rationale:** Depends on credit system from Phase 3; builds on existing PDF generation.
+
+1. PdfPreviewService: low-res preview generation (reuse existing PDF logic)
+2. PdfPreviewController: GET preview endpoint with 1h expiring URL
+3. Full PDF generation with credit deduction (CreditDeductionService)
+4. Refund logic: if PDF generation fails after deduction, rollback credit
+5. Frontend: preview UI, confirmation button, credit deduction UX
+
+**Dependencies:** Phase 3 (credit system), existing PdfGenerationTask
+
+### Phase 5: Subdomain Routing & Publishing
+
+**Rationale:** Depends on blog being complete (AI + editor polish done); is the final publish step.
+
+1. SubdomainFilter + SiteController for serving published sites
+2. Blog model: add `subdomain`, `status` (DRAFT/PUBLISHED) fields
+3. PublishService: static HTML render + OSS upload
+4. UnpublishService: remove from OSS, reset status
+5. DNS configuration documentation (wildcard A record)
+6. Frontend: publish/unpublish button, subdomain display
+
+**Dependencies:** Phase 2 (AI pipeline for complete blogs), Phase 1 (block editor)
+
+### Phase Dependency Graph
+
+```
+Phase 1 (Block Schema)
+    │
+    ▼
+Phase 2 (AI Pipeline) ──────────────────────────┐
+    │                                          │
+    │                                          ▼
+    │                              Phase 5 (Subdomain Routing)
+    │                                  (needs complete blogs)
+    │
+    ▼
+Phase 3 (Credit System)
+    │
+    ▼
+Phase 4 (PDF Preview)
+    │
+    ▼
+Phase 5 (Subdomain Routing)
+```
+
+---
+
+## Anti-Patterns
+
+### 1. AI Generates HTML, Not Blocks
+
+**What:** Have AI directly output rendered HTML instead of structured block data.
+
+**Why wrong:** Users lose editability; template coupling increases; every edit requires re-generation.
+
+**Instead:** AI outputs block JSON; editor renders blocks; user edits blocks.
+
+### 2. Synchronous AI Calls in HTTP Request
+
+**What:** Call AI provider synchronously in HTTP request thread.
+
+**Why wrong:** AI calls take 5-30s; will timeout at 500 QPS; exhausts thread pool.
+
+**Instead:** Always use async RabbitMQ-based pipeline with job status tracking.
+
+### 3. Credit Deduction Without Idempotency
+
+**What:** Deduct credits without idempotency keys.
+
+**Why wrong:** Network retries or double-clicks cause double deduction; users lose credits.
+
+**Instead:** Every deduction request includes idempotency key stored in Redis with 24h TTL.
+
+### 4. Wildcard DNS Without Branded 404
+
+**What:** Configure wildcard DNS but return slow/generic 404 for unknown subdomains.
+
+**Why wrong:** Poor UX; unnecessary load on app servers.
+
+**Instead:** Subdomain resolution returns branded 404 page; cache at CDN edge if possible.
+
+### 5. PDF Generation Without Preview
+
+**What:** Generate full PDF immediately on request and charge.
+
+**Why wrong:** Users may cancel without downloading; wastes credits and generates unnecessary PDFs.
+
+**Instead:** Two-phase: free low-res preview first, then full PDF with credit deduction on explicit confirmation.
+
+---
 
 ## Sources
 
-- GrapesJS Documentation (https://www.grapesjs.com/docs/) - Page builder architecture patterns
-- dnd-kit Documentation (https://dndkit.com/) - Drag-and-drop React architecture
-- LangChain Concepts (https://docs.langchain.com/) - AI pipeline orchestration
-- Vercel Documentation (https://vercel.com/docs) - Static site deployment patterns
-- Redis Caching Documentation (https://redis.io/docs/) - Cache strategies
-- MDN Web Performance (https://developer.mozilla.org/en-US/docs/Learn/Performance) - Performance optimization
+**Note:** WebSearch was unavailable during research (400 errors on all queries). The following reflects training knowledge and partial verification via WebFetch.
+
+| Topic | Source | Confidence |
+|-------|--------|------------|
+| Spring AI + RabbitMQ | spring.io/projects/spring-ai, spring.io/projects/spring-amqp | MEDIUM - Official docs, pattern well-established |
+| WeChat Pay v3 API | pay.weixin.qq.com/doc/v3/merchant/4012062524 | MEDIUM - Official docs, partial verification |
+| Credit/Wallet systems | stripe.com/docs/billing (redirected to docs.stripe.com) | MEDIUM - Training knowledge |
+| Block editor architecture | grapesjs.com/docs, contentful.com/developers/docs | MEDIUM - Well-established CMS patterns |
+| Subdomain routing | docs.netlify.com (routing overview) | MEDIUM - Training knowledge |
+| LangChain pipeline | docs.langchain.com | MEDIUM - Well-established AI patterns |
+
+**Overall confidence:** MEDIUM - Well-established architectural patterns from training data; WebSearch unavailable to verify current 2025-2026 best practices.
 
 ---
-*Architecture research for: Drag-and-Drop Website Builder SaaS*
+
+*Architecture research for: Vibe Onepage v1.1 milestone - AI generation, editor polish, payments, and hosting*
 *Researched: 2026-03-21*

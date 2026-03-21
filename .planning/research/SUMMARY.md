@@ -1,183 +1,180 @@
 # Project Research Summary
 
-**Project:** Vibe Onepage - AI-Powered Single-Page Website Builder
-**Domain:** Drag-and-Drop Website Builder SaaS with AI Generation
+**Project:** Vibe Onepage - Drag-and-Drop Single-Page Website Builder SaaS
+**Domain:** AI-powered website builder with block editor, PDF export, WeChat Pay credits, and subdomain hosting
 **Researched:** 2026-03-21
-**Confidence:** MEDIUM (multiple verified sources for stack/features; lower confidence on pitfalls due to web search unavailability)
+**Confidence:** MEDIUM
 
 ## Executive Summary
 
-Vibe Onepage is a drag-and-drop website builder that generates personalized single-page websites from user-uploaded images using AI. The product targets non-technical users who want a personal blog, resume, or portfolio site without design or coding skills. Experts build这类工具 using modular block-based editors (not free-form canvas), AI pipelines that chain image analysis to style extraction to content generation, and template systems that separate structure from content.
+Vibe Onepage v1.1 is a drag-and-drop single-page website builder that uses AI to generate personalized sites from images. The existing codebase has structural foundations for all v1.1 features but requires completion of stub implementations and integration work. The core value proposition - "upload a photo, get a website in minutes" - requires finishing the AI generation pipeline (image analysis -> MiniMax -> block assembly), polishing the per-block AI writing assist, completing PDF export with credit deduction, and enabling subdomain hosting.
 
-The recommended approach prioritizes: (1) dnd-kit for React drag-and-drop (modern, accessible, performant), (2) Spring AI with sequential prompt chains for the AI pipeline (lighter than LangChain4j for linear workflows), and (3) OpenPDF for server-side PDF generation. The existing stack (Spring Boot + React + MySQL + Redis + RabbitMQ) is appropriate and should not be changed. The 500 QPS target is achievable with Redis caching, HikariCP connection pooling, and async job processing via RabbitMQ.
-
-Key risks include AI output validation failures (bad content propagates unchecked), drag-drop state desync with the database, and MiniMax API latency blocking the UI. Mitigate by implementing async job patterns, validation gates between AI pipeline stages, and debounced auto-save with localStorage backup.
+The recommended approach is to complete the AI pipeline first (since it is the core differentiator), then build the credit system (required for all paid features), then layer PDF preview and hosting on top. Key risks include: AI generation producing unusable output without validation gates, credit race conditions causing free PDFs, WeChat Pay v2 SDK used in a v3 API world, and no actual subdomain routing infrastructure.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**From STACK.md**
-
-The existing brownfield Spring Boot + React stack is correct. Key additions needed:
-
-- **dnd-kit** for frontend drag-and-drop — modular sensors, built-in accessibility, CSS transform-only animations. Avoid react-dnd (pre-Hooks API) and GrapesJS (full framework, overkill for block reordering).
-- **Spring AI** for AI integration — built-in MiniMax support, auto-configured starters, sufficient for linear image->style->content->layout pipeline. LangChain4j adds complexity without value for non-branching workflows.
-- **OpenPDF + OpenHTMLToPDF** for PDF generation — open source (LGPL/MIT), HTML-to-PDF. Avoid iText (AGPL licensing) and Puppeteer (Node.js, overkill).
-- **Docker + Kubernetes** for 500 QPS — horizontal scaling, Redis integration, CDN for static assets.
+**Summary from STACK.md:** The v1.0 stack is complete and validated. v1.1 requires minimal additions - primarily WebSocket for real-time AI progress, a form library for the configuration panel, and a PDF preview component.
 
 **Core technologies:**
-- dnd-kit: Drag-and-drop UI — modern React-first library with accessibility support
-- Spring AI: AI pipeline orchestration — first-class MiniMax integration, lighter than LangChain4j
-- OpenPDF: Server-side PDF generation — HTML-to-PDF without commercial licensing
-- Redis: Hot endpoint caching — 24h TTL for template listing and blog views
-- RabbitMQ: Async job processing — PDF generation and long-running AI tasks
+- **Spring Boot 3.2.0 + Java 17** - Backend framework (existing, stable)
+- **React 18.2.0 + Vite 5.0.8 + TailwindCSS 3.3.6** - Frontend framework (existing, validated)
+- **@stomp/stompjs 7.3.0 + sockjs-client 1.6.2** - WebSocket for AI progress (NEW: enables real-time generation status)
+- **react-hook-form 7.71.2** - Configuration panel forms (NEW: lightweight form state for block settings)
+- **react-pdf 3.4.1** - PDF preview before charge (NEW: in-browser preview capability)
+- **Spring AI 1.0.0-M6 + MiniMax** - AI generation (existing, needs completion of parseAndAssemble stub)
+- **RabbitMQ + Redis** - Async jobs and caching (existing, well-configured)
+- **Flying Saucer 9.3.1** - PDF generation (existing, working but limited CSS support)
+
+**What NOT to add:** socket.io (use STOMP instead), Redux/MobX (Zustand sufficient), react-query (not needed), Builder.io/GrapesJS (overkill), LangChain4j (Spring AI sufficient), iText 7 (AGPL license issue).
 
 ### Expected Features
 
-**From FEATURES.md**
+**Summary from FEATURES.md:** The v1.1 milestone focuses on completing the AI generation pipeline, polishing AI writing assist, finalizing the block editor, completing PDF export, implementing WeChat Pay credit deduction, and enabling platform hosting.
 
 **Must have (table stakes):**
-- Template Library (10 templates) — foundation for everything; categorized by use case
-- Block Editor — add, remove, reorder, configure blocks with drag-and-drop
-- Click-to-Edit — inline text/image editing on preview
-- Image Upload — drag-drop upload with basic processing
-- Platform Hosting — subdomain publishing (username.vibe.com)
-- Share Links — unique shareable URL per published site
-- Mobile Responsive Output — templates responsive by default
-- User Auth + WeChat Pay — already exists
-- VIP Subscription (10 RMB/month) — gates all templates + removes platform branding
+- **Complete AI Generation Pipeline** - Image upload -> MiniMax -> Block assembly -> Editor display; current stub returns empty blocks with 0.0 confidence
+- **AI Writing Assist Polish** - Replace/Append modes, confidence highlighting (amber ring when < 0.7), sparkle button visibility on hover
+- **Block Configuration Panel** - Right sidebar for block-level settings (alignment, colors, visibility)
+- **PDF Preview + Export** - Preview free, export charges 0.3 credits, 24h download links, quality validation before charging
+- **WeChat Pay Credit Flow** - Order creation, callback handling, credit deduction (atomic operation)
+- **Publish/Unpublish** - Static HTML generation, status management, subdomain hosting
 
 **Should have (competitive differentiators):**
-- AI Website Generation from Image — upload photo + description -> editable page; the core differentiator
-- AI Writing Assist per Block — inline "AI Write" button in each text block
-- Style Transfer from Image — extract color palette, mood from uploaded image
-- PDF Export — offline sharing capability (~0.1-0.5 RMB per generation)
+- **AI Generation from Image** - "Upload a photo, get a website" is the core magical experience
+- **Per-Block AI Write Assist** - Context-aware inline AI without disrupting workflow
+- **Async Generation with Progress** - Non-blocking UI during 5-30s AI calls via WebSocket
+- **Confidence-Based Highlighting** - Visual indicator of AI certainty (amber ring)
+- **One-Click Regeneration** - Iterate on AI output quickly
 
 **Defer (v2+):**
-- Custom Domain Binding — infrastructure cost and SSL management
-- Multi-Page Websites — contradicts single-page value proposition
-- User-Created Blocks — template system complexity
-- Team Collaboration — extreme complexity with locking/conflict resolution
-- Code Export — removes SaaS lock-in
+- Real-Time Collaborative Editing - Extreme complexity; single-user only for v1
+- Full Code Export - Removes SaaS lock-in; hosting included instead
+- Custom Domain for Free Users - Infrastructure cost; reserve for VIP
+- Block Animations - Entrance animations, hover effects
+- More Templates - Expand based on usage data after launch
 
 ### Architecture Approach
 
-**From ARCHITECTURE.md**
-
-The system follows a **Block Component Pattern** — page content is decomposed into typed blocks (Text, Image, Social, Contact) with consistent interfaces. The **AI Pipeline Pattern** chains image analysis -> style extraction -> content generation -> block assembly as sequential steps with typed outputs. **Template-Output Separation** ensures single source of truth for content rendered to preview, published site, and PDF.
+**Summary from ARCHITECTURE.md:** The existing 3-layer Spring Boot architecture (Controller-Service-Repository) with RabbitMQ async consumers, Redis caching, JWT auth, and WebSocket via SimpMessagingTemplate is sound. Key integration challenges are completing the AI generation pipeline and credit system.
 
 **Major components:**
-1. **Page Editor** — React + dnd-kit for drag-drop block manipulation and in-place editing
-2. **Editor State Store (Zustand)** — centralized state with undo/redo history, optimistic updates
-3. **AI Pipeline (Spring AI)** — orchestrates MiniMax calls for image analysis and content generation
-4. **Static Site Generator** — transforms block data into deployable HTML/CSS
-5. **PDF Export Service** — server-side rendering to PDF using OpenPDF
-6. **CDN + Object Storage** — serves published sites with caching
+1. **AIGenerationController + AIGenerationConsumer** - Receives generation requests, queues async job, orchestrates pipeline via RabbitMQ, notifies frontend via WebSocket
+2. **BlockAssemblyService** - Parses AI JSON response into structured block data (NOT raw HTML - preserves editability)
+3. **CreditDeductionService + WalletService** - Atomic credit operations with idempotency keys and distributed locks (Redis)
+4. **PdfPreviewController + PdfPreviewService** - Two-phase PDF: free low-res preview, then full export with credit deduction
+5. **SubdomainFilter + SiteController** - Wildcard DNS routing to serve published blogs via subdomains
+
+**Key patterns:**
+- Always use async RabbitMQ-based pipeline for AI calls (5-30s latency, 500 QPS requirement)
+- AI outputs structured block JSON, NOT rendered HTML (preserves user editability)
+- Credit deduction uses idempotency keys + distributed locks (prevents race conditions)
+- Two-phase PDF: preview before charge with automatic refund on failure
 
 ### Critical Pitfalls
 
-**From PITFALLS.md**
+**Top 5 from PITFALLS.md:**
 
-1. **AI Generation Produces Unusable Output Without Validation Gates** — Each LangChain stage compounds errors. Implement preview/approval step, confidence scoring, and block-level regeneration.
-2. **Drag-and-Drop State Desync With Backend Persistence** — Use explicit position field (not array index), debounce auto-save (500ms), persist to localStorage as backup.
-3. **MiniMax API Latency Blocks the Entire UI** — Never call AI synchronously. Use async job pattern with polling, allow editing while AI runs.
-4. **PDF Export Produces Broken Output** — Generate server-side with proper viewport config, wait for all assets to load, preview before charging.
-5. **LangChain Chain State Leakage Between Requests** — Create new chain instance per request, never share memory objects, use request-scoped DI.
+1. **AI Generation Produces Unusable Output** - AIGenerationService.parseAndAssemble() is a stub returning empty blocks. Without validation gates, users get garbage output. Prevention: confidence scoring, preview/approval step before commit.
+
+2. **PDF Credits Deducted After Generation - No Rollback** - PdfJobConsumer deducts credits AFTER PDF is generated and stored. If deduction fails, user gets free PDF. Prevention: deduct BEFORE generation, or use transaction spanning both.
+
+3. **WeChat Pay v2 SDK in v3 API World** - wxpay-sdk 0.0.3 uses v2 protocol (MD5 signatures), but WeChat Pay API v3 requires RSA certificates and HMAC-SHA256. Payments will silently fail in production. Prevention: migrate to v3 native SDK.
+
+4. **Race Condition in Credit Balance Check vs Deduction** - Two concurrent PDF requests both pass balance check before either deduction. User gets 2 PDFs for 0.6 credits when they only had 0.5. Prevention: Redis distributed lock per user during check-and-deduct.
+
+5. **Static Site Hosting Has No Actual Subdomain Routing** - BlogService.publish() saves HTML to DB but no DNS, Nginx, or CDN configuration exists. Prevention: implement SubdomainFilter + wildcard DNS + OSS storage.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-### Phase 1: Block Editor Foundation
-**Rationale:** Core editor must exist before AI can output editable content. Dependencies: Template System -> Block Editor -> Click-to-Edit.
-**Delivers:** Block component model, EditorState store (Zustand), basic drag-drop with dnd-kit, REST endpoints for block CRUD.
-**Addresses:** Template System, Block Editor, Click-to-Edit from FEATURES.md
-**Avoids:** Drag-drop state desync (explicit position field), DOM manipulation anti-patterns
+### Phase 1: Block Schema Contract + AI Generation Pipeline
+**Rationale:** AI generation is the core differentiator and depends on agreeing on block JSON schema first.
+**Delivers:** Block schema contract, AI generation pipeline with WebSocket progress, block assembly service
+**Addresses:** AI Website Generation completion, AI Writing Assist polish, Block Editor polish
+**Avoids:** AI generates HTML (wrong), Synchronous AI calls (UI freeze), MiniMax API latency blocking UI
 
-### Phase 2: Template Rendering + Preview
-**Rationale:** Publishing requires template rendering. Preview iframe must match production output.
-**Delivers:** TemplateRenderer service, static HTML generation, preview iframe in editor, SEO basics.
-**Addresses:** Platform Hosting, Share Links, Basic SEO
-**Avoids:** Preview/publish diff (serve from same domain), template block schema mismatch
+### Phase 2: Credit System Infrastructure
+**Rationale:** All paid features (PDF export, template purchases, VIP) depend on atomic credit operations. Build this before payments.
+**Delivers:** User credit_balance field, atomic WalletService, CreditDeductionService with idempotency + distributed lock, Redis caching
+**Addresses:** WeChat Pay Credit Deduction flow
+**Avoids:** Race condition in credit balance, double-deduction from retries
 
-### Phase 3: AI Generation Pipeline
-**Rationale:** Core differentiator. Must have editable output before AI can generate into it.
-**Delivers:** Spring AI + MiniMax integration, image analysis step, style extraction, content generation, block assembly, AI Write Assist per block.
-**Addresses:** AI Website Generation from Image, AI Writing Assist, Style Transfer
-**Avoids:** AI output validation failures (add validation gates), MiniMax UI blocking (async jobs), prompt injection (sandboxed prompts), LangChain state leakage (request-scoped DI)
+### Phase 3: PDF Preview-Before-Charge
+**Rationale:** Depends on credit system; implements two-phase pattern to prevent broken PDFs being charged.
+**Delivers:** PdfPreviewService (low-res preview), preview endpoint with 1h expiring URL, full export with credit deduction, auto-refund on failure
+**Addresses:** PDF Export completion
+**Avoids:** Credits deducted after generation (no rollback), PDF quality no validation, PDF 24h expiration cleanup never runs
 
-### Phase 4: Publishing + Payments + PDF
-**Rationale:** MVP requires working payment flow and PDF export. RabbitMQ is already in stack.
-**Delivers:** Static site upload to OSS, subdomain DNS routing, CDN cache invalidation, PDF export with OpenPDF, VIP subscription enforcement.
-**Addresses:** VIP Subscription, PDF Export
-**Avoids:** PDF broken output (test all templates), cache stampede (stale-while-revalidate)
+### Phase 4: Subdomain Routing & Publishing
+**Rationale:** Final publish step; depends on complete blogs (AI + editor done).
+**Delivers:** SubdomainFilter, SiteController, BlogService.publish() with OSS upload, wildcard DNS configuration
+**Addresses:** Subdomain Hosting completion
+**Avoids:** No actual subdomain routing, published blogs not accessible via subdomain
 
-### Phase 5: Polish + Performance + Scale
-**Rationale:** Address technical debt and prepare for growth after core validation.
-**Delivers:** Redis full-page caching tuning, block animations, more templates, load testing with cache disabled.
-**Addresses:** Block Animations, More Templates
-**Avoids:** Cache stampede (cache warming, probabilistic early expiration)
+### Phase 5: VIP & Payments Completion
+**Rationale:** WeChat Pay v2->v3 migration and final integration.
+**Delivers:** WeChat Pay v3 API integration, certificate authentication, proper signature validation
+**Avoids:** WeChat Pay signature validation bypass when not configured, v2 SDK in v3 world
 
 ### Phase Ordering Rationale
 
-- **Phase 1 before 2:** AI generates editable blocks; blocks require editor to exist
-- **Phase 2 before 3:** Template rendering enables preview fidelity; AI output must render correctly
-- **Phase 3 before 4:** PDF requires published website; AI must work before paid features
-- **Phase 4 before 5:** Core revenue loop must work before polish
-- **Grouping:** Block Editor + Template Rendering are tightly coupled (both frontend-heavy)
-- **Parallel work:** AI Pipeline (backend) can proceed alongside Block Editor (frontend) once architecture is defined
+- **Block schema first** because both AI pipeline (backend) and editor (frontend) must agree on contract
+- **AI pipeline second** because it is the core differentiator and provides user value early for testing
+- **Credit system third** because all paid features depend on atomic operations; build infrastructure before building on top
+- **PDF preview fourth** because it uses credit system and completes the export feature
+- **Subdomain hosting fifth** because it depends on complete blogs from AI + editor
+- **VIP/Payments last** because WeChat Pay v3 migration is a known complex integration
 
 ### Research Flags
 
-**Phases likely needing deeper research during planning:**
-- **Phase 3 (AI Pipeline):** LangChain4j vs Spring AI decision needs validation. PROJECT.md specifies LangChain, but research suggests Spring AI is sufficient. Recommend testing Spring AI first, migrating to LangChain4j only if workflow complexity requires it.
-- **Phase 4 (PDF Export):** OpenPDF HTML-to-PDF CSS support is limited. Benchmark both OpenPDF and OpenHTMLToPDF with actual template output before committing.
+Phases likely needing deeper research during planning:
+- **Phase 1 (AI Pipeline):** MiniMax API response format needs verification; confidence scoring threshold needs user testing
+- **Phase 2 (Credit System):** Redis lock implementation details; idempotency key TTL decision
+- **Phase 5 (VIP/Payments):** WeChat Pay v3 API migration path; certificate management in production
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Block Editor):** dnd-kit is well-documented, established patterns
-- **Phase 2 (Template Rendering):** Template-Output Separation is standard pattern with clear documentation
+Phases with standard patterns (skip research-phase):
+- **Phase 3 (PDF Preview):** Flying Saucer + RabbitMQ consumer is well-documented pattern
+- **Phase 4 (Subdomain Routing):** Wildcard DNS + Spring Filter is established pattern
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | dnd-kit, Spring AI, OpenPDF all verified via GitHub/docs. LangChain4j vs Spring AI needs validation. |
-| Features | MEDIUM | WebFetch from Durable, Elementor, Webflow, Relume. Some competitive data from training data supplement. |
-| Architecture | MEDIUM | Derived from documented frameworks (GrapesJS, dnd-kit, LangChain) and open-source patterns. No peer-reviewed sources. |
-| Pitfalls | LOW | Web search API unavailable during research. Findings from training data only. All should be verified with current sources. |
+| Stack | HIGH | v1.0 stack validated; v1.1 additions from official documentation |
+| Features | MEDIUM | Codebase analysis + training data patterns; WebSearch unavailable |
+| Architecture | MEDIUM | Well-established patterns from training data; WebSearch unavailable |
+| Pitfalls | MEDIUM | Code analysis verified; some external sources unverifiable due to WebSearch errors |
 
 **Overall confidence:** MEDIUM
 
 ### Gaps to Address
 
-- **LangChain4j vs Spring AI decision:** PROJECT.md specifies LangChain, but STACK.md recommends Spring AI for linear pipelines. This is the most important architectural decision to validate early.
-- **OpenPDF CSS support:** OpenPDF's HTML module has limited CSS support. Benchmark with actual templates before implementation.
-- **Containerization approach:** Project mentions Docker on Tencent Cloud via BT Panel. Kubernetes may be needed for 500 QPS but introduces complexity.
-- **RabbitMQ utilization:** Already in stack but unused. PDF generation is a good fit for async queue processing.
-- **Pitfall validation:** All pitfalls from PITFALLS.md should be verified against current sources and tested during implementation.
+- **MiniMax API exact response format:** parseAndAssemble() needs to handle actual MiniMax JSON; verify with API docs
+- **WeChat Pay v3 migration path:** Current wxpay-sdk v2 will fail; need concrete migration plan with code examples
+- **Confidence threshold validation:** Amber ring at < 0.7 needs user testing to verify if this is the right threshold
+- **PDF quality validation:** Flying Saucer CSS limitations need testing with real blog content
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- dnd-kit GitHub (clauderic/dnd-kit) + dndkit.com — verified 2026, 382 releases
-- Spring AI Documentation (docs.spring.io/spring-ai/reference) — official documentation
-- OpenPDF GitHub (LibrePDF/OpenPDF) — official repository, v3.0.3 Jan 2025
-- GrapesJS Documentation (grapesjs.com/docs) — page builder architecture patterns
-- LangChain Concepts (docs.langchain.com) — AI pipeline orchestration
+- Spring Framework WebSocket documentation (docs.spring.io) - STOMP patterns, WebSocketMessageBrokerConfigurer
+- @stomp/stompjs npm registry (verified 7.3.0) - TypeScript types, compatibility
+- react-hook-form npm registry (verified 7.71.2) - Form validation patterns
+- react-pdf npm registry (verified 3.4.1) - PDF worker configuration
 
 ### Secondary (MEDIUM confidence)
-- Durable AI Website Builder (durable.com/ai-website-builder) — AI generation process, pricing
-- Elementor Features (elementor.com/features) — block editor architecture, AI capabilities
-- Webflow Features (webflow.com/features) — CMS, hosting model, AI optimization
-- Vercel Documentation (vercel.com/docs) — static site deployment patterns
-- Redis Caching Documentation (redis.io/docs) — cache strategies
+- Existing codebase analysis (AIService.java, AIGenerationService.java, PdfJobConsumer.java, WeChatPayService.java) - Stub implementations identified
+- WeChat Pay API v3 documentation via WebFetch - Signature validation patterns
+- Spring AI documentation - Streaming, retry patterns
+- Block editor architecture patterns (grapesjs.com, contentful.com) - CMS patterns
 
-### Tertiary (LOW confidence - needs validation)
-- High concurrency patterns — training data + general cloud documentation
-- Spring AI vs LangChain4j comparison — training data + docs, requires verification
-- All pitfalls — training data only, web search unavailable during research
-- PDF alternatives comparison — community sources (Baeldung, InfoQ)
+### Tertiary (LOW confidence)
+- Credit system patterns from Stripe billing docs - Wallet patterns need verification
+- Subdomain routing from Netlify docs - Specific implementation needs validation
+- LangChain pipeline patterns - Not directly applicable (Spring AI sufficient)
 
 ---
 *Research completed: 2026-03-21*
