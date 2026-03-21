@@ -3,6 +3,7 @@ package com.onepage.messaging;
 import com.onepage.dto.PdfJobMessage;
 import com.onepage.service.CreditLockService;
 import com.onepage.service.PdfGenerationService;
+import com.onepage.service.PdfJobService;
 import com.onepage.service.UserCreditsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ public class PdfJobConsumer {
     private final PdfGenerationService pdfGenerationService;
     private final UserCreditsService userCreditsService;
     private final CreditLockService creditLockService;
+    private final PdfJobService pdfJobService;
 
     /**
      * Process PDF generation jobs from queue.
@@ -62,8 +64,17 @@ public class PdfJobConsumer {
                 throw new RuntimeException("Generated PDF is too small/invalid");
             }
 
+            // For preview jobs, store in Redis with 1h TTL
+            if (message.isPreview()) {
+                pdfGenerationService.storePreviewInRedis(message.getJobId(), pdfBytes);
+                log.info("Preview PDF stored in Redis: jobId={}", message.getJobId());
+            }
+
             // Store for download (24h expiration for exports)
             String downloadUrl = pdfGenerationService.storeForDownload(message.getJobId(), pdfBytes);
+
+            // Update job status to completed
+            pdfJobService.completeJob(message.getJobId(), downloadUrl);
 
             log.info("PDF job completed: jobId={}, downloadUrl={}", message.getJobId(), downloadUrl);
 
@@ -84,6 +95,8 @@ public class PdfJobConsumer {
                     creditLockService.unlock(message.getUserId(), lockValue);
                 }
             }
+            // Mark job as failed
+            pdfJobService.failJob(message.getJobId());
             throw e;
         }
 
