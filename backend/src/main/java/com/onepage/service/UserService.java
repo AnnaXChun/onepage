@@ -3,67 +3,139 @@ package com.onepage.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.LoginRequest;
+import com.onepage.dto.RefreshTokenRequest;
+import com.onepage.exception.BusinessException;
+import com.onepage.exception.ErrorCode;
 import com.onepage.mapper.UserMapper;
 import com.onepage.model.User;
-import com.onepage.util.JwtUtil;
+import com.onepage.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class UserService extends ServiceImpl<UserMapper, User> {
 
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
-    public String register(String username, String password, String email) {
+    /**
+     * Register a new user. Password is hashed with BCrypt.
+     * Returns both access and refresh tokens.
+     */
+    public Map<String, String> register(String username, String password, String email) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, username);
         User existUser = this.getOne(wrapper);
         if (existUser != null) {
-            throw new RuntimeException("用户名已存在");
+            throw BusinessException.badRequest(ErrorCode.USERNAME_ALREADY_EXISTS);
         }
 
         User user = new User();
         user.setUsername(username);
-        user.setPassword(md5(password));
+        user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
         user.setStatus(1);
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
         this.save(user);
 
-        return jwtUtil.generateToken(user.getId(), username);
+        Map<String, String> tokens = jwtTokenProvider.generateTokenPair(user.getId(), username);
+        redisTemplate.opsForValue().set(
+                "user:token:" + user.getId(),
+                tokens.get("accessToken"),
+                7,
+                TimeUnit.DAYS
+        );
+        return tokens;
     }
 
-    public String login(LoginRequest request) {
+    /**
+     * Authenticate user with username/password.
+     * Returns both access and refresh tokens.
+     */
+    public Map<String, String> login(LoginRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, request.getUsername());
         User user = this.getOne(wrapper);
 
-        if (user == null || !user.getPassword().equals(md5(request.getPassword()))) {
-            throw new RuntimeException("用户名或密码错误");
+        if (user == null) {
+            throw BusinessException.invalidCredentials();
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
-        redisTemplate.opsForValue().set("user:token:" + user.getId(), token, 24, TimeUnit.HOURS);
-        return token;
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw BusinessException.invalidCredentials();
+        }
+
+        if (user.getStatus() != 1) {
+            throw BusinessException.forbidden("User account is disabled");
+        }
+
+        Map<String, String> tokens = jwtTokenProvider.generateTokenPair(user.getId(), user.getUsername());
+        redisTemplate.opsForValue().set(
+                "user:token:" + user.getId(),
+                tokens.get("accessToken"),
+                7,
+                TimeUnit.DAYS
+        );
+        return tokens;
     }
 
+    /**
+     * Refresh tokens using a valid refresh token.
+     * Returns new access and refresh token pair.
+     */
+    public Map<String, String> refreshToken(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw BusinessException.tokenInvalid();
+        }
+
+        if (!jwtTokenProvider.isRefreshToken(refreshToken)) {
+            throw BusinessException.badRequest("Not a valid refresh token");
+        }
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+
+        if (userId == null || username == null) {
+            throw BusinessException.tokenInvalid();
+        }
+
+        // Verify user still exists and is active
+        User user = this.getById(userId);
+        if (user == null || user.getStatus() != 1) {
+            throw BusinessException.userNotFound();
+        }
+
+        return jwtTokenProvider.generateTokenPair(userId, username);
+    }
+
+    /**
+     * Get user info by ID.
+     */
     public User getUserInfo(Long userId) {
-        return this.getById(userId);
+        User user = this.getById(userId);
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+        user.setPassword(null);
+        return user;
     }
 
+    /**
+     * Logout - invalidate token in Redis.
+     */
     public void logout(Long userId) {
         redisTemplate.delete("user:token:" + userId);
-    }
-
-    private String md5(String str) {
-        return DigestUtils.md5DigestAsHex(str.getBytes());
     }
 }

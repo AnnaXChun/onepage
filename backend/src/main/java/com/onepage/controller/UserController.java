@@ -1,12 +1,17 @@
 package com.onepage.controller;
 
+import com.onepage.config.JwtUserPrincipal;
 import com.onepage.dto.LoginRequest;
+import com.onepage.dto.RefreshTokenRequest;
+import com.onepage.dto.RegisterRequest;
 import com.onepage.dto.Result;
+import com.onepage.exception.BusinessException;
 import com.onepage.model.User;
 import com.onepage.service.UserService;
-import com.onepage.util.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,60 +22,56 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public Result<Map<String, String>> register(@RequestBody Map<String, String> params) {
-        try {
-            String token = userService.register(
-                params.get("username"),
-                params.get("password"),
-                params.get("email")
-            );
-            return Result.success(Map.of("token", token));
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
-        }
+    public Result<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
+        Map<String, String> tokens = userService.register(
+                request.getUsername(),
+                request.getPassword(),
+                request.getEmail()
+        );
+        return Result.success(tokens);
     }
 
     @PostMapping("/login")
-    public Result<Map<String, String>> login(@RequestBody LoginRequest request) {
-        try {
-            String token = userService.login(request);
-            return Result.success(Map.of("token", token));
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
-        }
+    public Result<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
+        Map<String, String> tokens = userService.login(request);
+        return Result.success(tokens);
+    }
+
+    @PostMapping("/refresh")
+    public Result<Map<String, String>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        Map<String, String> tokens = userService.refreshToken(request);
+        return Result.success(tokens);
     }
 
     @GetMapping("/info")
-    public Result<User> getUserInfo(HttpServletRequest request) {
-        try {
-            Long userId = getUserIdFromRequest(request);
-            User user = userService.getUserInfo(userId);
-            user.setPassword(null);
-            return Result.success(user);
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
+    public Result<User> getUserInfo() {
+        JwtUserPrincipal principal = getCurrentUser();
+        if (principal == null) {
+            throw BusinessException.unauthorized("Please login first");
         }
+        User user = userService.getUserInfo(principal.getUserId());
+        return Result.success(user);
     }
 
     @PostMapping("/logout")
-    public Result<Void> logout(HttpServletRequest request) {
-        try {
-            Long userId = getUserIdFromRequest(request);
-            userService.logout(userId);
-            return Result.success();
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
+    public Result<Void> logout() {
+        JwtUserPrincipal principal = getCurrentUser();
+        if (principal != null) {
+            userService.logout(principal.getUserId());
         }
+        return Result.success();
     }
 
-    private Long getUserIdFromRequest(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+    /**
+     * Get current authenticated user from SecurityContext.
+     */
+    private JwtUserPrincipal getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof JwtUserPrincipal principal) {
+            return principal;
         }
-        return jwtUtil.getUserIdFromToken(token);
+        return null;
     }
 }

@@ -2,6 +2,7 @@ package com.onepage.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.OrderDetailDTO;
+import com.onepage.exception.BusinessException;
 import com.onepage.mapper.OrderMapper;
 import com.onepage.model.Order;
 import com.onepage.model.OrderStatus;
@@ -24,16 +25,54 @@ import java.util.concurrent.TimeUnit;
 public class OrderService extends ServiceImpl<OrderMapper, Order> {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final IdempotentService idempotentService;
+
     private static final String PAYMENT_LOCK_PREFIX = "lock:order:";
     private static final String PAYMENT_IDEMPOTENT_PREFIX = "idempotent:payment:";
     private static final int ORDER_EXPIRE_MINUTES = 30;
 
+    // BigDecimal monetary limits
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("99999");
+    private static final BigDecimal MIN_AMOUNT = new BigDecimal("0.01");
+
     @Transactional
-    public Order createOrder(Long userId, Long templateId, String templateName, String paymentMethod, BigDecimal amount) {
-        // 检查是否有未支付的订单
+    public Order createOrder(Long userId, String templateId, String templateName, String paymentMethod, BigDecimal amount) {
+        // 1. Validate userId
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        // 2. Validate templateId
+        if (templateId == null || templateId.isBlank()) {
+            throw BusinessException.badRequest("Template ID cannot be empty");
+        }
+        if (templateId.length() > 100) {
+            throw BusinessException.badRequest("Template ID is too long");
+        }
+        if (!templateId.matches("^[A-Za-z0-9_-]+$")) {
+            throw BusinessException.badRequest("Invalid template ID format");
+        }
+
+        // 3. Validate templateName
+        if (templateName != null && templateName.length() > 200) {
+            throw BusinessException.badRequest("Template name is too long");
+        }
+
+        // 4. Validate amount using BigDecimal
+        validateAmount(amount);
+
+        // 5. Validate paymentMethod
+        if (paymentMethod == null || paymentMethod.isBlank()) {
+            paymentMethod = "wechat"; // default
+        }
+        if (!paymentMethod.matches("^[A-Za-z0-9_]+$")) {
+            throw BusinessException.badRequest("Invalid payment method");
+        }
+
+        // 6. Check for existing pending order
         Order pendingOrder = baseMapper.findPendingOrder(userId, LocalDateTime.now());
         if (pendingOrder != null) {
-            log.info("用户 {} 存在未支付订单: {}", userId, pendingOrder.getOrderNo());
+            log.info("User {} has existing unpaid order: {}", userId, pendingOrder.getOrderNo());
             return pendingOrder;
         }
 
@@ -41,7 +80,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setOrderNo(generateOrderNo());
         order.setUserId(userId);
         order.setTemplateId(templateId);
-        order.setTemplateName(templateName);
+        order.setTemplateName(templateName != null ? templateName : "VIP Template");
         order.setPaymentMethod(paymentMethod);
         order.setAmount(amount);
         order.setStatus(OrderStatus.PENDING.getCode());
@@ -51,76 +90,122 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setExpireTime(LocalDateTime.now().plusMinutes(ORDER_EXPIRE_MINUTES));
 
         this.save(order);
-        log.info("创建订单成功: {}, 用户: {}, 金额: {}", order.getOrderNo(), userId, amount);
+        log.info("Order created: {}, user: {}, amount: {}", order.getOrderNo(), userId, amount);
 
         return order;
     }
 
+    /**
+     * Validate monetary amount with comprehensive checks.
+     */
+    private void validateAmount(BigDecimal amount) {
+        if (amount == null) {
+            throw BusinessException.badRequest("Order amount cannot be null");
+        }
+        // Must be positive
+        if (amount.compareTo(MIN_AMOUNT) < 0) {
+            throw BusinessException.badRequest("Order amount must be at least " + MIN_AMOUNT);
+        }
+        // Must not exceed maximum
+        if (amount.compareTo(MAX_AMOUNT) > 0) {
+            throw BusinessException.badRequest("Order amount exceeds maximum limit of " + MAX_AMOUNT);
+        }
+        // No more than 2 decimal places (no floating-point precision issues)
+        if (amount.scale() > 2) {
+            throw BusinessException.badRequest("Amount cannot have more than 2 decimal places");
+        }
+        // Must not be zero or negative
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw BusinessException.badRequest("Invalid order amount");
+        }
+    }
+
     public Order getOrderById(Long id) {
+        if (id == null) {
+            throw BusinessException.badRequest("Order ID cannot be null");
+        }
         return this.getById(id);
     }
 
     public Order getOrderByOrderNo(String orderNo) {
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+        if (orderNo.length() > 100) {
+            throw BusinessException.badRequest("Invalid order number");
+        }
         return baseMapper.findByOrderNo(orderNo);
     }
 
     public List<Order> getOrdersByUserId(Long userId) {
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
         return baseMapper.findByUserId(userId);
     }
 
     public OrderDetailDTO getOrderDetail(String orderNo) {
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
-            return null;
+            return null; // Caller handles null
         }
         return convertToDetailDTO(order);
     }
 
     /**
-     * 发起支付 - 使用Redis分布式锁防重
+     * Initiate payment with Redis distributed lock for idempotency.
      */
     @Transactional
     public Order initiatePayment(String orderNo, String paymentMethod) {
+        // 1. Validate inputs
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+        if (paymentMethod == null || paymentMethod.isBlank()) {
+            throw BusinessException.badRequest("Payment method cannot be empty");
+        }
+
+        // 2. Acquire distributed lock
         String lockKey = PAYMENT_LOCK_PREFIX + orderNo;
         Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", 30, TimeUnit.SECONDS);
 
         if (!Boolean.TRUE.equals(acquired)) {
-            throw new RuntimeException("订单正在处理中，请稍后重试");
+            throw BusinessException.badRequest("Order is being processed, please try again later");
         }
 
         try {
             Order order = getOrderByOrderNo(orderNo);
             if (order == null) {
-                throw new RuntimeException("订单不存在");
+                throw BusinessException.orderNotFound();
             }
 
-            // 订单状态校验
+            // Order status validation
             if (!order.canPay()) {
                 OrderStatus status = order.getOrderStatus();
-                throw new RuntimeException("订单当前状态不允许支付: " + status.getText());
+                throw BusinessException.badRequest("Order cannot be paid in current status: " + status.getText());
             }
 
-            // 检查是否过期
+            // Check expiration
             if (order.isExpired()) {
                 order.setStatus(OrderStatus.EXPIRED.getCode());
                 order.setUpdateTime(LocalDateTime.now());
                 this.updateById(order);
-                throw new RuntimeException("订单已过期");
+                throw BusinessException.orderExpired();
             }
 
-            // 检查支付幂等键
+            // Store idempotent key in Redis
             if (order.getPaymentIdempotentKey() != null) {
                 String idempotentKey = PAYMENT_IDEMPOTENT_PREFIX + order.getPaymentIdempotentKey();
                 redisTemplate.opsForValue().set(idempotentKey, orderNo, 24, TimeUnit.HOURS);
             }
 
-            // 更新状态为支付中
+            // Update status to PAYING
             order.setStatus(OrderStatus.PAYING.getCode());
             order.setPaymentMethod(paymentMethod);
             order.setUpdateTime(LocalDateTime.now());
             this.updateById(order);
 
-            log.info("发起支付成功: {}, 支付方式: {}", orderNo, paymentMethod);
+            log.info("Payment initiated: {}, method: {}", orderNo, paymentMethod);
             return order;
 
         } finally {
@@ -129,24 +214,36 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
 
     /**
-     * 确认支付成功 - 回调处理
+     * Confirm payment success - callback processing with idempotency.
      */
     @Transactional
     public Order confirmPayment(String orderNo, String transactionId, String tradeNo) {
-        Order order = getOrderByOrderNo(orderNo);
-        if (order == null) {
-            throw new RuntimeException("订单不存在");
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
         }
 
-        // 幂等性检查
+        Order order = getOrderByOrderNo(orderNo);
+        if (order == null) {
+            throw BusinessException.orderNotFound();
+        }
+
+        // Idempotency check - if already paid, return existing order
         if (order.getStatus().equals(OrderStatus.PAID.getCode())) {
-            log.info("订单已支付，跳过: {}", orderNo);
+            log.info("Order already paid, skipping: {}", orderNo);
             return order;
         }
 
-        // 只有支付中状态才能确认
+        // Only PAYING status can be confirmed
         if (!order.getStatus().equals(OrderStatus.PAYING.getCode())) {
-            throw new RuntimeException("订单状态不正确，无法确认支付");
+            throw BusinessException.badRequest("Order status is incorrect, cannot confirm payment");
+        }
+
+        // Validate transaction IDs
+        if (transactionId != null && transactionId.length() > 200) {
+            throw BusinessException.badRequest("Invalid transaction ID");
+        }
+        if (tradeNo != null && tradeNo.length() > 200) {
+            throw BusinessException.badRequest("Invalid trade number");
         }
 
         order.setStatus(OrderStatus.PAID.getCode());
@@ -156,23 +253,30 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        // 清除幂等键
+        // Clear idempotent key
         if (order.getPaymentIdempotentKey() != null) {
             redisTemplate.delete(PAYMENT_IDEMPOTENT_PREFIX + order.getPaymentIdempotentKey());
         }
 
-        log.info("支付确认成功: {}, 交易号: {}", orderNo, transactionId);
+        log.info("Payment confirmed: {}, transactionId: {}", orderNo, transactionId);
         return order;
     }
 
     /**
-     * 支付失败
+     * Payment failure handling.
      */
     @Transactional
     public Order paymentFailed(String orderNo, String reason) {
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+        if (reason != null && reason.length() > 500) {
+            reason = reason.substring(0, 500); // Truncate long reasons
+        }
+
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
-            throw new RuntimeException("订单不存在");
+            throw BusinessException.orderNotFound();
         }
 
         order.setStatus(OrderStatus.FAILED.getCode());
@@ -180,22 +284,29 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        log.info("支付失败: {}, 原因: {}", orderNo, reason);
+        log.info("Payment failed: {}, reason: {}", orderNo, reason);
         return order;
     }
 
     /**
-     * 申请退款
+     * Apply for refund.
      */
     @Transactional
     public Order applyRefund(String orderNo, String reason) {
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+        if (reason != null && reason.length() > 500) {
+            reason = reason.substring(0, 500);
+        }
+
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
-            throw new RuntimeException("订单不存在");
+            throw BusinessException.orderNotFound();
         }
 
         if (!order.canRefund()) {
-            throw new RuntimeException("订单当前状态不允许退款");
+            throw BusinessException.badRequest("Order cannot be refunded in current status");
         }
 
         order.setStatus(OrderStatus.REFUNDING.getCode());
@@ -203,32 +314,39 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        log.info("申请退款: {}, 原因: {}", orderNo, reason);
+        log.info("Refund applied: {}, reason: {}", orderNo, reason);
         return order;
     }
 
     /**
-     * 确认退款
+     * Confirm refund.
      */
     @Transactional
     public Order confirmRefund(String orderNo) {
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
-            throw new RuntimeException("订单不存在");
+            throw BusinessException.orderNotFound();
         }
 
         order.setStatus(OrderStatus.REFUNDED.getCode());
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        log.info("退款完成: {}", orderNo);
+        log.info("Refund confirmed: {}", orderNo);
         return order;
     }
 
     /**
-     * 查询支付状态
+     * Query payment status.
      */
     public String queryPaymentStatus(String orderNo) {
+        if (orderNo == null || orderNo.isBlank()) {
+            return "INVALID_ORDER";
+        }
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
             return "ORDER_NOT_FOUND";
@@ -237,29 +355,33 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
 
     /**
-     * 取消订单
+     * Cancel order.
      */
     @Transactional
     public Order cancelOrder(String orderNo) {
+        if (orderNo == null || orderNo.isBlank()) {
+            throw BusinessException.badRequest("Order number cannot be empty");
+        }
+
         Order order = getOrderByOrderNo(orderNo);
         if (order == null) {
-            throw new RuntimeException("订单不存在");
+            throw BusinessException.orderNotFound();
         }
 
         if (!order.canPay()) {
-            throw new RuntimeException("订单当前状态不允许取消");
+            throw BusinessException.badRequest("Order cannot be cancelled in current status");
         }
 
         order.setStatus(OrderStatus.CANCELLED.getCode());
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        log.info("订单取消: {}", orderNo);
+        log.info("Order cancelled: {}", orderNo);
         return order;
     }
 
     /**
-     * 处理过期订单
+     * Process expired orders.
      */
     @Transactional
     public int expireOrders() {
@@ -268,15 +390,18 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             order.setStatus(OrderStatus.EXPIRED.getCode());
             order.setUpdateTime(LocalDateTime.now());
             this.updateById(order);
-            log.info("订单过期: {}", order.getOrderNo());
+            log.info("Order expired: {}", order.getOrderNo());
         }
         return expiredOrders.size();
     }
 
     /**
-     * 检查支付幂等性
+     * Check payment idempotency.
      */
     public boolean checkPaymentIdempotent(String idempotentKey) {
+        if (idempotentKey == null || idempotentKey.isBlank()) {
+            return false;
+        }
         String key = PAYMENT_IDEMPOTENT_PREFIX + idempotentKey;
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }

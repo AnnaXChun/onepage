@@ -1,31 +1,77 @@
 package com.onepage.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.onepage.dto.BlogDTO;
+import com.onepage.exception.BusinessException;
 import com.onepage.mapper.BlogMapper;
 import com.onepage.model.Blog;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BlogService extends ServiceImpl<BlogMapper, Blog> {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String BLOG_CACHE_PREFIX = "blog:";
     private static final long CACHE_EXPIRE_HOURS = 24;
+    private static final int MAX_TITLE_LENGTH = 200;
+    private static final int MAX_CONTENT_LENGTH = 50000;
+    private static final int MAX_COVER_IMAGE_LENGTH = 500;
 
+    /**
+     * Create a new blog with comprehensive input validation.
+     */
     public Blog createBlog(Long userId, String title, String content, String coverImage, String templateId) {
+        // 1. Validate userId
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        // 2. Validate and sanitize title
+        if (title == null || title.trim().isEmpty()) {
+            throw BusinessException.badRequest("Title cannot be empty");
+        }
+        String trimmedTitle = title.trim();
+        if (trimmedTitle.length() > MAX_TITLE_LENGTH) {
+            throw BusinessException.badRequest("Title cannot exceed " + MAX_TITLE_LENGTH + " characters");
+        }
+
+        // 3. Validate content length
+        if (content != null && content.length() > MAX_CONTENT_LENGTH) {
+            throw BusinessException.badRequest("Content exceeds maximum length of " + MAX_CONTENT_LENGTH + " characters");
+        }
+
+        // 4. Validate cover image URL length (if provided)
+        if (coverImage != null && coverImage.length() > MAX_COVER_IMAGE_LENGTH) {
+            throw BusinessException.badRequest("Cover image URL is too long");
+        }
+
+        // 5. Validate templateId format (if provided)
+        if (templateId != null && !templateId.isBlank()) {
+            if (templateId.length() > 100) {
+                throw BusinessException.badRequest("Template ID is too long");
+            }
+            // Prevent injection in templateId
+            if (!templateId.matches("^[A-Za-z0-9_-]+$")) {
+                throw BusinessException.badRequest("Invalid template ID format");
+            }
+        }
+
         Blog blog = new Blog();
         blog.setUserId(userId);
-        blog.setTitle(title);
-        blog.setContent(content);
-        blog.setCoverImage(coverImage);
+        blog.setTitle(trimmedTitle);
+        blog.setContent(sanitizeContent(content));
+        blog.setCoverImage(sanitizeUrl(coverImage));
         blog.setTemplateId(templateId);
         blog.setShareCode(generateShareCode());
         blog.setStatus(1);
@@ -34,27 +80,97 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         this.save(blog);
 
         cacheBlog(blog);
+        log.info("Blog created: id={}, title={}, userId={}", blog.getId(), trimmedTitle, userId);
         return blog;
     }
 
+    /**
+     * Create blog from DTO with validation.
+     */
+    public Blog createBlog(BlogDTO dto, Long userId) {
+        if (dto == null) {
+            throw BusinessException.badRequest("Blog data cannot be null");
+        }
+        return createBlog(userId, dto.getTitle(), dto.getContent(), dto.getCoverImage(), dto.getTemplateId());
+    }
+
+    /**
+     * Update an existing blog with ownership and input validation.
+     */
     public Blog updateBlog(Long id, Long userId, String title, String content, String coverImage, String templateId) {
-        Blog blog = this.getById(id);
-        if (blog == null || !blog.getUserId().equals(userId)) {
-            throw new RuntimeException("博客不存在或无权限修改");
+        // 1. Validate IDs
+        if (id == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
         }
 
-        blog.setTitle(title);
-        blog.setContent(content);
-        blog.setCoverImage(coverImage);
-        blog.setTemplateId(templateId);
+        // 2. Fetch and verify ownership
+        Blog blog = this.getById(id);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to modify this blog");
+        }
+
+        // 3. Validate and update title
+        if (title != null) {
+            String trimmedTitle = title.trim();
+            if (trimmedTitle.isEmpty()) {
+                throw BusinessException.badRequest("Title cannot be empty");
+            }
+            if (trimmedTitle.length() > MAX_TITLE_LENGTH) {
+                throw BusinessException.badRequest("Title cannot exceed " + MAX_TITLE_LENGTH + " characters");
+            }
+            blog.setTitle(trimmedTitle);
+        }
+
+        // 4. Validate content length
+        if (content != null && content.length() > MAX_CONTENT_LENGTH) {
+            throw BusinessException.badRequest("Content exceeds maximum length");
+        }
+        if (content != null) {
+            blog.setContent(sanitizeContent(content));
+        }
+
+        // 5. Validate cover image
+        if (coverImage != null && coverImage.length() > MAX_COVER_IMAGE_LENGTH) {
+            throw BusinessException.badRequest("Cover image URL is too long");
+        }
+        if (coverImage != null) {
+            blog.setCoverImage(sanitizeUrl(coverImage));
+        }
+
+        // 6. Validate templateId
+        if (templateId != null && !templateId.isBlank()) {
+            if (templateId.length() > 100) {
+                throw BusinessException.badRequest("Template ID is too long");
+            }
+            if (!templateId.matches("^[A-Za-z0-9_-]+$")) {
+                throw BusinessException.badRequest("Invalid template ID format");
+            }
+            blog.setTemplateId(templateId);
+        }
+
         blog.setUpdateTime(LocalDateTime.now());
         this.updateById(blog);
 
+        // Invalidate cache
+        redisTemplate.delete(BLOG_CACHE_PREFIX + id);
         cacheBlog(blog);
+        log.info("Blog updated: id={}", id);
         return blog;
     }
 
+    /**
+     * Get blog by ID with cache.
+     */
     public Blog getBlogById(Long id) {
+        if (id == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
         String cacheKey = BLOG_CACHE_PREFIX + id;
         Blog cached = (Blog) redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
@@ -68,7 +184,17 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         return blog;
     }
 
+    /**
+     * Get blog by share code with validation.
+     */
     public Blog getBlogByShareCode(String shareCode) {
+        if (shareCode == null || shareCode.isBlank()) {
+            throw BusinessException.badRequest("Share code cannot be empty");
+        }
+        if (!shareCode.matches("^[A-Za-z0-9]{4,32}$")) {
+            throw BusinessException.badRequest("Invalid share code format");
+        }
+
         String cacheKey = BLOG_CACHE_PREFIX + "share:" + shareCode;
         Blog cached = (Blog) redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
@@ -82,21 +208,68 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         return blog;
     }
 
+    /**
+     * Delete blog with ownership validation.
+     */
     public void deleteBlog(Long id, Long userId) {
+        if (id == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
         Blog blog = this.getById(id);
-        if (blog == null || !blog.getUserId().equals(userId)) {
-            throw new RuntimeException("博客不存在或无权限删除");
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to delete this blog");
         }
 
         this.removeById(id);
         redisTemplate.delete(BLOG_CACHE_PREFIX + id);
+        redisTemplate.delete(BLOG_CACHE_PREFIX + "share:" + blog.getShareCode());
+        log.info("Blog deleted: id={}", id);
     }
 
     private void cacheBlog(Blog blog) {
-        redisTemplate.opsForValue().set(BLOG_CACHE_PREFIX + blog.getId(), blog, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(
+                BLOG_CACHE_PREFIX + blog.getId(),
+                blog,
+                CACHE_EXPIRE_HOURS,
+                TimeUnit.HOURS
+        );
     }
 
     private String generateShareCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toLowerCase();
+    }
+
+    /**
+     * Basic content sanitization - strip potentially dangerous HTML/scripts.
+     */
+    private String sanitizeContent(String content) {
+        if (content == null) {
+            return null;
+        }
+        // Remove script tags and event handlers as a basic XSS protection
+        return content
+                .replaceAll("(?i)<script[^>]*>.*?</script>", "")
+                .replaceAll("(?i)<iframe[^>]*>.*?</iframe>", "")
+                .replaceAll("(?i)on\\w+\\s*=", "");
+    }
+
+    /**
+     * Basic URL sanitization - only allow http/https and relative URLs.
+     */
+    private String sanitizeUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return null;
+        }
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
+            return null;
+        }
+        return url;
     }
 }
