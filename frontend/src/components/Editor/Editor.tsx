@@ -1,0 +1,74 @@
+import { useEffect } from 'react';
+import { useEditorStore } from '../../stores/editorStore';
+import EditorCanvas from './EditorCanvas';
+import EditorToolbar from './EditorToolbar';
+import BlockConfigPanel from './BlockConfigPanel';
+import BlockLibrary from './BlockLibrary';
+import useAutoSave from './useAutoSave';
+import { BlockManifest } from '../../types/block';
+
+interface EditorProps {
+  blogId: string;
+  initialBlocks?: BlockManifest;
+}
+
+export default function Editor({ blogId, initialBlocks }: EditorProps) {
+  const { setBlocks, blocks, selectBlock } = useEditorStore();
+
+  // Initialize blocks from initialBlocks (loaded from blocks.json)
+  useEffect(() => {
+    if (initialBlocks?.blocks && blocks.length === 0) {
+      const initialBlockStates = initialBlocks.blocks.map((block) => ({
+        id: block.id,
+        type: block.type,
+        content: block.defaultContent,
+        config: block.config || {},
+      }));
+      setBlocks(initialBlockStates);
+    }
+  }, [initialBlocks, setBlocks, blocks.length]);
+
+  // Auto-save hook
+  useAutoSave(blogId);
+
+  // Click outside to deselect
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      selectBlock(null);
+    }
+  };
+
+  // Graceful fallback if no blogId provided
+  if (!blogId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-background text-text-primary">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-4 opacity-50">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+          <polyline points="14,2 14,8 20,8" />
+        </svg>
+        <p className="text-lg font-medium">No blog selected</p>
+        <p className="text-sm mt-1 text-text-muted">Please select a blog to edit</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-background">
+      <EditorToolbar />
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main editor area */}
+        <div
+          className="flex-1 overflow-y-auto"
+          onClick={handleCanvasClick}
+        >
+          <EditorCanvas />
+          <BlockLibrary />
+        </div>
+
+        {/* Right sidebar - block config */}
+        <BlockConfigPanel />
+      </div>
+    </div>
+  );
+}
