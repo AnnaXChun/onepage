@@ -23,6 +23,10 @@ logs/
 .env
 .env.local
 
+# Local config with secrets
+backend/config.yaml
+backend/config.local.yaml
+
 # Uploads
 uploads/
 
