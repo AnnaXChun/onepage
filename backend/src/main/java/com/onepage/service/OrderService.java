@@ -31,6 +31,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     private final VipService vipService;
     private final TemplateMapper templateMapper;
     private final TemplatePurchaseService templatePurchaseService;
+    private final FulfillmentService fulfillmentService;
 
     private static final String PAYMENT_LOCK_PREFIX = "lock:order:";
     private static final String PAYMENT_IDEMPOTENT_PREFIX = "idempotent:payment:";
@@ -257,6 +258,15 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setPayTime(LocalDateTime.now());
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
+
+        // Fulfillment dispatch - AFTER status is confirmed PAID
+        // This is idempotent: if order was already PAID, this method returns early
+        try {
+            fulfillmentService.dispatchFulfillment(order);
+        } catch (Exception e) {
+            log.error("Fulfillment failed for order {}, but payment is confirmed", orderNo, e);
+            // Don't rollback - payment is done, fulfillment failures can be retried manually
+        }
 
         // Clear idempotent key
         if (order.getPaymentIdempotentKey() != null) {
