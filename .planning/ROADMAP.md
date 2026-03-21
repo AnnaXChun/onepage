@@ -31,7 +31,10 @@
 4. User can click template to see full preview before selection
 5. Each template defines a block component structure (Text, Image, Social Links, Contact)
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [x] 01-01-PLAN.md -- Template gallery with animated cards, category filtering, template preview
 
 ---
 
@@ -53,7 +56,12 @@
 7. Editor state auto-saves to backend (debounced 500ms) and backs up to localStorage
 8. User can undo/redo changes via keyboard shortcuts or buttons
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [x] 02-01-PLAN.md -- Editor foundation: block components, Zustand store with undo/redo, BlockRenderer
+- [ ] 02-02-PLAN.md -- Editor canvas: dnd-kit integration, SortableBlock, click-to-edit, drag handles
+- [ ] 02-03-PLAN.md -- Editor polish: BlockConfigPanel, EditorToolbar, auto-save hook, main Editor orchestrator
 
 ---
 
@@ -125,7 +133,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
-| 2. Block Editor Core | 0/1 | Not started | - |
+| 2. Block Editor Core | 1/3 | In progress | - |
 | 3. AI Generation Pipeline | 0/1 | Not started | - |
 | 4. Publishing, Payments & PDF | 0/1 | Not started | - |
 | 5. Polish & Performance | 0/1 | Not started | - |

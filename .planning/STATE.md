@@ -15,8 +15,8 @@
 | Field | Value |
 |-------|-------|
 | Current Phase | 2 - Block Editor Core |
-| Current Plan | Not started |
-| Phase Status | Not started |
+| Current Plan | 3 plans (02-01, 02-02, 02-03) |
+| Phase Status | Wave 1 execution in progress |
 | Milestone Progress | 1/5 phases complete |
 
 ## Performance Metrics
@@ -30,11 +30,9 @@
 
 ## Accumulated Context
 
-### Decisions Made
-- **dnd-kit** for drag-and-drop (not react-dnd or GrapesJS)
-- **Spring AI** for AI pipeline orchestration (not LangChain4j - lighter for linear workflows)
-- **OpenPDF** for PDF generation (not iText - better licensing)
-- **5 phases** for v1 delivery (standard granularity)
+### Decisions Made (Phase 2)
+- **zundo@2.2.0 + zustand@5.0.12**: Used despite peer dependency conflict (zundo requires zustand@^4.3.0). Installed with --legacy-peer-deps. May need zundo upgrade when zustand@5 support is released.
+- **@dnd-kit/sortable@10.0.0**: Used instead of plan-specified@8.0.0 (version 8.0.0 not available on npm)
 
 ### Block Component Model
 Blocks are typed components with consistent interfaces:
@@ -57,7 +55,11 @@ Sequential stages with validation gates:
 
 ## Session Continuity
 
-No active session. Roadmap just created.
+**Last Session:** 2026-03-21T10:42:00Z
+**Stopped At:** Completed 02-01-PLAN.md - Block Editor Core foundation
+
+### Completed This Session
+- 02-01: Editor foundation (block components, Zustand store, BlockRenderer)
 
 ## Notes
 
