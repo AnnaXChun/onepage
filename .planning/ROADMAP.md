@@ -126,7 +126,8 @@
   2. VIP subscription at 10 RMB/month grants user access to all templates
   3. Template purchases give user lifetime one-time access to that specific template
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 10-01-PLAN.md - Payment Fulfillment (PAY-01, PAY-02, PAY-03)
 
 ---
 
@@ -138,7 +139,7 @@
 | 7. Credit System | 3/3 | Complete    | 2026-03-21 |
 | 8. PDF Export | 2/2 | Complete    | 2026-03-21 |
 | 9. Platform Hosting | 1/1 | Complete    | 2026-03-21 |
-| 10. Payments & VIP | 0/TBD | Not started | - |
+| 10. Payments & VIP | 1/1   | Wave 0-1  | - |
 
 ---
 
