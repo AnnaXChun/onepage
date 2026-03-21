@@ -75,6 +75,7 @@ export default function SortableBlock({ block }: SortableBlockProps) {
           onContentChange={handleContentChange}
           isSelected={isSelected}
           onSelect={handleSelect}
+          confidence={block.confidence}
         />
       </div>
     </div>

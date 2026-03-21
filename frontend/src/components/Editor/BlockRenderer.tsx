@@ -11,6 +11,7 @@ interface BlockRendererProps {
   onContentChange: (content: string) => void;
   isSelected: boolean;
   onSelect: () => void;
+  confidence?: number;
 }
 
 export default function BlockRenderer({
@@ -19,6 +20,7 @@ export default function BlockRenderer({
   onContentChange,
   isSelected,
   onSelect,
+  confidence,
 }: BlockRendererProps) {
   // Don't render hidden blocks
   if (block.config?.visible === false) {
@@ -31,6 +33,7 @@ export default function BlockRenderer({
     onContentChange,
     isSelected,
     onSelect,
+    confidence,
   };
 
   switch (block.type) {
