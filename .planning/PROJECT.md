@@ -10,21 +10,20 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.1
+## Current Milestone: v1.2
 
-**Goal:** Complete the core user value loop — AI generation, editor polish, and payments/hosting integration to make the product shippable.
+**Goal:** Add analytics dashboard — visitor counts and page views so users can see their site traffic.
 
 **Target features:**
-- Complete AI Website Generation pipeline (image upload → AI style extraction → full page generation)
-- AI Writing Assist polish (sparkle button per text block, Replace/Append modes, confidence highlighting)
-- Block Editor polish (configuration panel, block settings persistence)
-- PDF Export completion (preview before charge, 24h expiring download links)
-- VIP & Payments completion (WeChat Pay flow, credit deduction)
-- Platform Hosting completion (subdomain DNS routing, publish/unpublish)
+- Analytics dashboard with visitor counts and page views
+- Track page views per published site
+- Display traffic metrics in user dashboard
 
 ## Requirements
 
-### Validated
+### Validated (v1.0 + v1.1)
+
+<!-- All requirements from v1.0 and v1.1 milestones -->
 
 <!-- v1.0 shipped — these requirements are complete and tested -->
 
@@ -56,10 +55,9 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ### Active
 
-<!-- Next milestone priorities -->
-
-- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish (covered by Phase 9)
-- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
+- [ ] **ANAL-01**: User can view visitor counts for published site
+- [ ] **ANAL-02**: User can view page views per published site
+- [ ] **ANAL-03**: Analytics data displays in user dashboard
 
 ### Out of Scope
 
