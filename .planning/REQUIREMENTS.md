@@ -86,7 +86,7 @@
 
 ### Performance & Infrastructure
 
-- [ ] **PERF-01**: Hot endpoints (template listing, blog view) handle 500 QPS
+- [x] **PERF-01**: Hot endpoints (template listing, blog view) handle 500 QPS
 - [x] **PERF-02**: Redis caching for template listing (24h TTL) and blog pages
 - [x] **PERF-03**: Database indexes on frequently queried fields (userId, shareCode)
 - [x] **PERF-04**: HikariCP connection pool tuning for high concurrency
@@ -179,7 +179,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-01 | Existing | Existing |
 | AUTH-02 | Existing | Existing |
 | AUTH-03 | Phase 4 | Pending |
-| PERF-01 | Phase 5 | Pending |
+| PERF-01 | Phase 5 | Complete |
 | PERF-02 | Phase 5 | Complete |
 | PERF-03 | Phase 5 | Complete |
 | PERF-04 | Phase 5 | Complete |
