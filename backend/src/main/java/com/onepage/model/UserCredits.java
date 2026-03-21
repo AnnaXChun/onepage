@@ -17,7 +17,9 @@ public class UserCredits {
 
     private Long userId;
 
-    private BigDecimal balance;  // Current credit balance
+    private BigDecimal balance;     // Current credits balance
+
+    private BigDecimal totalSpent;   // Total credits spent
 
     private LocalDateTime createTime;
 
