@@ -62,6 +62,10 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  ai:
+    openai:
+      api-key: ${MINIMAX_API_KEY:dummy-key-for-startup}
+
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.onepage.model
