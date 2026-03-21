@@ -110,12 +110,13 @@ Plans:
 7. User can export current page as PDF; PDF generates server-side and is downloadable via link (expires 24h)
 8. User sees PDF preview before being charged
 
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 Plans:
 - [ ] 04-01-PLAN.md -- Static site publishing: publish/unpublish, Thymeleaf HTML generation, subdomain routing
 - [ ] 04-02-PLAN.md -- PDF export system: async PDF generation, user credits, preview before charge
-- [ ] 04-03-PLAN.md -- Payments & VIP: VIP subscriptions, template purchases, balance tracking
+- [ ] 04-03-PLAN.md -- VIP & Payments core: VIP subscriptions, template purchases, VipService, TemplatePurchaseService
+- [ ] 04-04-PLAN.md -- VIP/credits UI: PaymentController endpoints, VipBanner, BalanceDisplay components
 
 ---
 
@@ -150,7 +151,7 @@ Plans:
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
 | 2. Block Editor Core | 3/3 | Complete   | 2026-03-21 |
 | 3. AI Generation Pipeline | 0/3 | Not started | - |
-| 4. Publishing, Payments & PDF | 0/3 | Not started | - |
+| 4. Publishing, Payments & PDF | 0/4 | Not started | - |
 | 5. Polish & Performance | 0/3 | Not started | - |
 
 ---
@@ -222,4 +223,4 @@ Plans:
 ---
 
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after Phase 4 planning*
+*Last updated: 2026-03-21 after Phase 4 planning revision*
