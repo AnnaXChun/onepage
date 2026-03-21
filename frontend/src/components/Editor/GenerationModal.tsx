@@ -29,6 +29,8 @@ export function GenerationModal({ isOpen, onClose, blogId }: GenerationModalProp
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [previewBlocks, setPreviewBlocks] = useState<BlockState[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [colorPalette, setColorPalette] = useState<string[]>([]);
+  const [dominantColor, setDominantColor] = useState('#6366f1');
   const setBlocks = useEditorStore((s) => s.setBlocks);
 
   useEffect(() => {
@@ -65,6 +67,8 @@ export function GenerationModal({ isOpen, onClose, blogId }: GenerationModalProp
     setStage('EXTRACTING_COLORS');
     const palette = await extractColors(imageUrl);
     const dominant = palette[0] || '#6366f1';
+    setColorPalette(palette);
+    setDominantColor(dominant);
 
     setStage('STARTING');
     await fetch('/api/v1/generate', {
@@ -89,8 +93,12 @@ export function GenerationModal({ isOpen, onClose, blogId }: GenerationModalProp
   };
 
   const handleRegenerateBlock = async (blockIndex: number) => {
-    // TODO: Implement per-block regeneration via /api/v1/generate/regenerate/{blogId}/{blockIndex}
-    console.log('Regenerate block:', blockIndex);
+    if (!imageUrl || !description) return;
+    await fetch(`/api/v1/generate/regenerate/${blogId}/${blockIndex}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl, description, colorPalette, dominantColor })
+    });
   };
 
   if (!isOpen) return null;
