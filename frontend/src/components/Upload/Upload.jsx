@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from '../../i18n'
 
 function Upload({ onUpload, onBack }) {
+  const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -50,7 +52,6 @@ function Upload({ onUpload, onBack }) {
 
   return (
     <div className="min-h-screen bg-background text-textPrimary flex flex-col">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
@@ -61,15 +62,13 @@ function Upload({ onUpload, onBack }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <h1 className="text-lg font-semibold">Upload Image</h1>
+          <h1 className="text-lg font-semibold">{t('uploadImage')}</h1>
           <div className="w-10" />
         </div>
       </header>
 
-      {/* Content */}
       <main className="flex-1 flex items-center justify-center px-8 pt-24 pb-12">
         <div className="w-full max-w-lg">
-          {/* Step indicator */}
           <div className="flex items-center justify-center gap-2 mb-12">
             <div className="w-3 h-3 rounded-full bg-primary" />
             <div className="w-12 h-0.5 bg-border" />
@@ -108,11 +107,11 @@ function Upload({ onUpload, onBack }) {
                       className="max-h-72 mx-auto rounded-2xl object-cover shadow-2xl"
                     />
                     <div className="absolute inset-0 bg-background/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-sm text-textSecondary">Click to change</span>
+                      <span className="text-sm text-textSecondary">{t('clickToChange')}</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-textMuted text-sm">Your image looks great</p>
+                <p className="text-textMuted text-sm">{t('yourImageLooksGreat')}</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -132,7 +131,6 @@ function Upload({ onUpload, onBack }) {
                       />
                     </svg>
                   </div>
-                  {/* Decorative dot */}
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
@@ -141,10 +139,10 @@ function Upload({ onUpload, onBack }) {
                 </div>
                 <div>
                   <p className="text-xl font-semibold text-textPrimary mb-2">
-                    Drop your image here
+                    {t('dropYourImageHere')}
                   </p>
                   <p className="text-textMuted text-sm">
-                    or click to browse • JPG, PNG, WebP
+                    {t('orClickToBrowse')}
                   </p>
                 </div>
               </div>
@@ -159,7 +157,7 @@ function Upload({ onUpload, onBack }) {
                 className="group relative px-10 py-4 bg-textPrimary text-background font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  {uploading ? 'Processing...' : 'Continue'}
+                  {uploading ? t('processing') : t('continue')}
                   {!uploading && (
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

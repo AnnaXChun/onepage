@@ -19,7 +19,7 @@ public class Order {
 
     private Long userId;
 
-    private Long templateId;
+    private String templateId;
 
     private String templateName;
 

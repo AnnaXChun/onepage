@@ -10,7 +10,7 @@ public class OrderDetailDTO {
     private Long id;
     private String orderNo;
     private Long userId;
-    private Long templateId;
+    private String templateId;
     private String templateName;
     private BigDecimal amount;
     private String status;

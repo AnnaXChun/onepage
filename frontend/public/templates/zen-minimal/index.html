@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{USER_NAME}} - 博客</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="ink-wash"></div>
+    <div class="bamboo-pattern"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="seal">禅</div>
+
+            <div class="profile-section">
+                <div class="image-container">
+                    <img src="{{USER_IMAGE}}" alt="{{USER_NAME}}" class="avatar">
+                </div>
+                <div class="info-container">
+                    <h1 class="name">{{USER_NAME}}</h1>
+                    <div class="divider"></div>
+                    <p class="bio">{{USER_BIO}}</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="content-inner">
+                {{BLOG_CONTENT}}
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="zen-circle">
+                <span>空</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

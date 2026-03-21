@@ -8,6 +8,35 @@
   :root {
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Base colors - OKLCH with purple tint */
+    --color-background: oklch(12% 0.02 280);
+    --color-surface: oklch(18% 0.02 280);
+    --color-surface-elevated: oklch(22% 0.02 280);
+
+    /* Text colors */
+    --color-text-primary: oklch(95% 0.01 280);
+    --color-text-secondary: oklch(75% 0.02 280);
+    --color-text-muted: oklch(55% 0.02 280);
+    --color-text-primary-btn: oklch(10% 0.01 280);
+    --color-text-secondary-btn: oklch(75% 0.02 280);
+
+    /* Primary - Purple */
+    --color-primary: oklch(65% 0.18 280);
+    --color-primary-hover: oklch(70% 0.2 280);
+    --color-primary-light: oklch(80% 0.15 280);
+
+    /* Accent - Blue-Purple */
+    --color-accent: oklch(75% 0.15 200);
+    --color-accent-hover: oklch(80% 0.18 200);
+
+    /* Border */
+    --color-border: oklch(30% 0.02 280);
+    --color-border-light: oklch(40% 0.02 280);
+
+    /* Semantic */
+    --color-success: oklch(70% 0.15 150);
+    --color-error: oklch(65% 0.18 20);
   }
 
   * {
@@ -24,8 +53,8 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: oklch(12% 0.02 280);
-    color: oklch(95% 0.01 280);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
     line-height: 1.6;
   }
 
@@ -36,7 +65,7 @@
 
   /* Smooth focus outlines */
   :focus-visible {
-    outline: 2px solid oklch(65% 0.18 280);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }
@@ -44,37 +73,54 @@
 @layer components {
   /* Custom button styles */
   .btn-primary {
-    @apply px-8 py-4 bg-[#oklch(65%_0.18_280)] text-white font-semibold rounded-full;
-    @apply hover:bg-[#oklch(70%_0.2_280)] transition-all duration-300;
-    @apply hover:scale-[1.02] active:scale-[0.98];
+    @apply px-8 py-4 font-semibold rounded-full;
+    background-color: var(--color-primary);
+    color: var(--color-text-primary-btn);
+    @apply hover:scale-[1.02] active:scale-[0.98] transition-all duration-300;
   }
 
   .btn-secondary {
-    @apply px-8 py-4 border border-[#oklch(30%_0.02_280)] text-[#oklch(95%_0.01_280)] font-medium rounded-full;
-    @apply hover:border-[#oklch(40%_0.02_280)] transition-all duration-300;
+    @apply px-8 py-4 font-medium rounded-full border;
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+    @apply transition-all duration-300;
   }
 
   .btn-ghost {
-    @apply px-6 py-3 text-[#oklch(75%_0.02_280)] font-medium;
-    @apply hover:text-[#oklch(95%_0.01_280)] transition-colors duration-200;
+    @apply px-6 py-3 font-medium;
+    color: var(--color-text-secondary-btn);
+    @apply hover:scale-[1.02] active:scale-[0.98] transition-colors duration-200;
   }
 
   /* Card styles */
   .card {
-    @apply bg-[#oklch(18%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-2xl;
+    @apply rounded-2xl border;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
   }
 
   .card-elevated {
-    @apply bg-[#oklch(22%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-2xl;
-    @apply shadow-lg shadow-black/20;
+    @apply rounded-2xl shadow-lg;
+    background-color: var(--color-surface-elevated);
+    border-color: var(--color-border);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2);
   }
 
   /* Input styles */
   .input {
-    @apply w-full px-4 py-3 bg-[#oklch(18%_0.02_280)] border border-[#oklch(30%_0.02_280)] rounded-xl;
-    @apply text-[#oklch(95%_0.01_280)] placeholder:text-[#oklch(55%_0.02_280)];
-    @apply focus:border-[#oklch(65%_0.18_280)] focus:ring-1 focus:ring-[#oklch(65%_0.18_280)];
-    @apply transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-xl border transition-all duration-200;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  .input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .input:focus {
+    border-color: var(--color-primary);
+    outline: none;
   }
 
   /* Stagger animation utilities */
@@ -89,7 +135,7 @@
 @layer utilities {
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, oklch(65% 0.18 280), oklch(75% 0.15 200));
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -97,7 +143,7 @@
 
   /* Glow effect */
   .glow {
-    box-shadow: 0 0 40px oklch(65% 0.18 280 / 0.15);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--color-primary) 15%, transparent);
   }
 
   /* Smooth transitions */
@@ -124,14 +170,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: oklch(12% 0.02 280);
+  background: var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(30% 0.02 280);
+  background: var(--color-border);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(40% 0.02 280);
+  background: var(--color-border-light);
 }

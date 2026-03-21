@@ -1,16 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from '../../i18n'
 
 function ShareLink({ blog, onRestart }) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
-  // Use local dev URL for testing, replace with production URL in deployment
   const isLocalhost = window.location.hostname === 'localhost'
   const shareUrl = blog?.shareCode
     ? isLocalhost
       ? `http://localhost:5173/blog/${blog.shareCode}`
       : `https://vibe.page/blog/${blog.shareCode}`
     : `https://vibe.page/blog_${Date.now().toString(36)}`
+
+  // Generate local preview URL (for testing without backend)
+  const localPreviewUrl = blog
+    ? `http://localhost:3000/preview?template=${blog.templateId || 'minimal-simple'}&name=${encodeURIComponent(blog.title || 'My Blog')}&bio=${encodeURIComponent('Welcome to my blog')}&content=${encodeURIComponent(blog.content || '')}&image=${encodeURIComponent(blog.coverImage || '')}`
+    : null
 
   const handleCopy = async () => {
     try {
@@ -33,7 +39,6 @@ function ShareLink({ blog, onRestart }) {
 
   return (
     <div className="min-h-screen bg-background text-textPrimary flex flex-col">
-      {/* Animated background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
@@ -41,24 +46,21 @@ function ShareLink({ blog, onRestart }) {
 
       <main className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-lg text-center">
-          {/* Success Icon with celebration */}
           <div className="relative inline-block mb-8">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-scale-in shadow-2xl shadow-primary/30">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            {/* Celebration dots */}
             <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-pulse" />
             <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-accent rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
           </div>
 
-          <h1 className="text-fluid-lg font-bold mb-4 animate-slide-up">You're all set!</h1>
-          <p className="text-xl text-textSecondary mb-10 animate-slide-up stagger-1">Your page is live and ready to share</p>
+          <h1 className="text-fluid-lg font-bold mb-4 animate-slide-up">{t('youreAllSet')}</h1>
+          <p className="text-xl text-textSecondary mb-10 animate-slide-up stagger-1">{t('pageIsLive')}</p>
 
-          {/* Share Link */}
           <div className="bg-surface rounded-2xl p-6 mb-8 border border-border animate-slide-up stagger-2">
-            <p className="text-sm text-textMuted mb-3">Your unique link</p>
+            <p className="text-sm text-textMuted mb-3">{t('yourUniqueLink')}</p>
             <div className="flex items-center gap-3">
               <input
                 type="text"
@@ -74,14 +76,34 @@ function ShareLink({ blog, onRestart }) {
                     : 'bg-textPrimary text-background hover:scale-[1.02]'
                 }`}
               >
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? t('copied') : t('copy')}
               </button>
             </div>
+
+            {/* Local Preview URL - for testing without backend */}
+            {localPreviewUrl && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-sm text-textMuted mb-3">Local Preview (Port 3000)</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={localPreviewUrl}
+                    readOnly
+                    className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-textPrimary text-xs font-mono truncate"
+                  />
+                  <button
+                    onClick={() => window.open(localPreviewUrl, '_blank')}
+                    className="px-4 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors whitespace-nowrap"
+                  >
+                    Open Preview
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Social Share */}
           <div className="mb-10 animate-slide-up stagger-3">
-            <p className="text-sm text-textMuted mb-4">Share on social media</p>
+            <p className="text-sm text-textMuted mb-4">{t('shareOnSocialMedia')}</p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => handleShare('twitter')}
@@ -110,27 +132,25 @@ function ShareLink({ blog, onRestart }) {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up stagger-4">
             <button
               onClick={onRestart}
               className="px-8 py-3 border border-border text-textSecondary font-medium rounded-full hover:border-borderLight hover:text-textPrimary transition-all duration-200"
             >
-              Create another page
+              {t('createAnotherPage')}
             </button>
             <Link
               to="/orders"
               className="px-8 py-3 bg-surface border border-border text-textPrimary font-medium rounded-full hover:border-borderLight transition-all duration-200"
             >
-              View My Orders
+              {t('viewMyOrders')}
             </Link>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-8 text-center">
-        <p className="text-textMuted text-sm">© 2024 Vibe Onepage. Create your online presence.</p>
+        <p className="text-textMuted text-sm">{t('createYourOnlinePresence')}</p>
       </footer>
     </div>
   )

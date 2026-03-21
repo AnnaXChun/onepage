@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Preview - Vibe</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #09090b; color: #fafafa; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="app">Loading...</div>
+
+  <script>
+    // Get params from URL
+    const params = new URLSearchParams(window.location.search);
+    const templateId = params.get('template') || 'minimal-simple';
+    const userImage = params.get('image') || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=800&fit=crop';
+    const userName = params.get('name') || 'Your Name';
+    const userBio = params.get('bio') || 'Welcome to my personal blog';
+    const blogContent = params.get('content') || 'Your blog content will appear here...';
+
+    // Template configurations
+    const templates = {
+      'minimal-simple': {
+        name: 'Minimal',
+        color: 'from-zinc-700 to-zinc-900',
+        render: () => `
+          <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 60px; min-height: 100vh; align-items: center;">
+            <div style="text-align: center; padding: 40px;">
+              <img src="${userImage}" alt="Profile" style="width: 200px; height: 200px; object-fit: cover; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+              <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #fafafa, #a1a1aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${userName}</h1>
+              <p style="color: #a1a1aa; font-size: 1.1rem; line-height: 1.6;">${userBio}</p>
+            </div>
+            <div style="padding: 40px;">
+              <div style="font-size: 1.1rem; line-height: 1.8; color: #d4d4d8; white-space: pre-wrap;">${blogContent}</div>
+            </div>
+          </div>
+        `
+      },
+      'gallery-display': {
+        name: 'Gallery',
+        color: 'from-purple-700 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: linear-gradient(135deg, #18181b 0%, #27272a 100%);">
+            <div style="height: 60vh; position: relative; overflow: hidden;">
+              <img src="${userImage}" alt="Cover" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="position: absolute; inset: 0; background: linear-gradient(to top, #18181b 0%, transparent 50%);"></div>
+            </div>
+            <div style="max-width: 900px; margin: -100px auto 0; padding: 0 40px 60px; position: relative; z-index: 10;">
+              <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 30px; background: linear-gradient(135deg, #fafafa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${userName}</h1>
+              <p style="color: #a1a1aa; font-size: 1.2rem; margin-bottom: 40px; line-height: 1.8;">${userBio}</p>
+              <div style="border-l-4 border-purple-600 pl-6; font-size: 1.1rem; line-height: 1.8; color: #d4d4d8; white-space: pre-wrap;">${blogContent}</div>
+            </div>
+          </div>
+        `
+      },
+      'vintage-style': {
+        name: 'Vintage',
+        color: 'from-amber-700 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: #1c1917; padding: 60px 20px;">
+            <div style="max-width: 800px; margin: 0 auto;">
+              <div style="text-align: center; margin-bottom: 60px;">
+                <img src="${userImage}" alt="Profile" style="width: 180px; height: 180px; object-fit: cover; border-radius: 50%; border: 6px solid #78350f; margin-bottom: 24px;">
+                <h1 style="font-size: 2.5rem; font-weight: 700; color: #fef3c7; margin-bottom: 12px; font-family: Georgia, serif;">${userName}</h1>
+                <p style="color: #d97706; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase;">${userBio}</p>
+              </div>
+              <div style="background: #292524; border-radius: 12px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+                <div style="font-size: 1.1rem; line-height: 1.9; color: #d6d3d1; font-family: Georgia, serif; white-space: pre-wrap;">${blogContent}</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'ultra-minimal': {
+        name: 'Ultra',
+        color: 'from-slate-700 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 20px; background: #09090b;">
+            <img src="${userImage}" alt="Profile" style="width: 300px; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 48px;">
+            <h1 style="font-size: 4rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -2px;">${userName}</h1>
+            <p style="color: #71717a; font-size: 1.2rem; margin-bottom: 48px; max-width: 500px; text-align: center; line-height: 1.6;">${userBio}</p>
+            <div style="max-width: 600px; text-align: center; color: #a1a1aa; font-size: 1rem; line-height: 1.8; white-space: pre-wrap;">${blogContent}</div>
+          </div>
+        `
+      },
+      'creative-card': {
+        name: 'Creative',
+        color: 'from-blue-700 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: #0c0c0f; padding: 60px 20px;">
+            <div style="max-width: 1200px; margin: 0 auto;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 60px;">
+                <div style="background: #18181b; border-radius: 24px; overflow: hidden; border: 1px solid #27272a;">
+                  <img src="${userImage}" alt="Profile" style="width: 100%; aspect-ratio: 1; object-fit: cover;">
+                </div>
+                <div style="background: #18181b; border-radius: 24px; padding: 40px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #27272a;">
+                  <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #fafafa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${userName}</h1>
+                  <p style="color: #60a5fa; font-size: 1.1rem; line-height: 1.6;">${userBio}</p>
+                </div>
+              </div>
+              <div style="background: #18181b; border-radius: 24px; padding: 40px; border: 1px solid #27272a;">
+                <div style="font-size: 1.1rem; line-height: 1.8; color: #d4d4d8; white-space: pre-wrap;">${blogContent}</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'paper-fold': {
+        name: 'Paper',
+        color: 'from-amber-600 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 60px 20px;">
+            <div style="max-width: 900px; margin: 0 auto;">
+              <div style="position: relative; background: #fafaf9; border-radius: 4px; padding: 60px; box-shadow: 0 40px 80px rgba(0,0,0,0.4); transform: perspective(1000px) rotateX(2deg);">
+                <div style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: linear-gradient(135deg, transparent 50%, #e7e5e4 50%); border-radius: 0 4px 0 0;"></div>
+                <h1 style="font-size: 2.5rem; font-weight: 700; color: #1c1917; margin-bottom: 24px; font-family: Georgia, serif;">${userName}</h1>
+                <p style="color: #78716c; font-size: 1rem; margin-bottom: 32px; font-style: italic;">${userBio}</p>
+                <div style="color: #44403c; font-size: 1.1rem; line-height: 1.9; font-family: Georgia, serif; white-space: pre-wrap;">${blogContent}</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'retro-wave': {
+        name: 'Retro',
+        color: 'from-pink-600 to-purple-900',
+        render: () => `
+          <div style="min-height: 100vh; background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 100%); padding: 60px 20px; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 20%; left: 10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%); filter: blur(40px);"></div>
+            <div style="position: absolute; bottom: 20%; right: 10%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%); filter: blur(40px);"></div>
+            <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 10;">
+              <div style="text-align: center; margin-bottom: 60px;">
+                <img src="${userImage}" alt="Profile" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 4px solid #ec4899; box-shadow: 0 0 40px rgba(236,72,153,0.5); margin-bottom: 30px;">
+                <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #f472b6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 40px rgba(236,72,153,0.5);">${userName}</h1>
+                <p style="color: #c084fc; font-size: 1.1rem;">${userBio}</p>
+              </div>
+              <div style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); border-radius: 20px; padding: 40px; backdrop-filter: blur(10px);">
+                <div style="font-size: 1.1rem; line-height: 1.8; color: #e9d5ff; white-space: pre-wrap;">${blogContent}</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'glass-morphism': {
+        name: 'Glass',
+        color: 'from-blue-500 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: linear-gradient(135deg, #0c1914 0%, #1e293b 100%); padding: 60px 20px; position: relative;">
+            <div style="position: absolute; inset: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"none\" stroke=\"rgba(59,130,246,0.1)\" stroke-width=\"0.5\"/></svg>'); opacity: 0.5;"></div>
+            <div style="max-width: 1000px; margin: 0 auto; position: relative; z-index: 10;">
+              <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 60px; backdrop-filter: blur(20px);">
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 60px; align-items: center;">
+                  <div style="text-align: center;">
+                    <img src="${userImage}" alt="Profile" style="width: 220px; height: 220px; object-fit: cover; border-radius: 24px; margin-bottom: 24px; border: 3px solid rgba(255,255,255,0.2);">
+                    <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 12px;">${userName}</h1>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 1rem;">${userBio}</p>
+                  </div>
+                  <div style="color: rgba(255,255,255,0.85); font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;">${blogContent}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'neon-pulse': {
+        name: 'Neon',
+        color: 'from-violet-600 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: #0a0a0f; padding: 60px 20px; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 600px; height: 2px; background: linear-gradient(90deg, transparent, #8b5cf6, transparent); box-shadow: 0 0 20px #8b5cf6;"></div>
+            <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 400px; height: 1px; background: linear-gradient(90deg, transparent, #a855f7, transparent);"></div>
+            <div style="max-width: 900px; margin: 0 auto; position: relative; z-index: 10;">
+              <div style="text-align: center; margin-bottom: 60px;">
+                <img src="${userImage}" alt="Profile" style="width: 180px; height: 180px; object-fit: cover; border-radius: 50%; border: 3px solid #8b5cf6; box-shadow: 0 0 60px rgba(139,92,246,0.5); margin-bottom: 30px;">
+                <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 16px; color: #fafafa; text-shadow: 0 0 30px rgba(139,92,246,0.8);">${userName}</h1>
+                <p style="color: #a78bfa; font-size: 1.1rem; text-shadow: 0 0 20px rgba(139,92,246,0.5);">${userBio}</p>
+              </div>
+              <div style="border: 1px solid #4c1d95; border-radius: 20px; padding: 40px; background: rgba(76,29,149,0.2); box-shadow: 0 0 40px rgba(139,92,246,0.2);">
+                <div style="font-size: 1.1rem; line-height: 1.8; color: #e9d5ff; white-space: pre-wrap;">${blogContent}</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      'zen-minimal': {
+        name: 'Zen',
+        color: 'from-emerald-600 to-zinc-900',
+        render: () => `
+          <div style="min-height: 100vh; background: #052e16; padding: 60px 20px; display: flex; align-items: center; justify-content: center;">
+            <div style="max-width: 800px; text-align: center;">
+              <img src="${userImage}" alt="Profile" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; margin-bottom: 40px; border: 4px solid #059669;">
+              <h1 style="font-size: 2.5rem; font-weight: 300; margin-bottom: 20px; color: #ecfdf5; letter-spacing: 4px;">${userName}</h1>
+              <p style="color: #10b981; font-size: 1rem; margin-bottom: 48px; letter-spacing: 2px;">${userBio}</p>
+              <div style="color: #a7f3d0; font-size: 1rem; line-height: 2; opacity: 0.8; white-space: pre-wrap;">${blogContent}</div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // Render the template
+    const template = templates[templateId];
+    if (template) {
+      document.getElementById('app').innerHTML = template.render();
+    } else {
+      document.getElementById('app').innerHTML = templates['minimal-simple'].render();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{USER_NAME}} - 博客</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="synthwave-bg">
+        <div class="sun"></div>
+        <div class="grid"></div>
+        <div class="mountains"></div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <div class="profile-wrapper">
+                <div class="glow-line top"></div>
+                <div class="profile-box">
+                    <div class="avatar-container">
+                        <img src="{{USER_IMAGE}}" alt="{{USER_NAME}}" class="avatar">
+                    </div>
+                    <div class="text-content">
+                        <h1 class="name">{{USER_NAME}}</h1>
+                        <p class="bio">{{USER_BIO}}</p>
+                    </div>
+                    <div class="retro-badge">
+                        <span>EST. 2024</span>
+                    </div>
+                </div>
+                <div class="glow-line bottom"></div>
+            </div>
+        </header>
+
+        <main class="content">
+            {{BLOG_CONTENT}}
+        </main>
+
+        <footer class="footer">
+            <div class="footer-glow">
+                <span>THANKS FOR VISITING</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

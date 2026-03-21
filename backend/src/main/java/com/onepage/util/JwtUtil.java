@@ -48,6 +48,9 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
         Claims claims = parseToken(token);
         return claims.get("userId", Long.class);
     }

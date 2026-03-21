@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from '../../i18n'
 import { getOrderList, getOrderDetail } from '../../services/api'
 
 function Orders() {
+  const { t } = useTranslation()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -15,7 +17,7 @@ function Orders() {
     try {
       setLoading(true)
       const result = await getOrderList()
-      if (result.success) {
+      if (result.code === 200) {
         setOrders(result.data || [])
       } else {
         setError(result.message)
@@ -30,7 +32,7 @@ function Orders() {
   const viewOrderDetail = async (orderNo) => {
     try {
       const result = await getOrderDetail(orderNo)
-      if (result.success) {
+      if (result.code === 200) {
         setSelectedOrder(result.data)
       }
     } catch (err) {
@@ -60,10 +62,9 @@ function Orders() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-zinc-800">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">My Orders</h1>
+          <h1 className="text-lg font-semibold">{t('myOrders')}</h1>
           <button
             onClick={loadOrders}
             className="text-gray-400 hover:text-white transition-colors"
@@ -76,7 +77,6 @@ function Orders() {
       </header>
 
       <main className="pt-24 pb-12 px-6">
-        {/* Loading state */}
         {loading && (
           <div className="flex items-center justify-center py-20">
             <svg className="animate-spin w-8 h-8 text-gray-400" viewBox="0 0 24 24">
@@ -86,14 +86,12 @@ function Orders() {
           </div>
         )}
 
-        {/* Error state */}
         {error && !loading && (
           <div className="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-6">
             {error}
           </div>
         )}
 
-        {/* Empty state */}
         {!loading && !error && orders.length === 0 && (
           <div className="text-center py-20">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-800 flex items-center justify-center">
@@ -101,12 +99,11 @@ function Orders() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">No orders yet</h3>
-            <p className="text-gray-500">Your purchase history will appear here</p>
+            <h3 className="text-xl font-semibold mb-2">{t('noOrdersYet')}</h3>
+            <p className="text-gray-500">{t('yourPurchaseHistory')}</p>
           </div>
         )}
 
-        {/* Order list */}
         {!loading && orders.length > 0 && (
           <div className="space-y-4">
             {orders.map((order) => (
@@ -134,7 +131,7 @@ function Orders() {
 
                 {order.expireTime && order.status === 'PENDING' && (
                   <div className="mt-3 pt-3 border-t border-zinc-800 text-sm">
-                    <span className="text-gray-500">Expires: </span>
+                    <span className="text-gray-500">{t('expiresIn')}: </span>
                     <span className="text-orange-400">{formatDate(order.expireTime)}</span>
                   </div>
                 )}
@@ -143,7 +140,6 @@ function Orders() {
           </div>
         )}
 
-        {/* Order detail modal */}
         {selectedOrder && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <div
@@ -160,51 +156,51 @@ function Orders() {
                 </svg>
               </button>
 
-              <h2 className="text-2xl font-bold mb-6">Order Details</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('orderDetailsTitle')}</h2>
 
               <div className="space-y-4">
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Order No</span>
+                  <span className="text-gray-400">{t('orderNo')}</span>
                   <span className="font-mono text-sm">{selectedOrder.orderNo}</span>
                 </div>
 
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Template</span>
+                  <span className="text-gray-400">{t('template')}</span>
                   <span>{selectedOrder.templateName}</span>
                 </div>
 
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Amount</span>
+                  <span className="text-gray-400">{t('amount')}</span>
                   <span className="font-semibold">${selectedOrder.amount}</span>
                 </div>
 
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Status</span>
+                  <span className="text-gray-400">{t('status')}</span>
                   <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(selectedOrder.status)}`}>
                     {selectedOrder.statusText}
                   </span>
                 </div>
 
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Payment Method</span>
+                  <span className="text-gray-400">{t('paymentMethod')}</span>
                   <span className="capitalize">{selectedOrder.paymentMethod}</span>
                 </div>
 
                 <div className="flex justify-between py-3 border-b border-zinc-800">
-                  <span className="text-gray-400">Created</span>
+                  <span className="text-gray-400">{t('created')}</span>
                   <span>{formatDate(selectedOrder.createTime)}</span>
                 </div>
 
                 {selectedOrder.payTime && (
                   <div className="flex justify-between py-3 border-b border-zinc-800">
-                    <span className="text-gray-400">Paid At</span>
+                    <span className="text-gray-400">{t('paidAt')}</span>
                     <span>{formatDate(selectedOrder.payTime)}</span>
                   </div>
                 )}
 
                 {selectedOrder.tradeNo && (
                   <div className="py-3">
-                    <span className="text-gray-400 block mb-1">Trade No</span>
+                    <span className="text-gray-400 block mb-1">{t('tradeNo')}</span>
                     <span className="font-mono text-sm text-gray-500">{selectedOrder.tradeNo}</span>
                   </div>
                 )}

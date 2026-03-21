@@ -7,32 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Base colors - OKLCH with purple tint
-        background: 'oklch(12% 0.02 280)',
-        surface: 'oklch(18% 0.02 280)',
-        surfaceElevated: 'oklch(22% 0.02 280)',
+        // CSS variable references - defined in global.css :root
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        'surface-elevated': 'var(--color-surface-elevated)',
 
         // Text colors
-        textPrimary: 'oklch(95% 0.01 280)',
-        textSecondary: 'oklch(75% 0.02 280)',
-        textMuted: 'oklch(55% 0.02 280)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-muted': 'var(--color-text-muted)',
 
         // Primary - Purple
-        primary: 'oklch(65% 0.18 280)',
-        primaryHover: 'oklch(70% 0.2 280)',
-        primaryLight: 'oklch(80% 0.15 280)',
+        primary: 'var(--color-primary)',
+        primaryhover: 'var(--color-primary-hover)',
+        'primary-light': 'var(--color-primary-light)',
 
         // Accent - Blue-Purple
-        accent: 'oklch(75% 0.15 200)',
-        accentHover: 'oklch(80% 0.18 200)',
+        accent: 'var(--color-accent)',
+        accenthover: 'var(--color-accent-hover)',
 
         // Border
-        border: 'oklch(30% 0.02 280)',
-        borderLight: 'oklch(40% 0.02 280)',
+        border: 'var(--color-border)',
+        'border-light': 'var(--color-border-light)',
 
         // Semantic
-        success: 'oklch(70% 0.15 150)',
-        error: 'oklch(65% 0.18 20)',
+        success: 'var(--color-success)',
+        error: 'var(--color-error)',
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],

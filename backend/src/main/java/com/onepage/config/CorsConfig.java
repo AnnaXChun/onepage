@@ -6,6 +6,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.List;
+
+/**
+ * Legacy CORS configuration - kept for backward compatibility.
+ * SecurityConfig now handles CORS via CorsConfigurationSource bean.
+ * This config is deprecated and will be removed in a future version.
+ */
+@Deprecated
 @Configuration
 public class CorsConfig {
 
@@ -13,7 +21,7 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setMaxAge(3600L);

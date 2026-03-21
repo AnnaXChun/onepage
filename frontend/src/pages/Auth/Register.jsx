@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from '../../i18n'
 import { register } from '../../services/api'
 
 function Register() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ username: '', password: '', confirmPassword: '', email: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem('token')
     const user = localStorage.getItem('user')
@@ -26,12 +27,12 @@ function Register() {
     setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('passwordsDoNotMatch'))
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError(t('passwordTooShort'))
       return
     }
 
@@ -45,18 +46,15 @@ function Register() {
       })
       if (response.code === 200 && response.data?.token) {
         localStorage.setItem('token', response.data.token)
-        // Store user info from form data since backend doesn't return user object
         const userInfo = { username: formData.username, email: formData.email }
         localStorage.setItem('user', JSON.stringify(userInfo))
-        // Use navigate for client-side routing
         navigate('/')
-        // Force re-render by dispatching a custom event
         window.dispatchEvent(new Event('user-auth-change'))
       } else {
-        setError(response.message || 'Registration failed')
+        setError(response.message || t('registrationFailed'))
       }
     } catch (err) {
-      setError('注册失败，用户名可能已存在')
+      setError(t('userMayExist'))
     } finally {
       setLoading(false)
     }
@@ -64,13 +62,11 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-background text-textPrimary flex flex-col">
-      {/* Background blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1.5s' }} />
       </div>
 
-      {/* Header */}
       <header className="relative z-10 px-8 py-6">
         <Link to="/" className="flex items-center gap-3 max-w-6xl mx-auto">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -82,13 +78,12 @@ function Register() {
         </Link>
       </header>
 
-      {/* Content */}
       <main className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-md">
           <div className="bg-surface rounded-3xl p-8 border border-border">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold mb-2">Create account</h1>
-              <p className="text-textSecondary">Start creating your page today</p>
+              <h1 className="text-2xl font-bold mb-2">{t('createAccount')}</h1>
+              <p className="text-textSecondary">{t('startCreatingToday')}</p>
             </div>
 
             {error && (
@@ -99,7 +94,7 @@ function Register() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Username</label>
+                <label className="block text-sm font-medium text-textSecondary mb-2">{t('username')}</label>
                 <input
                   type="text"
                   name="username"
@@ -108,12 +103,12 @@ function Register() {
                   required
                   minLength={3}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Choose a username"
+                  placeholder={t('enterYourUsername')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Email</label>
+                <label className="block text-sm font-medium text-textSecondary mb-2">{t('email')}</label>
                 <input
                   type="email"
                   name="email"
@@ -121,12 +116,12 @@ function Register() {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Enter your email"
+                  placeholder={t('enterYourEmail')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Password</label>
+                <label className="block text-sm font-medium text-textSecondary mb-2">{t('password')}</label>
                 <input
                   type="password"
                   name="password"
@@ -135,12 +130,12 @@ function Register() {
                   required
                   minLength={6}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Create a password"
+                  placeholder={t('enterYourPassword')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-textSecondary mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-textSecondary mb-2">{t('confirmPassword')}</label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -149,7 +144,7 @@ function Register() {
                   required
                   minLength={6}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Confirm your password"
+                  placeholder={t('confirmYourPassword')}
                 />
               </div>
 
@@ -158,15 +153,15 @@ function Register() {
                 disabled={loading}
                 className="w-full py-4 bg-textPrimary text-background font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
               >
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? t('creatingAccount') : t('createAccountButton')}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-textSecondary text-sm">
-                Already have an account?{' '}
+                {t('alreadyHaveAccount')}{' '}
                 <Link to="/login" className="text-primary hover:underline">
-                  Sign in
+                  {t('signInLink')}
                 </Link>
               </p>
             </div>
@@ -174,9 +169,8 @@ function Register() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-8 text-center">
-        <p className="text-textMuted text-sm">© 2024 Vibe Onepage. All rights reserved.</p>
+        <p className="text-textMuted text-sm">© 2024 Vibe Onepage. {t('allRightsReserved')}</p>
       </footer>
     </div>
   )

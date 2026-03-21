@@ -43,7 +43,7 @@ public class PaymentService extends ServiceImpl<OrderMapper, Order> {
      * 创建订单
      */
     @Transactional
-    public Order createOrder(Long userId, String paymentMethod, BigDecimal amount, Long templateId, String templateName) {
+    public Order createOrder(Long userId, String paymentMethod, BigDecimal amount, String templateId, String templateName) {
         Order order = new Order();
         order.setOrderNo(generateOrderNo());
         order.setUserId(userId);

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{USER_NAME}} - 图片画廊</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <h1 class="title">{{USER_NAME}}</h1>
+        <p class="subtitle">{{USER_BIO}}</p>
+    </header>
+
+    <div class="hero-image">
+        <img src="{{USER_IMAGE}}" alt="{{USER_NAME}}">
+    </div>
+
+    <main class="gallery">
+        {{BLOG_CONTENT}}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 {{USER_NAME}}. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

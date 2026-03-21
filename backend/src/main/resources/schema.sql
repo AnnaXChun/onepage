@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `order_no` VARCHAR(50) NOT NULL UNIQUE,
     `user_id` BIGINT NOT NULL,
-    `template_id` BIGINT,
+    `template_id` VARCHAR(50),
     `template_name` VARCHAR(100),
     `payment_method` VARCHAR(20) COMMENT 'wechat:微信 alipay:支付宝',
     `trade_no` VARCHAR(100),

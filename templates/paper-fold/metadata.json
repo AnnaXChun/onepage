@@ -1,0 +1,10 @@
+{
+    "name": "paper-fold",
+    "displayName": "折纸艺术",
+    "description": "折纸艺术风格，模拟真实纸张质感与折叠效果，适合手工艺爱好者、设计师和创意人士",
+    "category": "creative",
+    "tags": ["paper", "craft", "artistic", "clean", "handmade"],
+    "author": "Vibe Team",
+    "version": "1.0.0",
+    "price": 19.9
+}
