@@ -18,9 +18,16 @@ public class RabbitMQConfig {
     public static final String BLOG_GENERATE_EXCHANGE = "blog.generate.exchange";
     public static final String BLOG_GENERATE_ROUTING_KEY = "blog.generate";
 
+    public static final String PDF_JOB_QUEUE = "pdf.job.queue";
+
     @Bean
     public Queue blogGenerateQueue() {
         return new Queue(BLOG_GENERATE_QUEUE, true);
+    }
+
+    @Bean
+    public Queue pdfJobQueue() {
+        return new Queue(PDF_JOB_QUEUE, true);
     }
 
     @Bean
