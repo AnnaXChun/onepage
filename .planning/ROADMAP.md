@@ -74,7 +74,10 @@
   2. Credit deduction for paid operations is atomic; concurrent requests do not cause race conditions (Redis distributed lock verified)
   3. User can purchase credits via WeChat Pay top-up and balance updates immediately after payment
 
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 07-01-PLAN.md - Credit Balance Display (CRD-01)
+- [ ] 07-02-PLAN.md - Atomic Credit Deduction (CRD-02)
+- [ ] 07-03-PLAN.md - WeChat Pay Top-up (CRD-03)
 
 ### Phase 8: PDF Export
 
@@ -129,11 +132,11 @@
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
-| 7. Credit System | 0/TBD | Not started | - |
+| 7. Credit System | 0/3 | Not started | - |
 | 8. PDF Export | 0/TBD | Not started | - |
 | 9. Platform Hosting | 0/TBD | Not started | - |
 | 10. Payments & VIP | 0/TBD | Not started | - |
 
 ---
 
-*Last updated: 2026-03-21 after Phase 6 planning*
+*Last updated: 2026-03-21 after Phase 7 planning*
