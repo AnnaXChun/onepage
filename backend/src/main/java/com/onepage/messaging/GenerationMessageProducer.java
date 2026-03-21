@@ -22,9 +22,26 @@ public class GenerationMessageProducer {
         );
     }
 
+    public void sendRegenerateRequest(Long blogId, Integer blockIndex, com.onepage.dto.GenerationRequest request) {
+        log.info("Sending regenerate request to queue for blogId: {}, blockIndex: {}", blogId, blockIndex);
+        rabbitTemplate.convertAndSend(
+            "blog.generate.exchange",
+            "blog.generate",
+            new RegenerateMessage(blogId, blockIndex, request.getDescription(), request.getColorPalette(), request.getDominantColor())
+        );
+    }
+
     public record GenerationMessage(
         Long blogId,
         String imageUrl,
+        String description,
+        String[] colorPalette,
+        String dominantColor
+    ) {}
+
+    public record RegenerateMessage(
+        Long blogId,
+        Integer blockIndex,
         String description,
         String[] colorPalette,
         String dominantColor

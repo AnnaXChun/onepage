@@ -38,5 +38,15 @@ public class AIGenerationController {
         return ResponseEntity.ok(new GenerationResponse(jobId, "PROCESSING"));
     }
 
+    @PostMapping("/regenerate/{blogId}/{blockIndex}")
+    public ResponseEntity<?> regenerateBlock(
+            @PathVariable Long blogId,
+            @PathVariable Integer blockIndex,
+            @RequestBody GenerationRequest request) {
+        // Queue single block regeneration via RabbitMQ
+        messageProducer.sendRegenerateRequest(blogId, blockIndex, request);
+        return ResponseEntity.accepted().body(new GenerationResponse(blogId, "QUEUED"));
+    }
+
     public record GenerationResponse(Long jobId, String status) {}
 }
