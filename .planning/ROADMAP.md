@@ -57,7 +57,9 @@
   8. Right sidebar shows block configuration panel when a block is selected
   9. Block settings (alignment, colors, visibility) persist to backend and reload correctly
 
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 06-01-PLAN.md - AI Generation Pipeline (GEN-01~05, WRT-01~03)
+- [ ] 06-02-PLAN.md - Editor Polish & Block Config (EDI-01~02)
 
 ### Phase 7: Credit System
 
@@ -126,7 +128,7 @@
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. AI Generation & Editor Polish | 0/TBD | Not started | - |
+| 6. AI Generation & Editor Polish | 2/TBD | In progress | - |
 | 7. Credit System | 0/TBD | Not started | - |
 | 8. PDF Export | 0/TBD | Not started | - |
 | 9. Platform Hosting | 0/TBD | Not started | - |
@@ -134,4 +136,4 @@
 
 ---
 
-*Last updated: 2026-03-21 after v1.1 roadmap creation*
+*Last updated: 2026-03-21 after Phase 6 planning*
