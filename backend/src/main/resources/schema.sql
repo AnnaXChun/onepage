@@ -82,6 +82,23 @@ CREATE TABLE IF NOT EXISTS `user_credits` (
     INDEX `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- PDF jobs table for tracking PDF generation
+CREATE TABLE IF NOT EXISTS `pdf_jobs` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `job_id` VARCHAR(50) NOT NULL UNIQUE,
+    `user_id` BIGINT NOT NULL,
+    `blog_id` BIGINT NOT NULL,
+    `job_type` TINYINT NOT NULL COMMENT '1:preview 2:export',
+    `status` TINYINT DEFAULT 0 COMMENT '0:pending 1:completed 2:failed',
+    `file_path` VARCHAR(255),
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `completed_at` DATETIME,
+    `expires_at` DATETIME,
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_job_id` (`job_id`),
+    INDEX `idx_expires_at` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert default templates
 INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) VALUES
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
