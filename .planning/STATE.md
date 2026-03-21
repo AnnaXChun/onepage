@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Completion
 status: unknown
-last_updated: "2026-03-21T14:28:42.347Z"
+last_updated: "2026-03-21T14:29:04.201Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Vibe Onepage - Project State
@@ -21,11 +21,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.1 — Phase 6 complete
+**Current Milestone:** v1.1 — Phase 8 complete
 
 ## Current Position
 
-Phase: 08 (pdf-export) — EXECUTING
+Phase: 08 (pdf-export) — COMPLETED
 Plan: 2 of 2
 
 ## Next Steps
@@ -44,6 +44,7 @@ Run `/gsd:plan-phase 7` to plan Phase 7.
 ### Decisions Made (v1.1)
 
 - **07-credit-system**: Reused existing UserCreditsService.getCredits() method for credits balance endpoint
+- **08-pdf-export-01**: Credit deduction happens BEFORE PDF generation in consumer; atomic deduction at controller level before job queuing; ownership validation on download/preview endpoints
 
 ### v1.1 Phase Dependencies
 
