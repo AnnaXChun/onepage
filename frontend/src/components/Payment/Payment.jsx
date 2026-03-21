@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from '../../i18n'
-import { createOrder, getPaymentQRCode, queryPaymentStatus, getOrderDetail } from '../../services/api'
+import { createOrder, getPaymentQRCode, queryPaymentStatus, getOrderDetail, getUserInfo } from '../../services/api'
 
 function Payment({ template, onSuccess, onBack }) {
   const { t } = useTranslation()
@@ -73,6 +73,17 @@ function Payment({ template, onSuccess, onBack }) {
             const detailResult = await getOrderDetail(orderNo)
             if (detailResult.code === 200) {
               setOrderDetail(detailResult.data)
+            }
+            // Refresh user context so VIP status and credits balance are updated
+            try {
+              const userInfoResult = await getUserInfo()
+              if (userInfoResult.code === 200 && userInfoResult.data) {
+                // Update localStorage with fresh user data
+                localStorage.setItem('user', JSON.stringify(userInfoResult.data))
+                window.dispatchEvent(new Event('user-auth-change'))
+              }
+            } catch (err) {
+              console.error('Failed to refresh user context:', err)
             }
             setTimeout(() => onSuccess(), 1500)
           } else if (status === 'EXPIRED' || status === 'CANCELLED' || status === 'FAILED') {
