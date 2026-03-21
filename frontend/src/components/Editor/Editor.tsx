@@ -67,7 +67,7 @@ export default function Editor({ blogId, initialBlocks }: EditorProps) {
         </div>
 
         {/* Right sidebar - block config */}
-        <BlockConfigPanel />
+        <BlockConfigPanel blogId={blogId} />
       </div>
     </div>
   );

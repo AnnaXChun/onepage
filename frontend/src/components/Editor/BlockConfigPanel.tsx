@@ -1,11 +1,34 @@
 import { useEditorStore } from '../../stores/editorStore';
+import api from '../../services/api';
 
-export default function BlockConfigPanel() {
+interface BlockConfigPanelProps {
+  blogId?: string;
+}
+
+export default function BlockConfigPanel({ blogId }: BlockConfigPanelProps) {
   const { blocks, selectedBlockId, updateBlock, selectBlock } = useEditorStore();
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
 
   const handleClose = () => {
     selectBlock(null);
+  };
+
+  const handleConfigChange = async (key: string, value: unknown) => {
+    const newConfig = { ...selectedBlock.config, [key]: value };
+    updateBlock(selectedBlock.id, {
+      config: newConfig,
+    });
+
+    // Persist to backend
+    if (blogId) {
+      try {
+        await api.put(`/blog/${blogId}/blocks/${selectedBlock.id}/config`, {
+          [key]: value,
+        });
+      } catch (error) {
+        console.error('Failed to persist config:', error);
+      }
+    }
   };
 
   if (!selectedBlock) {
@@ -15,12 +38,6 @@ export default function BlockConfigPanel() {
       </div>
     );
   }
-
-  const handleConfigChange = (key: string, value: unknown) => {
-    updateBlock(selectedBlock.id, {
-      config: { ...selectedBlock.config, [key]: value },
-    });
-  };
 
   return (
     <div className="w-72 border-l border-border p-4 bg-surface overflow-y-auto">
@@ -118,9 +135,67 @@ export default function BlockConfigPanel() {
         </div>
       )}
 
+      {/* Common settings for all block types - visibility, colors */}
+      <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-700 pt-4 mt-4">
+        {/* Visibility toggle for all block types */}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={selectedBlock.config?.visible !== false}
+            onChange={(e) => handleConfigChange('visible', e.target.checked)}
+            className="rounded border-border bg-surface-elevated text-primary focus:ring-primary"
+          />
+          <span className="text-sm text-text-primary">Visible</span>
+        </label>
+
+        {/* Background color */}
+        <div className="space-y-2">
+          <label className="block">
+            <span className="text-sm text-text-secondary block mb-1">Background Color</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={selectedBlock.config?.backgroundColor || '#ffffff'}
+                onChange={(e) => handleConfigChange('backgroundColor', e.target.value)}
+                className="w-8 h-8 rounded border border-border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={selectedBlock.config?.backgroundColor || '#ffffff'}
+                onChange={(e) => handleConfigChange('backgroundColor', e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface-elevated text-text-primary text-sm"
+                placeholder="#ffffff"
+              />
+            </div>
+          </label>
+        </div>
+
+        {/* Text color */}
+        <div className="space-y-2">
+          <label className="block">
+            <span className="text-sm text-text-secondary block mb-1">Text Color</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={selectedBlock.config?.textColor || '#000000'}
+                onChange={(e) => handleConfigChange('textColor', e.target.value)}
+                className="w-8 h-8 rounded border border-border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={selectedBlock.config?.textColor || '#000000'}
+                onChange={(e) => handleConfigChange('textColor', e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface-elevated text-text-primary text-sm"
+                placeholder="#000000"
+              />
+            </div>
+          </label>
+        </div>
+      </div>
+
       {/* Text container settings */}
       {selectedBlock.type === 'text-container' && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <p className="text-sm text-text-muted">
             Text container holds nested text blocks. Add blocks from the library below.
           </p>
@@ -129,7 +204,7 @@ export default function BlockConfigPanel() {
 
       {/* Divider style */}
       {selectedBlock.type === 'divider' && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <label className="block">
             <span className="text-sm text-text-secondary block mb-1">Style</span>
             <select
@@ -147,7 +222,7 @@ export default function BlockConfigPanel() {
 
       {/* Social links settings */}
       {selectedBlock.type === 'social-links' && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <p className="text-sm text-text-muted">
             Edit social links by clicking on the social links block directly.
           </p>
@@ -156,7 +231,7 @@ export default function BlockConfigPanel() {
 
       {/* Contact form settings */}
       {selectedBlock.type === 'contact-form' && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <p className="text-sm text-text-muted">
             Contact form settings coming soon.
           </p>
@@ -165,7 +240,7 @@ export default function BlockConfigPanel() {
 
       {/* List block settings */}
       {selectedBlock.type === 'text-list' && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <label className="block">
             <span className="text-sm text-text-secondary block mb-1">List Style</span>
             <select
