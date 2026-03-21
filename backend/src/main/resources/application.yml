@@ -88,6 +88,11 @@ minimax:
 credit:
   packages: '[{"credits":10,"price":10.00,"name":"10 Credits"},{"credits":50,"price":45.00,"name":"50 Credits (10% off)"},{"credits":100,"price":80.00,"name":"100 Credits (20% off)"}]'
 
+hosting:
+  base-domain: ${HOSTING_BASE_DOMAIN:localhost:8080}
+  use-subdomain: ${HOSTING_USE_SUBDOMAIN:true}
+  environment: ${HOSTING_ENV:dev}
+
 logging:
   level:
     com.onepage: debug
