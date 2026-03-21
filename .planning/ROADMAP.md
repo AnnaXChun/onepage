@@ -31,7 +31,7 @@
 - [x] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel (completed 2026-03-21)
 - [x] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up (completed 2026-03-21)
 - [x] **Phase 8: PDF Export** - Two-phase PDF export with free preview and paid full export via credit deduction (completed 2026-03-21)
-- [ ] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
+- [x] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
 - [ ] **Phase 10: Payments & VIP** - WeChat Pay callback handling, VIP subscription, and template purchase
 
 ---
@@ -137,7 +137,7 @@
 | 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
 | 7. Credit System | 3/3 | Complete    | 2026-03-21 |
 | 8. PDF Export | 2/2 | Complete    | 2026-03-21 |
-| 9. Platform Hosting | 1/1 | Not started | - |
+| 9. Platform Hosting | 1/1 | Complete | 2026-03-21 |
 | 10. Payments & VIP | 0/TBD | Not started | - |
 
 ---
