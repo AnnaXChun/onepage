@@ -64,7 +64,11 @@ spring:
 
   ai:
     openai:
-      api-key: ${MINIMAX_API_KEY:dummy-key-for-startup}
+      api-key: ${MINIMAX_API_KEY:}
+      base-url: https://api.minimax.io/v1
+      chat:
+        options:
+          model: MiniMax-M2.7
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml

@@ -1,20 +1,48 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-21T13:04:31.101Z",
+  "timestamp": "2026-03-21T15:04:15.725Z",
   "milestone": "v1.1",
-  "phase": "06",
-  "phase_name": "AI Generation & Editor Polish",
-  "phase_dir": ".planning/phases/06-ai-generation-editor-polish",
-  "plan": null,
+  "phase": "09",
+  "phase_name": "platform-hosting",
+  "phase_dir": ".planning/phases/09-platform-hosting",
+  "plan": "09-01",
   "task": null,
-  "total_tasks": null,
+  "total_tasks": 7,
   "status": "paused",
   "completed_tasks": [],
   "remaining_tasks": [],
-  "blockers": [],
-  "human_actions_pending": [],
-  "decisions": [],
+  "blockers": [
+    {
+      "description": "Phase 9 verified complete but Phase 10 not yet planned",
+      "type": "planning",
+      "workaround": "None needed - this is a natural pause point"
+    },
+    {
+      "description": "Spring AI MiniMax API key needs to be set via MINIMAX_API_KEY environment variable",
+      "type": "external",
+      "workaround": "Set MINIMAX_API_KEY env var before starting backend"
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Set MINIMAX_API_KEY environment variable and start backend to test hosting",
+      "context": "Spring Boot app requires MINIMAX_API_KEY to start without errors",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Phase 9 subdomain hosting infrastructure built with SubdomainFilter, SiteController, SiteService",
+      "rationale": "Serve published blogs at /host/{username} endpoint",
+      "phase": "09"
+    },
+    {
+      "decision": "Spring AI uses spring.ai.openai.api-key config (not minimax.api.key)",
+      "rationale": "Spring AI 1.0.0-M6 autoconfiguration requires spring.ai.openai.api-key",
+      "phase": "09"
+    }
+  ],
   "uncommitted_files": [],
-  "next_action": "Run /gsd:plan-phase 6 to create PLAN.md files for Phase 6",
-  "context_notes": "Paused during plan-phase workflow for Phase 6. v1.1 milestone was just started. Phase 6 has requirements (GEN-01~05, WRT-01~03, EDI-01~02) and success criteria defined in ROADMAP.md but no plans yet. Need to create the phase directory .planning/phases/06-ai-generation-editor-polish/ and spawn gsd-planner to create PLAN.md files. Research was done for the entire milestone (STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md in .planning/research/). Phase 6 is blocked by context limit (~90%) at the moment of pause."
+  "next_action": "Run /gsd:plan-phase 10 to plan Phase 10 (Payments & VIP)",
+  "context_notes": "v1.1 milestone: Phases 6-9 complete. Phase 10 (Payments & VIP) is last phase. Compilation issues fixed (duplicate spring: key, Spring AI API compatibility, missing dependencies). Backend compiles and starts if MINIMAX_API_KEY is set."
 }
