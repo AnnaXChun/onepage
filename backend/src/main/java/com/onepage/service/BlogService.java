@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class BlogService extends ServiceImpl<BlogMapper, Blog> {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StaticSiteService staticSiteService;
 
     private static final String BLOG_CACHE_PREFIX = "blog:";
     private static final long CACHE_EXPIRE_HOURS = 24;
@@ -301,5 +302,74 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         redisTemplate.delete(BLOG_CACHE_PREFIX + id);
         cacheBlog(blog);
         log.info("Blog blocks updated: id={}", id);
+    }
+
+    /**
+     * Publish a blog - generates static HTML and sets status to published.
+     * HOST-01, HOST-03
+     */
+    public Blog publish(Long blogId, Long userId) {
+        if (blogId == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        Blog blog = this.getById(blogId);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to publish this blog");
+        }
+
+        // Generate static HTML from blocks
+        String staticHtml = staticSiteService.generateStaticHtml(
+            blog.getTitle(),
+            blog.getCoverImage(),
+            blog.getBlocks()
+        );
+
+        blog.setHtmlContent(staticHtml);
+        blog.setStatus(1); // published
+        blog.setPublishTime(LocalDateTime.now());
+        blog.setUpdateTime(LocalDateTime.now());
+        this.updateById(blog);
+
+        // Invalidate cache
+        redisTemplate.delete(BLOG_CACHE_PREFIX + blogId);
+        log.info("Blog published: id={}, shareCode={}", blogId, blog.getShareCode());
+        return blog;
+    }
+
+    /**
+     * Unpublish a blog - sets status to unpublished.
+     * HOST-05
+     */
+    public Blog unpublish(Long blogId, Long userId) {
+        if (blogId == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        Blog blog = this.getById(blogId);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to unpublish this blog");
+        }
+
+        blog.setStatus(2); // unpublished
+        blog.setUpdateTime(LocalDateTime.now());
+        this.updateById(blog);
+
+        // Invalidate cache
+        redisTemplate.delete(BLOG_CACHE_PREFIX + blogId);
+        log.info("Blog unpublished: id={}", blogId);
+        return blog;
     }
 }
