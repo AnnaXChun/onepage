@@ -2,14 +2,14 @@
 
 **Project:** Vibe Onepage - AI-Powered Single-Page Website Builder
 **Granularity:** Standard
-**Total v1 Requirements:** 52 (3 existing, 49 to build)
+**Total v1 Requirements:** 52 (31 existing, 21 v1.1 to build)
 
 ---
 
 ## Milestones
 
-- ✅ **v1.0 MVP** — Phases 1-5 (shipped 2026-03-21)
-- 🚧 **v1.1** — Next milestone (in planning)
+- [x] **v1.0 MVP** — Phases 1-5 (shipped 2026-03-21)
+- [ ] **v1.1 Completion** — Phases 6-10 (in progress)
 
 ---
 
@@ -26,24 +26,112 @@
 
 </details>
 
-### 🚧 v1.1 (In Planning)
+### 🚧 v1.1 Completion (In Progress)
 
-Phase 6 through Phase 9 to be defined in next milestone.
+- [ ] **Phase 6: AI Generation & Editor Polish** - Complete AI website generation pipeline with WebSocket progress, confidence scoring, preview/regeneration, AI writing assist, and block configuration panel
+- [ ] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up
+- [ ] **Phase 8: PDF Export** - Two-phase PDF export with free preview and paid full export via credit deduction
+- [ ] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
+- [ ] **Phase 10: Payments & VIP** - WeChat Pay callback handling, VIP subscription, and template purchase
 
 ---
 
-## v1.0 Progress
+## Phase Details
+
+### Phase 6: AI Generation & Editor Polish
+
+**Goal**: Users can generate website content from an image with AI and polish blocks with a configuration panel
+
+**Depends on**: Phase 5 (v1.0 MVP)
+
+**Requirements**: GEN-01, GEN-02, GEN-03, GEN-04, GEN-05, WRT-01, WRT-02, WRT-03, EDI-01, EDI-02
+
+**Success Criteria** (what must be TRUE):
+  1. User can upload one main image and enter a one-sentence description to trigger AI generation
+  2. AI pipeline runs asynchronously via RabbitMQ with WebSocket progress updates visible to user
+  3. Each generated block displays a confidence score; blocks with score below 0.7 are highlighted with amber ring
+  4. User sees preview of generated blocks and can accept all into editor or cancel
+  5. User can regenerate individual blocks or accept all blocks into the editor
+  6. Each text block shows sparkle button on hover
+  7. Clicking sparkle button opens Replace/Append modal with existing block content as context
+  8. Right sidebar shows block configuration panel when a block is selected
+  9. Block settings (alignment, colors, visibility) persist to backend and reload correctly
+
+**Plans**: TBD
+
+### Phase 7: Credit System
+
+**Goal**: Users have credit balance tracked in database with atomic deduction for paid operations
+
+**Depends on**: Phase 6
+
+**Requirements**: CRD-01, CRD-02, CRD-03
+
+**Success Criteria** (what must be TRUE):
+  1. User account displays credit_balance field visible in database and frontend UI
+  2. Credit deduction for paid operations is atomic; concurrent requests do not cause race conditions (Redis distributed lock verified)
+  3. User can purchase credits via WeChat Pay top-up and balance updates immediately after payment
+
+**Plans**: TBD
+
+### Phase 8: PDF Export
+
+**Goal**: Users can preview PDF free and export full PDF with credit deduction
+
+**Depends on**: Phase 7
+
+**Requirements**: PDF-01, PDF-02, PDF-03
+
+**Success Criteria** (what must be TRUE):
+  1. User can preview PDF free with low-resolution output via link that expires after 1 hour
+  2. Full PDF export deducts 0.3 credits atomically from user balance
+  3. Generated PDF is downloadable via link that expires 24 hours after generation
+
+**Plans**: TBD
+
+### Phase 9: Platform Hosting
+
+**Goal**: Users can publish their site to a subdomain and manage publication status
+
+**Depends on**: Phase 6 (editor complete)
+
+**Requirements**: HST-01, HST-02, HST-03, HST-04
+
+**Success Criteria** (what must be TRUE):
+  1. User clicks Publish and static site is deployed to their subdomain
+  2. Published site is accessible at username.vibe.com in production or localhost:port in dev
+  3. User can unpublish site, removing it from public access
+  4. Published site is pre-rendered static HTML with no server-side rendering required
+
+**Plans**: TBD
+
+### Phase 10: Payments & VIP
+
+**Goal**: WeChat Pay integration completes with VIP subscription and template purchase
+
+**Depends on**: Phase 7
+
+**Requirements**: PAY-01, PAY-02, PAY-03
+
+**Success Criteria** (what must be TRUE):
+  1. WeChat Pay callback successfully handles payment notification and credits user account
+  2. VIP subscription at 10 RMB/month grants user access to all templates
+  3. Template purchases give user lifetime one-time access to that specific template
+
+**Plans**: TBD
+
+---
+
+## v1.1 Progress
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 1. Template System Foundation | 1/1 | Complete | 2026-03-21 |
-| 2. Block Editor Core | 3/3 | Complete | 2026-03-21 |
-| 3. AI Generation Pipeline | 3/3 | Complete | 2026-03-21 |
-| 4. Publishing, Payments & PDF | 4/4 | Complete | 2026-03-21 |
-| 5. Polish & Performance | 3/3 | Complete | 2026-03-21 |
-
-**Full phase details:** `.planning/milestones/v1.0-ROADMAP.md`
+| 6. AI Generation & Editor Polish | 0/TBD | Not started | - |
+| 7. Credit System | 0/TBD | Not started | - |
+| 8. PDF Export | 0/TBD | Not started | - |
+| 9. Platform Hosting | 0/TBD | Not started | - |
+| 10. Payments & VIP | 0/TBD | Not started | - |
 
 ---
 
-*Last updated: 2026-03-21 after v1.0 milestone completion*
+*Last updated: 2026-03-21 after v1.1 roadmap creation*
