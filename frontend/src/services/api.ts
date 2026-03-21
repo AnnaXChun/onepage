@@ -188,4 +188,20 @@ export const createCreditTopup = async (credits: number) => {
   return response.data.data;
 };
 
+// PDF Export
+export const requestPdfPreview = async (blogId: number): Promise<{ jobId: string; previewUrl: string }> => {
+  const response = await api.post(`/pdf/preview/${blogId}`);
+  return response.data.data;
+};
+
+export const exportPdf = async (blogId: number): Promise<{ jobId: string; creditCost: number }> => {
+  const response = await api.post(`/pdf/export/${blogId}`);
+  return response.data.data;
+};
+
+export const getPdfJobStatus = async (jobId: string): Promise<{ status: string; downloadUrl?: string }> => {
+  const response = await api.get(`/pdf/job/${jobId}`);
+  return response.data.data;
+};
+
 export default api;
