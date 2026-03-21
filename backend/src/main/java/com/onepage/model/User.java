@@ -27,4 +27,8 @@ public class User {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    private Boolean vipStatus;          // true if VIP is active
+
+    private LocalDateTime vipExpireTime; // VIP subscription expiration
 }
