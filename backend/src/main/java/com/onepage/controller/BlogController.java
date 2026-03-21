@@ -8,6 +8,7 @@ import com.onepage.model.Blog;
 import com.onepage.service.BlogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -123,6 +124,45 @@ public class BlogController {
         }
         blogService.deleteBlog(id, userId);
         return Result.success();
+    }
+
+    /**
+     * Publish a blog - generates static HTML and makes it publicly accessible.
+     * POST /blog/publish/{id}
+     * HOST-01, HOST-03
+     */
+    @PostMapping("/publish/{id}")
+    public Result<Blog> publish(@PathVariable Long id, @AuthenticationPrincipal JwtUserPrincipal principal) {
+        Blog blog = blogService.publish(id, principal.getUserId());
+        return Result.success(blog);
+    }
+
+    /**
+     * Unpublish a blog - removes from public access.
+     * POST /blog/unpublish/{id}
+     * HOST-05
+     */
+    @PostMapping("/unpublish/{id}")
+    public Result<Blog> unpublish(@PathVariable Long id, @AuthenticationPrincipal JwtUserPrincipal principal) {
+        Blog blog = blogService.unpublish(id, principal.getUserId());
+        return Result.success(blog);
+    }
+
+    /**
+     * Get published blog HTML content.
+     * GET /blog/html/{shareCode}
+     * HOST-03
+     */
+    @GetMapping("/html/{shareCode}")
+    public Result<String> getBlogHtml(@PathVariable String shareCode) {
+        Blog blog = blogService.getBlogByShareCode(shareCode);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (blog.getStatus() != 1) {
+            throw BusinessException.badRequest("Blog is not published");
+        }
+        return Result.success(blog.getHtmlContent());
     }
 
     private Long getCurrentUserId() {
