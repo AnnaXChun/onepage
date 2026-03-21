@@ -60,7 +60,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md -- Editor foundation: block components, Zustand store with undo/redo, BlockRenderer
-- [ ] 02-02-PLAN.md -- Editor canvas: dnd-kit integration, SortableBlock, click-to-edit, drag handles
+- [x] 02-02-PLAN.md -- Editor canvas: dnd-kit integration, SortableBlock, click-to-edit, drag handles
 - [ ] 02-03-PLAN.md -- Editor polish: BlockConfigPanel, EditorToolbar, auto-save hook, main Editor orchestrator
 
 ---
@@ -133,7 +133,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Template System Foundation | 1/1 | Completed | 2026-03-21 |
-| 2. Block Editor Core | 1/3 | In progress | - |
+| 2. Block Editor Core | 2/3 | In progress | - |
 | 3. AI Generation Pipeline | 0/1 | Not started | - |
 | 4. Publishing, Payments & PDF | 0/1 | Not started | - |
 | 5. Polish & Performance | 0/1 | Not started | - |
@@ -149,11 +149,11 @@ Plans:
 | TPL-03 | Phase 1 | Pending |
 | TPL-04 | Phase 1 | Pending |
 | TPL-05 | Phase 1 | Pending |
-| EDIT-01 | Phase 2 | Pending |
+| EDIT-01 | Phase 2 | Done (02-02) |
 | EDIT-02 | Phase 2 | Pending |
-| EDIT-03 | Phase 2 | Pending |
-| EDIT-04 | Phase 2 | Pending |
-| EDIT-05 | Phase 2 | Pending |
+| EDIT-03 | Phase 2 | Done (02-02) |
+| EDIT-04 | Phase 2 | Done (02-02) |
+| EDIT-05 | Phase 2 | Done (02-02) |
 | EDIT-06 | Phase 2 | Pending |
 | EDIT-07 | Phase 2 | Pending |
 | EDIT-08 | Phase 2 | Pending |
