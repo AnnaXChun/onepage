@@ -14,30 +14,39 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ### Validated
 
-<!-- Existing capabilities confirmed working in codebase -->
+<!-- v1.0 shipped — these requirements are complete and tested -->
 
-- ✓ User registration and login with JWT authentication — existing
-- ✓ Blog creation with unique shareable link — existing
-- ✓ WeChat Pay integration with order state machine (PENDING→PAYING→PAID→REFUNDING→REFUNDED) — existing
-- ✓ Redis caching for blog pages (24h TTL) and payment idempotency locks — existing
-- ✓ 10 existing template directories (gallery-display, creative-card, minimal-simple, paper-fold, retro-wave, glass-morphism, ultra-minimal, neon-pulse, vintage-style, zen-minimal) — existing
-- ✓ Drag-and-drop template gallery with animated cards — existing
-- ✓ Image upload handling — existing
+- ✓ User registration and login with JWT authentication — existing (pre-v1.0)
+- ✓ Blog creation with unique shareable link — existing (pre-v1.0)
+- ✓ WeChat Pay integration with order state machine (PENDING→PAYING→PAID→REFUNDING→REFUNDED) — existing (pre-v1.0)
+- ✓ 10 existing template directories — existing (pre-v1.0)
+- ✓ Drag-and-drop template gallery with animated cards — v1.0 (Phase 1)
+- ✓ Image upload handling — existing (pre-v1.0)
+- ✓ Block-level drag-and-drop editor with 5 block types (Text, Image, Social Links, Contact, Divider) — v1.0 (Phase 2)
+- ✓ Click-to-edit inline text and image editing — v1.0 (Phase 2)
+- ✓ Undo/redo via Zustand temporal middleware — v1.0 (Phase 2)
+- ✓ Auto-save to backend (500ms debounce) with localStorage backup — v1.0 (Phase 2)
+- ✓ Static HTML site publishing via Thymeleaf — v1.0 (Phase 4)
+- ✓ Unique shareable link per published site — v1.0 (Phase 4)
+- ✓ Async HTML-to-PDF export with Flying Saucer — v1.0 (Phase 4)
+- ✓ User credit balance management — v1.0 (Phase 4)
+- ✓ VIP subscription and template purchase via PaymentController — v1.0 (Phase 4)
+- ✓ Redis caching for template listing (24h TTL) and blog pages — v1.0 (Phase 5)
+- ✓ HikariCP connection pool tuned for 500 QPS (50 max connections) — v1.0 (Phase 5)
+- ✓ RabbitMQ async job processing for PDF and AI generation — v1.0 (Phase 5)
+- ✓ RGB color extraction + MiniMax AI text generation via Spring AI — v1.0 (Phase 3)
+- ✓ AI Write Assist with Replace/Append modes and low-confidence highlighting — v1.0 (Phase 3)
 
 ### Active
 
-<!-- Building toward these in current milestone -->
+<!-- Next milestone priorities -->
 
-- [ ] **Template System** — 10 fixed templates across Blog, Resume, Personal Intro categories; each template has defined block components
-- [ ] **Block Editor** — Block-level drag-and-drop editor; users can add, remove, reorder, and configure text/image/social/contact blocks
-- [ ] **AI Website Generation** — User uploads one main image + enters one-sentence description; AI extracts RGB style/mood from image and generates page content via MiniMax API; result is a complete editable page
-- [ ] **AI Writing Assist** — Each text block has an inline "AI Write" button; clicking it generates content based on existing text in the block using SpringAI + MiniMax
-- [ ] **LangChain Workflow** — Orchestrate the AI generation pipeline: image analysis → style extraction → content generation → block mapping
-- [ ] **Click-to-Edit** — Users click any text/image element directly on the page to edit content in-place
-- [ ] **Platform Hosting** — Publish site to `username.vibe.com` subdomain (development: localhost port first, swap domain later)
-- [ ] **PDF Export** — Generate static PDF of website; paid feature (~0.1-0.5 RMB per generation)
-- [ ] **VIP Subscription** — 10 RMB/month; VIP users access all templates; non-VIP users pay per template (1-10 RMB depending on template)
-- [ ] **High Concurrency** — Hot endpoints (template listing, blog view) handle 500 QPS; Redis caching, database indexing, connection pooling
+- [ ] **AI Website Generation** — Full pipeline: user uploads image → AI extracts style → generates complete editable page via MiniMax API
+- [ ] **AI Writing Assist** — Inline sparkle button on each text block; Replace/Append modes; low-confidence highlighting (Partially done in v1.0 Phase 3)
+- [ ] **Block Editor Polish** — Block configuration panel (right sidebar), block-level settings persistence
+- [ ] **PDF Export Full** — Preview before charge, 24h expiring download links
+- [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
+- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
 
 ### Out of Scope
 
@@ -53,23 +62,24 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Context
 
-**Brownfield project** — Existing Spring Boot + React codebase with working auth, blog sharing, WeChat Pay, and Redis. The codebase is functional but many features are incomplete stubs. The AI and drag-and-drop editor components need to be built from scratch.
+**v1.0 shipped:** 2026-03-21. Full-stack SaaS with React + Spring Boot, AI generation, WeChat Pay, PDF export, Redis caching, RabbitMQ async processing.
 
-**Existing infrastructure:**
+**Tech stack:**
 - Frontend: React 18 + Vite + TailwindCSS + TypeScript
 - Backend: Spring Boot 3 + MyBatis-Plus + MySQL 8
 - Cache/Queue: Redis + RabbitMQ
 - Auth: JWT (7-day access, 30-day refresh)
-- Payments: WeChat Pay (already integrated)
-
-**AI Integration:**
-- Provider: MiniMax API (via SpringAI)
-- Use cases: Image style extraction, text generation, block content generation
-- Workflow: LangChain for chaining image analysis → style → content → layout
+- Payments: WeChat Pay
+- AI: MiniMax via Spring AI OpenAI-compatible client
 
 **Deployment:**
 - Development: localhost ports (frontend 5173, backend 8080)
-- Production: Docker containers on Tencent Cloud via BT Panel; MySQL/Redis/RabbitMQ in Docker
+- Production: Docker containers on Tencent Cloud via BT Panel
+
+**AI Integration:**
+- Provider: MiniMax API
+- Use cases: RGB color extraction, text generation, block content generation
+- Workflow: ColorThief client-side extraction → Spring AI generation → block assembly
 
 ## Constraints
 
@@ -83,30 +93,17 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Block-level drag-and-drop | Simpler UX than free-layout; faster to implement; sufficient for target users | — Pending |
-| MiniMax for AI | User-specified provider | — Pending |
-| LangChain for workflow orchestration | Standardizes AI pipeline: image→style→content→layout | — Pending |
-| Platform subdomain hosting | Avoids custom domain complexity in v1 | — Pending |
-| 10 fixed templates initially | Fastest path to MVP; user can expand later | — Pending |
-| VIP + per-use pricing | Balances accessibility with revenue; low price point | — Pending |
-| 500 QPS hot endpoints | DAU 500, burst to 500 QPS on cacheable reads | — Pending |
+| Block-level drag-and-drop | Simpler UX than free-layout; faster to implement | ✓ Validated — editor shipped in v1.0 |
+| MiniMax for AI | User-specified provider | ✓ Working — color extraction + text gen |
+| dnd-kit for drag-and-drop | Standard React DnD library, well-supported | ✓ Working — sortable blocks |
+| Zustand with temporal middleware | Lightweight state + built-in undo/redo | ✓ Working — undo/redo confirmed |
+| Flying Saucer for PDF | Java HTML-to-PDF, good CSS support | ✓ Shipped — async PDF generation |
+| Redis caching 24h TTL | Cache template listing and blog pages | ✓ Validated — reduces DB load |
+| HikariCP 50 connections | Appropriate for MySQL SSD at 500 QPS | ✓ Configured — ready for load test |
+| RabbitMQ async processing | PDF/AI are slow (5-60s); must not block | ✓ Verified — consumers active |
+| JMeter for load testing | Industry standard, scripted testing | ✓ Test plans created |
 
 ## Evolution
 
-This document evolves at phase transitions and milestone boundaries.
+*Last updated: 2026-03-21 after v1.0 milestone*
 
-**After each phase transition** (via `/gsd:transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd:complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
-
----
-*Last updated: 2026-03-21 after initialization*

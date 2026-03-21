@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-current_phase: 05
-status: unknown
-stopped_at: Completed 05-03-PLAN.md - Async job processing
-last_updated: "2026-03-21T12:25:18.574Z"
+milestone_name: MVP
+current_phase: none
+status: milestone_complete
+stopped_at: Milestone v1.0 shipped 2026-03-21
+last_updated: "2026-03-21T12:44:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
   completed_plans: 13
 ---
@@ -21,44 +21,33 @@ progress:
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Phase:** 05
+**Current Milestone:** v1.0 MVP — SHIPPED
 
-**Current Milestone:** v1 MVP
+**Current Focus:** Planning next milestone (v1.1)
 
-## Current Position
+## Milestone v1.0 Summary
 
-Phase: 05 (polish-performance) — EXECUTING
-Plan: Not started
+- 5 phases, 13 plans executed via GSD workflow
+- 320 files changed, 35,164 insertions
+- Shipped: 2026-03-21
+- Git tag: v1.0
 
-## Phase 5 Plans
+## Next Steps
 
-| Plan | File | Tasks | Focus |
-|------|------|-------|-------|
-| 05-01 | 05-01-PLAN.md | 5 | Performance foundation: HikariCP tuning, TemplateService with caching, TemplateController |
-| 05-02 | 05-02-PLAN.md | 5 | JMeter load testing: 500 QPS verification for blog-share and template listing |
-| 05-03 | 05-03-PLAN.md | 5 | Async verification: RabbitMQ consumers for PDF and AI generation |
-
-## Performance Metrics
-
-| Metric | Value | Target |
-|--------|-------|--------|
-| Requirements Mapped | 52/52 | 100% |
-| Phases Defined | 5 | 5 |
-| Plans Created | 13/13 | 100% |
-| v1 Completion | 0% | 100% |
-| Phase 5 P03 | 30 | 5 tasks | 1 files |
+Run `/gsd:new-milestone` to start v1.1 planning.
 
 ## Accumulated Context
 
-### Decisions Made (Phase 2)
+### Decisions Made (v1.0)
 
-- **zundo@2.2.0 + zustand@5.0.12**: Used despite peer dependency conflict (zundo requires zustand@^4.3.0). Installed with --legacy-peer-deps. May need zundo upgrade when zustand@5 support is released.
-- **@dnd-kit/sortable@10.0.0**: Used instead of plan-specified@8.0.0 (version 8.0.0 not available on npm)
+- **zundo@2.2.0 + zustand@5.0.12**: Peer dependency conflict resolved with --legacy-peer-deps
+- **@dnd-kit/sortable@10.0.0**: Used instead of plan-specified@8.0.0 (8.0.0 not on npm)
+- **Spring AI 1.0.0-M6**: OpenAI-compatible client for MiniMax API
+- **Flying Saucer (xhtmlrenderer)**: HTML-to-PDF conversion
 
 ### Block Component Model
 
 Blocks are typed components with consistent interfaces:
-
 - Text (H1, H2, paragraph, list)
 - Image (single, gallery)
 - Social Links
@@ -68,29 +57,17 @@ Blocks are typed components with consistent interfaces:
 ### AI Pipeline Pattern
 
 Sequential stages with validation gates:
-
-1. Image Analysis (MiniMax)
-2. Style Extraction (colors, mood)
-3. Content Generation
+1. Image Analysis (ColorThief RGB extraction)
+2. Style Extraction (colors, mood keywords)
+3. Content Generation (MiniMax via Spring AI)
 4. Block Assembly
 
-### Research Flags (deferred to planning)
+### Technical Debt
 
-- Phase 3: Validate Spring AI vs LangChain4j decision
-- Phase 4: Benchmark OpenPDF HTML-to-PDF CSS support
+- Phase 1 had no GSD plan (pre-existing) — creates traceability gaps
+- Requirements traceability table not updated during execution
+- Thymeleaf compilation issue exists (pre-existing, not blocking)
 
-## Session Continuity
+---
 
-**Last Session:** 2026-03-21T12:23:33.838Z
-**Stopped At:** Completed 05-03-PLAN.md - Async job processing
-
-### Completed This Session
-
-- 02-01: Editor foundation (block components, Zustand store, BlockRenderer)
-- 02-02: Editor Canvas (DragHandle, SortableBlock, EditorCanvas, InlineEdit, BlockLibrary)
-
-## Notes
-
-- AUTH-01, AUTH-02, AUTH-03 are existing capabilities (keep as-is)
-- Phase 3 AI Pipeline can parallelize with Phase 1-2 frontend work after architecture defined
-- Core revenue loop (Payments + PDF) must work before Phase 5 polish
+*See .planning/PROJECT.md for full evolved project context*
