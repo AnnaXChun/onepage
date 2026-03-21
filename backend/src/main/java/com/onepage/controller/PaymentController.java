@@ -4,17 +4,20 @@ import com.onepage.config.JwtUserPrincipal;
 import com.onepage.dto.OrderDetailDTO;
 import com.onepage.dto.Result;
 import com.onepage.exception.BusinessException;
+import com.onepage.mapper.UserMapper;
 import com.onepage.model.Order;
+import com.onepage.model.User;
 import com.onepage.service.OrderService;
+import com.onepage.service.VipService;
 import com.onepage.service.WeChatPayService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,8 @@ public class PaymentController {
 
     private final OrderService orderService;
     private final WeChatPayService weChatPayService;
+    private final VipService vipService;
+    private final UserMapper userMapper;
 
     @PostMapping("/create")
     public Result<OrderDetailDTO> createOrder(@Valid @RequestBody Map<String, Object> params) {
@@ -225,5 +230,86 @@ public class PaymentController {
             return principal.getUserId();
         }
         return null;
+    }
+
+    /**
+     * Get VIP subscription price.
+     * PAY-01
+     */
+    @GetMapping("/vip/price")
+    public Result<String> getVipPrice() {
+        return Result.success(vipService.getVipMonthlyPrice().toString() + " RMB/month");
+    }
+
+    /**
+     * Create VIP subscription order.
+     * PAY-01
+     */
+    @PostMapping("/vip/subscribe")
+    public Result<OrderDetailDTO> subscribeVip(
+            @RequestParam(defaultValue = "1") int months,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        Order order = orderService.createVipOrder(principal.getUserId(), months);
+        Map<String, String> qrCode = weChatPayService.getPayQrCode(order.getOutTradeNo());
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setOrderNo(order.getOutTradeNo());
+        dto.setAmount(order.getAmount());
+        dto.setSubject(order.getSubject());
+        dto.setQrCode(qrCode.get("code_url"));
+        dto.setStatus(order.getOrderStatus().name());
+        return Result.success(dto);
+    }
+
+    /**
+     * Get available credit packages for purchase.
+     * PAY-06
+     */
+    @GetMapping("/credits/packages")
+    public Result<List<Map<String, String>>> getCreditPackages() {
+        List<Map<String, String>> packages = Arrays.asList(
+            Map.of("credits", "10", "price", "10", "label", "10 credits - 10 RMB"),
+            Map.of("credits", "50", "price", "45", "label", "50 credits - 45 RMB (10% off)"),
+            Map.of("credits", "100", "price", "80", "label", "100 credits - 80 RMB (20% off)")
+        );
+        return Result.success(packages);
+    }
+
+    /**
+     * Purchase credits.
+     * PAY-06
+     */
+    @PostMapping("/credits/purchase")
+    public Result<OrderDetailDTO> purchaseCredits(
+            @RequestParam String creditsAmount,
+            @RequestParam BigDecimal price,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        Order order = orderService.createCreditsOrder(
+            principal.getUserId(),
+            new BigDecimal(creditsAmount),
+            price
+        );
+        Map<String, String> qrCode = weChatPayService.getPayQrCode(order.getOutTradeNo());
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setOrderNo(order.getOutTradeNo());
+        dto.setAmount(order.getAmount());
+        dto.setSubject(order.getSubject());
+        dto.setQrCode(qrCode.get("code_url"));
+        dto.setStatus(order.getOrderStatus().name());
+        return Result.success(dto);
+    }
+
+    /**
+     * Get user's current VIP status.
+     * PAY-01
+     */
+    @GetMapping("/vip/status")
+    public Result<Map<String, Object>> getVipStatus(@AuthenticationPrincipal JwtUserPrincipal principal) {
+        boolean isVip = vipService.isVipActive(principal.getUserId());
+        User user = userMapper.selectById(principal.getUserId());
+        Map<String, Object> status = new HashMap<>();
+        status.put("isVip", isVip);
+        status.put("expireTime", user != null && user.getVipExpireTime() != null
+            ? user.getVipExpireTime().toString() : null);
+        return Result.success(status);
     }
 }
