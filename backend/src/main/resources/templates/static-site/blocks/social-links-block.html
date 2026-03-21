@@ -1,0 +1,7 @@
+<th:block th:fragment="social-links-block">
+    <div class="social-links">
+        <th:block th:each="link : ${#strings.setToList(#strings.isEmpty(block.content) ? {} : block.content)}">
+            <a th:href="${link.url}" th:text="${link.platform}">Platform</a>
+        </th:block>
+    </div>
+</th:block>
