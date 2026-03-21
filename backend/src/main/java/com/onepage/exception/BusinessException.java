@@ -81,4 +81,12 @@ public class BusinessException extends RuntimeException {
     public static BusinessException orderExpired() {
         return new BusinessException(ErrorCode.ORDER_EXPIRED);
     }
+
+    public static BusinessException insufficientCredits() {
+        return new BusinessException(ErrorCode.INSUFFICIENT_CREDITS);
+    }
+
+    public static BusinessException insufficientCredits(String message) {
+        return new BusinessException(ErrorCode.INSUFFICIENT_CREDITS.getCode(), message);
+    }
 }

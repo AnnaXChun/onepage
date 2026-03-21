@@ -24,6 +24,7 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(5001, "Order not found"),
     PAYMENT_FAILED(5002, "Payment failed"),
     ORDER_EXPIRED(5003, "Order expired"),
+    INSUFFICIENT_CREDITS(5004, "Insufficient credits"),
 
     // System errors (9xxx)
     SYSTEM_ERROR(9999, "System error"),
