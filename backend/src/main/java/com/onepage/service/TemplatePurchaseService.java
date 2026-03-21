@@ -59,6 +59,40 @@ public class TemplatePurchaseService {
     }
 
     /**
+     * Record a template purchase for WeChat Pay direct purchases.
+     * Does NOT deduct credits - use this for orders where payment was already made via WeChat Pay.
+     * For credits-based purchases, use purchaseTemplate() instead.
+     *
+     * PAY-03
+     */
+    @Transactional
+    public void recordPurchase(Long userId, String templateId, String orderNo) {
+        // Check if already purchased
+        if (hasPurchasedTemplate(userId, templateId)) {
+            log.info("Template {} already purchased by user {}", templateId, userId);
+            return; // Idempotent - don't throw
+        }
+
+        // Get template
+        Template template = templateMapper.selectById(templateId);
+        if (template == null) {
+            throw BusinessException.badRequest("Template not found");
+        }
+
+        // Record purchase (no credit deduction since payment via WeChat Pay)
+        UserTemplatePurchase purchase = new UserTemplatePurchase();
+        purchase.setUserId(userId);
+        purchase.setTemplateId(templateId);
+        purchase.setOrderNo(orderNo);
+        purchase.setPurchaseTime(LocalDateTime.now());
+        purchase.setCreateTime(LocalDateTime.now());
+
+        purchaseMapper.insert(purchase);
+        log.info("Template purchase recorded: userId={}, templateId={}, orderNo={}, price={}",
+            userId, templateId, orderNo, template.getPrice());
+    }
+
+    /**
      * Check if user has already purchased a template.
      * PAY-05: Template purchase is one-time (lifetime access)
      */
