@@ -110,7 +110,8 @@
   3. User can unpublish site, removing it from public access
   4. Published site is pre-rendered static HTML with no server-side rendering required
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [x] 09-01-PLAN.md - Subdomain Hosting Infrastructure (HST-01, HST-02, HST-03, HST-04)
 
 ### Phase 10: Payments & VIP
 
@@ -136,9 +137,9 @@
 | 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
 | 7. Credit System | 3/3 | Complete    | 2026-03-21 |
 | 8. PDF Export | 2/2 | Complete    | 2026-03-21 |
-| 9. Platform Hosting | 0/TBD | Not started | - |
+| 9. Platform Hosting | 1/1 | Not started | - |
 | 10. Payments & VIP | 0/TBD | Not started | - |
 
 ---
 
-*Last updated: 2026-03-21 after Phase 08 plan 01 execution*
+*Last updated: 2026-03-21 after Phase 09 plan 01 creation*
