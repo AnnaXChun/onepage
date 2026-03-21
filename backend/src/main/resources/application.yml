@@ -39,6 +39,12 @@ spring:
           min-idle: 0
           max-wait: -1ms
 
+  cache:
+    type: redis
+    redis:
+      time-to-live: 86400000
+      cache-null-values: false
+
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
