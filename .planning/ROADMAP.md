@@ -32,7 +32,7 @@
 - [x] **Phase 7: Credit System** - User credit balance tracking with atomic Redis-locked deductions and WeChat Pay top-up (completed 2026-03-21)
 - [x] **Phase 8: PDF Export** - Two-phase PDF export with free preview and paid full export via credit deduction (completed 2026-03-21)
 - [x] **Phase 9: Platform Hosting** - Subdomain deployment and publish/unpublish management
-- [ ] **Phase 10: Payments & VIP** - WeChat Pay callback handling, VIP subscription, and template purchase
+- [x] **Phase 10: Payments & VIP** - WeChat Pay callback handling, VIP subscription, and template purchase (completed 2026-03-21)
 
 ---
 
@@ -127,7 +127,7 @@
   3. Template purchases give user lifetime one-time access to that specific template
 
 **Plans**: 1 plan
-- [ ] 10-01-PLAN.md - Payment Fulfillment (PAY-01, PAY-02, PAY-03)
+- [x] 10-01-PLAN.md - Payment Fulfillment (PAY-01, PAY-02, PAY-03)
 
 ---
 
@@ -139,7 +139,7 @@
 | 7. Credit System | 3/3 | Complete    | 2026-03-21 |
 | 8. PDF Export | 2/2 | Complete    | 2026-03-21 |
 | 9. Platform Hosting | 1/1 | Complete    | 2026-03-21 |
-| 10. Payments & VIP | 1/1   | Wave 0-1  | - |
+| 10. Payments & VIP | 1/1 | Complete   | 2026-03-21 |
 
 ---
 

@@ -45,9 +45,9 @@
 
 ### Payments & VIP
 
-- [ ] **PAY-01**: WeChat Pay callback handles successful payment and credits user account
-- [ ] **PAY-02**: VIP subscription (10 RMB/month) grants access to all templates
-- [ ] **PAY-03**: Template purchases give lifetime one-time access to that template
+- [x] **PAY-01**: WeChat Pay callback handles successful payment and credits user account
+- [x] **PAY-02**: VIP subscription (10 RMB/month) grants access to all templates
+- [x] **PAY-03**: Template purchases give lifetime one-time access to that template
 
 ## v2 Requirements
 
@@ -105,9 +105,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | HST-02 | Phase 9 | Pending |
 | HST-03 | Phase 9 | Pending |
 | HST-04 | Phase 9 | Pending |
-| PAY-01 | Phase 10 | Pending |
-| PAY-02 | Phase 10 | Pending |
-| PAY-03 | Phase 10 | Pending |
+| PAY-01 | Phase 10 | Complete |
+| PAY-02 | Phase 10 | Complete |
+| PAY-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 21 total
