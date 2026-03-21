@@ -8,6 +8,7 @@ export interface BlockState {
   type: BlockType;
   content: string;
   config: BlockConfig;
+  confidence?: number;
 }
 
 interface EditorState {
