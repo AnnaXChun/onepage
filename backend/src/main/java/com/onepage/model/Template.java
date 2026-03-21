@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,6 +22,8 @@ public class Template {
     private String thumbnail;
 
     private String config;
+
+    private BigDecimal price;  // 0 for free, >0 for paid
 
     private Integer category;
 
