@@ -7,7 +7,10 @@ import com.onepage.dto.RegisterRequest;
 import com.onepage.dto.Result;
 import com.onepage.exception.BusinessException;
 import com.onepage.model.User;
+import com.onepage.service.UserCreditsService;
 import com.onepage.service.UserService;
+
+import java.math.BigDecimal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -22,6 +25,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserCreditsService userCreditsService;
 
     @PostMapping("/register")
     public Result<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
@@ -62,6 +66,13 @@ public class UserController {
             userService.logout(principal.getUserId());
         }
         return Result.success();
+    }
+
+    @GetMapping("/credits")
+    public Result<BigDecimal> getCredits(Authentication authentication) {
+        JwtUserPrincipal principal = (JwtUserPrincipal) authentication.getPrincipal();
+        BigDecimal balance = userCreditsService.getCredits(principal.getUserId());
+        return Result.success(balance);
     }
 
     /**
