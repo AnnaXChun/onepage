@@ -23,6 +23,7 @@
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <jjwt.version>0.12.5</jjwt.version>
         <spring-ai.version>1.0.0-M6</spring-ai.version>
+        <thymeleaf.version>3.2.0</thymeleaf.version>
     </properties>
 
     <dependencies>
@@ -113,6 +114,20 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
             <version>${spring-ai.version}</version>
+        </dependency>
+
+        <!-- Flying Saucer for HTML-to-PDF -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf-openpdf</artifactId>
+            <version>9.3.1</version>
+        </dependency>
+
+        <!-- Thymeleaf for template rendering -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>${thymeleaf.version}</version>
         </dependency>
 
         <!-- Test -->
