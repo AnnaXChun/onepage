@@ -50,14 +50,12 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ AI Write Assist with Replace/Append modes and low-confidence highlighting — v1.0 (Phase 3)
 - ✓ AI Website Generation full pipeline — image upload → RabbitMQ async → WebSocket progress → block preview with confidence scoring — v1.1 (Phase 6)
 - ✓ Block Editor Polish — configuration panel, block-level settings persistence — v1.1 (Phase 6)
+- ✓ Credit System — user_credits table, Redis atomic deduction, WeChat Pay top-up flow — v1.1 (Phase 7)
 
 ### Active
 
 <!-- Next milestone priorities -->
 
-- [ ] **PDF Export Full** — Preview before charge, 24h expiring download links
-- [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
-- [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
 - [ ] **PDF Export Full** — Preview before charge, 24h expiring download links
 - [ ] **VIP & Payments Full** — WeChat Pay integration completion, credit deduction flow
 - [ ] **Platform Hosting** — Subdomain DNS routing, publish/unpublish flow
