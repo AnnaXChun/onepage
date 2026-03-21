@@ -10,11 +10,17 @@
     "preview:server": "node preview-server.cjs"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "axios": "^1.6.2",
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0"
+    "react-router-dom": "^6.20.0",
+    "use-debounce": "^10.0.4",
+    "zundo": "^2.2.0",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
