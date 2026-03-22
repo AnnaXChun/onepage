@@ -425,4 +425,20 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         redisTemplate.delete(BLOG_CACHE_PREFIX + blogId);
         log.info("Blog SEO updated: id={}", blogId);
     }
+
+    /**
+     * Get all published blogs for a user.
+     * Used by public profile page.
+     * PROF-02
+     */
+    public List<Blog> getPublishedBlogsByUserId(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return this.lambdaQuery()
+                .eq(Blog::getUserId, userId)
+                .eq(Blog::getStatus, 1)
+                .orderByDesc(Blog::getPublishTime)
+                .list();
+    }
 }

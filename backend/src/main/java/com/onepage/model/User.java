@@ -47,4 +47,11 @@ public class User {
     private LocalDateTime smsCodeExpiresAt;           // 验证码过期时间
     private Integer smsSendCount = 0;                 // 今日发送次数
     private LocalDateTime smsSendResetAt;             // 发送计数重置时间
+
+    // Profile fields
+    private String bio;           // max 500 chars
+    private String twitter;       // Twitter/X username
+    private String github;        // GitHub username
+    private String linkedin;       // LinkedIn username/URL
+    private String website;       // personal website URL
 }

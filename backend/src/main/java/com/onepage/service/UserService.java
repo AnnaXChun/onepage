@@ -3,10 +3,12 @@ package com.onepage.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.LoginRequest;
+import com.onepage.dto.ProfileDTO;
 import com.onepage.dto.RefreshTokenRequest;
 import com.onepage.exception.BusinessException;
 import com.onepage.exception.ErrorCode;
 import com.onepage.mapper.UserMapper;
+import com.onepage.model.Blog;
 import com.onepage.model.User;
 import com.onepage.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +34,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final BlogService blogService;
 
     /**
      * Register a new user. Password is hashed with BCrypt.
@@ -297,5 +302,51 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
         emailService.sendVerificationEmail(newEmail, user.getUsername(), user.getVerificationToken());
         log.info("Email updated for user {}: {}", userId, newEmail);
+    }
+
+    /**
+     * Get public profile data for a user by username.
+     * Excludes sensitive fields (password, email).
+     * PROF-01, PROF-10
+     */
+    public ProfileDTO getPublicProfile(String username) {
+        User user = this.lambdaQuery()
+                .eq(User::getUsername, username)
+                .one();
+
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        // Get published blogs for this user
+        List<Blog> publishedBlogs = blogService.getPublishedBlogsByUserId(user.getId());
+
+        // Build blog summaries
+        List<ProfileDTO.BlogSummary> blogSummaries = publishedBlogs.stream()
+                .map(blog -> {
+                    ProfileDTO.BlogSummary summary = new ProfileDTO.BlogSummary();
+                    summary.setId(blog.getId());
+                    summary.setTitle(blog.getTitle());
+                    summary.setCoverImage(blog.getCoverImage());
+                    summary.setShareCode(blog.getShareCode());
+                    summary.setPublishTime(blog.getPublishTime());
+                    return summary;
+                })
+                .collect(Collectors.toList());
+
+        // Build profile DTO (excludes password, email)
+        ProfileDTO profile = new ProfileDTO();
+        profile.setUsername(user.getUsername());
+        profile.setAvatar(user.getAvatar());
+        profile.setBio(user.getBio());
+        profile.setTwitter(user.getTwitter());
+        profile.setGithub(user.getGithub());
+        profile.setLinkedin(user.getLinkedin());
+        profile.setWebsite(user.getWebsite());
+        profile.setVipStatus(user.getVipStatus());
+        profile.setVipExpireTime(user.getVipExpireTime());
+        profile.setBlogs(blogSummaries);
+
+        return profile;
     }
 }
