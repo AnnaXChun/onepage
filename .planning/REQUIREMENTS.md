@@ -13,12 +13,12 @@
 ### Notifications
 
 - [ ] **EML-03**: User receives an email notification when AI website generation is complete
-- [ ] **EML-04**: User receives an email when their published site receives its first visitor (optional onboarding)
+- [x] **EML-04**: User receives an email when their published site receives its first visitor (optional onboarding)
 
 ### PDF Delivery
 
-- [ ] **EML-05**: User can request the generated PDF to be sent to their registered email
-- [ ] **EML-06**: PDF email includes the site name and a download link valid for 24 hours
+- [x] **EML-05**: User can request the generated PDF to be sent to their registered email
+- [x] **EML-06**: PDF email includes the site name and a download link valid for 24 hours
 
 ## Out of Scope
 
@@ -37,9 +37,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EML-01 | TBD | Complete |
 | EML-02 | TBD | Complete |
 | EML-03 | TBD | Pending |
-| EML-04 | TBD | Pending |
-| EML-05 | TBD | Pending |
-| EML-06 | TBD | Pending |
+| EML-04 | TBD | Complete |
+| EML-05 | TBD | Complete |
+| EML-06 | TBD | Complete |
 
 ---
 *Requirements defined: 2026-03-22*
