@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Email & Notifications
-status: planning
-last_updated: "2026-03-22T14:30:00.000Z"
+status: in_progress
+last_updated: "2026-03-22T07:07:18.357Z"
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 7
+  completed_phases: 6
+  total_plans: 14
+  completed_plans: 12
 ---
 
 # Vibe Onepage - Project State
@@ -21,16 +21,23 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.4 — Email & Notifications (planning)
+**Current Milestone:** v1.4 — Email & Notifications (active)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
+Phase: 13 (email-collection) — COMPLETE
+Plan: 1 of 3
 
 ## Roadmap Evolution
 
 - Phase 12 added: SEO meta tags and Open Graph
+
+### Decisions Made (v1.4)
+
+- **13-01-D01**: Email required at registration with @NotBlank + @Email validation
+- **13-01-D02**: SendGrid SMTP via Spring Mail with Thymeleaf template rendering (per D-10)
+- **13-01-D03**: UUID tokens for email verification with 24hr expiry
+- **13-01-D04**: Max 3 resend requests per 24 hours per email
 
 ### Decisions Made (v1.3)
 

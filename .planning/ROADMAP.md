@@ -173,11 +173,11 @@
 |-------|-------|--------|-----------|
 | 12. SEO Meta Tags and Open Graph | 4/4 | Complete | 2026-03-22 |
 
-## v1.4 Progress (Planning)
+## v1.4 Progress (Active)
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 13. Email Collection | 3 | Planning complete |
+| 13. Email Collection | 1/3 | Plan 1 complete |
 
 ### Phase 13: Email Collection
 
@@ -187,7 +187,7 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Backend Email Infrastructure + Registration Enforcement
+- [x] 13-01-PLAN.md — Backend Email Infrastructure + Registration Enforcement
 - [ ] 13-02-PLAN.md — Frontend Registration + Login Updates
 - [ ] 13-03-PLAN.md — Frontend Account Settings Modal
 
