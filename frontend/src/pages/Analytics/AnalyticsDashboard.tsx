@@ -14,7 +14,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, trend }: StatCardProps) {
   return (
-    <div className="bg-surface rounded-2xl p-6 min-h-[120px] flex flex-col justify-between">
+    <div className="bg-white rounded-2xl p-6 min-h-[120px] flex flex-col justify-between border border-border">
       <span className="text-sm text-text-secondary">{label}</span>
       <div className="flex items-end gap-2">
         <span className="text-4xl font-semibold text-accent">
@@ -96,14 +96,14 @@ export default function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto p-6">
-        <div className="h-8 w-32 bg-surface rounded mb-8 animate-pulse" />
+        <div className="h-8 w-32 bg-white rounded mb-8 animate-pulse border border-border" />
         <div className="flex gap-4 mb-8">
-          <div className="flex-1 h-32 bg-surface rounded-2xl animate-pulse" />
-          <div className="flex-1 h-32 bg-surface rounded-2xl animate-pulse" />
+          <div className="flex-1 h-32 bg-white rounded-2xl animate-pulse border border-border" />
+          <div className="flex-1 h-32 bg-white rounded-2xl animate-pulse border border-border" />
         </div>
         <div className="space-y-4">
-          <div className="h-[300px] bg-surface rounded-2xl animate-pulse" />
-          <div className="h-[300px] bg-surface rounded-2xl animate-pulse" />
+          <div className="h-[300px] bg-white rounded-2xl animate-pulse border border-border" />
+          <div className="h-[300px] bg-white rounded-2xl animate-pulse border border-border" />
         </div>
       </div>
     );
@@ -142,12 +142,12 @@ export default function AnalyticsDashboard() {
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-semibold">Analytics</h1>
-        <div className="inline-flex bg-surface rounded-lg p-1">
+        <div className="inline-flex bg-white rounded-lg p-1 border border-border">
           {(['7d', '30d', '90d'] as Period[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all btn-hover ${
                 period === p
                   ? 'bg-primary text-white'
                   : 'text-text-secondary hover:text-text-primary'
@@ -178,16 +178,16 @@ export default function AnalyticsDashboard() {
         </ChartCard>
       </div>
 
-      <div className="bg-surface rounded-2xl overflow-hidden">
-        <div className="bg-surface-elevated px-6 py-4 text-left text-sm font-medium text-text-secondary">
+      <div className="bg-white rounded-2xl overflow-hidden border border-border">
+        <div className="bg-surface px-6 py-4 text-left text-sm font-medium text-text-secondary">
           Site
         </div>
         {analytics.map((item, index) => (
           <div
             key={item.blogId}
             className={`px-6 py-4 border-t border-border ${
-              index % 2 === 0 ? 'bg-surface' : 'bg-surface/50'
-            } hover:bg-background transition-colors`}
+              index % 2 === 0 ? 'bg-white' : 'bg-surface'
+            } hover:bg-surface transition-colors`}
           >
             <div className="flex items-center justify-between">
               <span className="font-medium text-text-primary">{item.blogTitle}</span>

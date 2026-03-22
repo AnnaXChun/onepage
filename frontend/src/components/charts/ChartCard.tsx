@@ -9,12 +9,12 @@ interface ChartCardProps {
 export default function ChartCard({ title, children, loading, error, onRetry }: ChartCardProps) {
   if (loading) {
     return (
-      <div className="bg-surface rounded-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
           <span className="text-base font-medium text-text-primary">{title}</span>
         </div>
         <div className="p-6">
-          <div className="h-[300px] bg-surface-elevated animate-pulse rounded-2xl" />
+          <div className="h-[300px] bg-surface animate-pulse rounded-2xl" />
         </div>
       </div>
     );
@@ -22,7 +22,7 @@ export default function ChartCard({ title, children, loading, error, onRetry }: 
 
   if (error) {
     return (
-      <div className="bg-surface rounded-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
           <span className="text-base font-medium text-text-primary">{title}</span>
         </div>
@@ -31,7 +31,7 @@ export default function ChartCard({ title, children, loading, error, onRetry }: 
           {onRetry && (
             <button
               onClick={onRetry}
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+              className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-medium btn-hover transition-colors"
             >
               Retry
             </button>
@@ -42,7 +42,7 @@ export default function ChartCard({ title, children, loading, error, onRetry }: 
   }
 
   return (
-    <div className="bg-surface rounded-2xl overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden">
       <div className="px-6 py-4 border-b border-border">
         <span className="text-base font-medium text-text-primary">{title}</span>
       </div>
