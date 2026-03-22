@@ -191,6 +191,16 @@ Plans:
 - [x] 13-02-PLAN.md — Frontend Registration + Login Updates
 - [x] 13-03-PLAN.md — Frontend Account Settings Modal
 
+### Phase 14: Notification Emails and PDF Delivery
+
+**Goal:** [To be planned]
+**Requirements**: EML-03, EML-04, EML-05, EML-06
+**Depends on:** Phase 13
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 14 to break down)
+
 ---
 
 *Last updated: 2026-03-22 after Phase 13 planning*
