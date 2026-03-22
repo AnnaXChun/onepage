@@ -2,8 +2,13 @@ package com.onepage.messaging;
 
 import com.onepage.dto.GenerationRequest;
 import com.onepage.dto.GenerationResult;
+import com.onepage.mapper.UserMapper;
+import com.onepage.model.Blog;
+import com.onepage.model.User;
 import com.onepage.service.AIGenerationService;
 import com.onepage.service.BlockAssemblyService;
+import com.onepage.service.BlogService;
+import com.onepage.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,6 +23,9 @@ public class GenerationMessageConsumer {
     private final AIGenerationService generationService;
     private final BlockAssemblyService blockAssemblyService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
+    private final BlogService blogService;
+    private final UserMapper userMapper;
 
     @RabbitListener(queues = "blog.generate.queue")
     public void handleGenerationRequest(Object message) {
@@ -48,6 +56,7 @@ public class GenerationMessageConsumer {
             blockAssemblyService.assembleBlocks(result, blogId);
 
             sendProgress(blogId, "COMPLETED", 100, result);
+            notifyUserOfCompletion(blogId);
             log.info("Generation completed for blogId: {}", blogId);
 
         } catch (Exception e) {
@@ -84,6 +93,7 @@ public class GenerationMessageConsumer {
             }
 
             sendProgress(blogId, "COMPLETED", 100, result);
+            notifyUserOfCompletion(blogId);
             log.info("Block regeneration completed for blogId: {}, blockIndex: {}", blogId, blockIndex);
 
         } catch (Exception e) {
@@ -107,4 +117,27 @@ public class GenerationMessageConsumer {
     }
 
     public record ProgressUpdate(String stage, int percent, Object blocks) {}
+
+    private void notifyUserOfCompletion(Long blogId) {
+        Blog blog = blogService.getBlogById(blogId);
+        if (blog == null) return;
+
+        User user = userMapper.selectById(blog.getUserId());
+        if (user == null || user.getEmail() == null || !user.getEmailVerified()) {
+            log.info("Skipping completion email for blogId={}: no verified email", blogId);
+            return;
+        }
+
+        try {
+            emailService.sendGenerationCompleteEmail(
+                user.getEmail(),
+                user.getUsername(),
+                blog.getTitle(),
+                blog.getShareCode()
+            );
+            log.info("Generation completion email sent for blogId={}", blogId);
+        } catch (Exception e) {
+            log.error("Failed to send completion email for blogId={}: {}", blogId, e.getMessage());
+        }
+    }
 }
