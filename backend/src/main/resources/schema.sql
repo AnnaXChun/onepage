@@ -124,6 +124,13 @@ CREATE TABLE IF NOT EXISTS `blog_daily_stats` (
     INDEX `idx_blog_id` (`blog_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- SEO fields for blogs table
+ALTER TABLE `blogs` ADD COLUMN `meta_title` VARCHAR(255) DEFAULT NULL COMMENT 'Custom SEO title' AFTER `content`;
+ALTER TABLE `blogs` ADD COLUMN `meta_description` TEXT DEFAULT NULL COMMENT 'Custom SEO description' AFTER `meta_title`;
+
+-- robots.txt for users table
+ALTER TABLE `users` ADD COLUMN `robots_txt` TEXT DEFAULT NULL COMMENT 'Custom robots.txt content' AFTER `vip_expire_time`;
+
 -- Insert default templates
 INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) VALUES
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
