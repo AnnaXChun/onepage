@@ -81,8 +81,8 @@
 2. Profile displays total visitor count across all user's published sites
 3. User can pin one blog as featured site, which appears first on profile grid
 
-**Plans:** 2/2 plans created
-- [ ] 22-integration-and-polish-PLAN.md - Backend: featured field, total visitors API, setFeaturedBlog endpoint
+**Plans:** 1/2 plans complete
+- [x] 22-integration-and-polish-PLAN.md - Backend: featured field, total visitors API, setFeaturedBlog endpoint
 - [ ] 22-integration-and-polish-02-PLAN.md - Frontend: header link, visitor count display, featured blog UI
 
 ---
@@ -93,7 +93,7 @@
 |-------|----------------|--------|-----------|
 | 20. Public Profile Display | 1/1 | Complete    | 2026-03-22 |
 | 21. Profile Editing | 1/1 | Complete    | 2026-03-22 |
-| 22. Integration and Polish | 0/2 | Not started | - |
+| 22. Integration and Polish | 1/2 | In progress | - |
 
 ---
 
