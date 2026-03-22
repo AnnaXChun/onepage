@@ -20,7 +20,7 @@
 
 ## Phases
 
-- [ ] **Phase 18: UI Foundation** - White theme, global CSS variables, button animations, template gallery polish
+- [x] **Phase 18: UI Foundation** - White theme, global CSS variables, button animations, template gallery polish (completed 2026-03-22)
 - [ ] **Phase 19: Editor Polish** - Block handle improvements, config panel refinement, editor theme consistency
 
 ---
@@ -41,8 +41,8 @@
 3. All buttons have consistent hover animations (scale, shadow, color)
 4. Template gallery cards have refined shadows and hover states
 
-**Plans:** 1/1 plans
-- [ ] 18-01-PLAN.md — UI Foundation (UIP-01, UIP-02, UIP-04, UIP-05)
+**Plans:** 1/1 plans complete
+- [x] 18-01-PLAN.md — UI Foundation (UIP-01, UIP-02, UIP-04, UIP-05)
 
 ---
 
@@ -69,7 +69,7 @@
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 18. UI Foundation | 1/1 | Not started | - |
+| 18. UI Foundation | 1/1 | Complete   | 2026-03-22 |
 | 19. Editor Polish | 1/1 | Not started | - |
 
 ---
