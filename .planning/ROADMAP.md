@@ -63,7 +63,7 @@
 3. User can edit social links (Twitter, GitHub, LinkedIn, website URLs)
 4. User can view their own profile preview link from account settings
 
-**Plans:** 1/1 plans created
+**Plans:** 1/1 plans complete
 - [x] 21-01-PLAN.md - Backend API and frontend profile editing with bio, avatar, social links, preview link
 
 ---
@@ -90,9 +90,9 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 20. Public Profile Display | 1/1 | Complete    | 2026-03-22 |
-| 21. Profile Editing | 1/1 | Not started | - |
+| 21. Profile Editing | 1/1 | Complete    | 2026-03-23 |
 | 22. Integration and Polish | 0/1 | Not started | - |
 
 ---
 
-*Last updated: 2026-03-22 after Phase 21 plan 01 created*
+*Last updated: 2026-03-23 after Phase 21 plan 01 completed*

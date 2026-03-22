@@ -16,10 +16,10 @@ Requirements for user profile pages. Each maps to roadmap phases.
 
 ### Profile Editing
 
-- [ ] **PROF-05**: Edit bio (text area, max 500 chars) in account settings
-- [ ] **PROF-06**: Upload avatar via existing ImageController
-- [ ] **PROF-07**: Edit social links (Twitter, GitHub, LinkedIn, website URLs)
-- [ ] **PROF-08**: View own profile preview link
+- [x] **PROF-05**: Edit bio (text area, max 500 chars) in account settings
+- [x] **PROF-06**: Upload avatar via existing ImageController
+- [x] **PROF-07**: Edit social links (Twitter, GitHub, LinkedIn, website URLs)
+- [x] **PROF-08**: View own profile preview link
 
 ### Integration
 
@@ -47,10 +47,10 @@ Requirements for user profile pages. Each maps to roadmap phases.
 | PROF-02 | Phase 20 | Complete |
 | PROF-03 | Phase 20 | Complete |
 | PROF-04 | Phase 20 | Complete |
-| PROF-05 | Phase 21 | Pending |
-| PROF-06 | Phase 21 | Pending |
-| PROF-07 | Phase 21 | Pending |
-| PROF-08 | Phase 21 | Pending |
+| PROF-05 | Phase 21 | Complete |
+| PROF-06 | Phase 21 | Complete |
+| PROF-07 | Phase 21 | Complete |
+| PROF-08 | Phase 21 | Complete |
 | PROF-09 | Phase 22 | Pending |
 | PROF-10 | Phase 20 | Complete |
 | PROF-11 | Phase 22 | Pending |
