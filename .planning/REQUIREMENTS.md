@@ -53,8 +53,8 @@
 
 ### Analytics
 
-- [ ] **ANAL-01**: User can view visitor counts for published site
-- [ ] **ANAL-02**: User can view page views per published site
+- [x] **ANAL-01**: User can view visitor counts for published site
+- [x] **ANAL-02**: User can view page views per published site
 - [ ] **ANAL-03**: Analytics data displays in user dashboard
 
 ## v2 Requirements
@@ -116,8 +116,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-01 | Phase 10 | Complete |
 | PAY-02 | Phase 10 | Complete |
 | PAY-03 | Phase 10 | Complete |
-| ANAL-01 | Phase 11 | Pending |
-| ANAL-02 | Phase 11 | Pending |
+| ANAL-01 | Phase 11 | Complete |
+| ANAL-02 | Phase 11 | Complete |
 | ANAL-03 | Phase 11 | Pending |
 
 **Coverage:**

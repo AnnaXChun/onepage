@@ -144,7 +144,7 @@
   3. Analytics data displays in user dashboard
 
 **Plans**: 2 plans
-- [ ] 11-01-PLAN.md — Analytics Data Layer (ANAL-01, ANAL-02)
+- [x] 11-01-PLAN.md — Analytics Data Layer (ANAL-01, ANAL-02)
 - [ ] 11-02-PLAN.md — Analytics Service & Dashboard (ANAL-01, ANAL-02, ANAL-03)
 
 ---
@@ -163,7 +163,7 @@
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 11. Analytics | 2/2 | In Progress | — |
+| 11. Analytics | 1/2 | In Progress|  |
 
 ---
 
