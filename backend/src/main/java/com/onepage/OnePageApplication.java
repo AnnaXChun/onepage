@@ -7,9 +7,13 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+    org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration.class
+})
 @MapperScan("com.onepage.mapper")
+@EnableAsync
 public class OnePageApplication {
     public static void main(String[] args) {
         SpringApplication.run(OnePageApplication.class, args);
