@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.BlogDTO;
 import com.onepage.exception.BusinessException;
 import com.onepage.mapper.BlogMapper;
+import com.onepage.mapper.UserMapper;
 import com.onepage.model.Blog;
+import com.onepage.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,10 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final StaticSiteService staticSiteService;
+    private final UserMapper userMapper;
+
+    @Value("${app.site.base-url:http://localhost:8080}")
+    private String siteBaseUrl;
 
     private static final String BLOG_CACHE_PREFIX = "blog:";
     private static final long CACHE_EXPIRE_HOURS = 24;
@@ -324,11 +331,19 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
             throw BusinessException.forbidden("No permission to publish this blog");
         }
 
-        // Generate static HTML from blocks
+        // Get username for og:url
+        User user = userMapper.selectById(blog.getUserId());
+        String username = user != null ? user.getUsername() : "";
+
+        // Generate static HTML from blocks with SEO fields
         String staticHtml = staticSiteService.generateStaticHtml(
             blog.getTitle(),
             blog.getCoverImage(),
-            blog.getBlocks()
+            blog.getBlocks(),
+            blog.getMetaTitle(),
+            blog.getMetaDescription(),
+            siteBaseUrl,
+            username
         );
 
         blog.setHtmlContent(staticHtml);
