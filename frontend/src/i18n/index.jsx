@@ -188,6 +188,17 @@ const translations = {
     emailNotVerified: 'Email not verified',
     pleaseVerifyEmail: 'Please verify your email first',
 
+    // Account Settings
+    accountSettings: 'Account Settings',
+    emailAddress: 'Email Address',
+    emailVerificationNote: 'If you change your email, a new verification link will be sent.',
+    emailUpdatedSuccess: 'Email updated successfully!',
+    emailAlreadyRegistered: 'This email is already registered.',
+    emailUpdateFailed: 'Failed to update email.',
+    failedToLoadUserInfo: 'Failed to load user info.',
+    saving: 'Saving...',
+    save: 'Save',
+
     // Errors
     error: 'Error',
     failed: 'Failed',
@@ -377,6 +388,17 @@ const translations = {
     addEmail: '添加邮箱',
     emailNotVerified: '邮箱未验证',
     pleaseVerifyEmail: '请先验证您的邮箱',
+
+    // Account Settings
+    accountSettings: '账户设置',
+    emailAddress: '邮箱地址',
+    emailVerificationNote: '如果更改邮箱，系统将发送新的验证链接。',
+    emailUpdatedSuccess: '邮箱更新成功！',
+    emailAlreadyRegistered: '该邮箱已被注册。',
+    emailUpdateFailed: '邮箱更新失败。',
+    failedToLoadUserInfo: '加载用户信息失败。',
+    saving: '保存中...',
+    save: '保存',
 
     // Errors
     error: '错误',
