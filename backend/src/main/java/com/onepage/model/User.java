@@ -33,4 +33,10 @@ public class User {
     private LocalDateTime vipExpireTime; // VIP subscription expiration
 
     private String robotsTxt;            // custom robots.txt content for SEO-03
+
+    private Boolean emailVerified = false;           // email verification status
+    private String verificationToken;                  // UUID token for email verification
+    private LocalDateTime verificationExpiresAt;      // token expiry time (24hrs from creation)
+    private Integer verificationResendCount = 0;       // count of resend requests (max 3 per 24hrs)
+    private LocalDateTime verificationResendResetAt;  // when the resend count resets (24hrs)
 }
