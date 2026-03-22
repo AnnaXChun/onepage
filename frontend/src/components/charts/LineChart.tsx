@@ -1,6 +1,4 @@
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -156,7 +154,7 @@ export default function ChartLine({ dailyStats, loading, error, onRetry }: LineC
             strokeWidth={2}
             fill="url(#areaGradient)"
             animationDuration={300}
-            animationEasing="ease-out-quart"
+            animationEasing="ease-out"
           />
         </AreaChart>
       </ResponsiveContainer>

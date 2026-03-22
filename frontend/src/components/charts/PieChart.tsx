@@ -107,8 +107,8 @@ export default function PieChartComponent({ refererSources, loading, error, onRe
               innerRadius={0}
               dataKey="value"
               animationDuration={300}
-              animationEasing="ease-out-quart"
-              label={({ percentage }) => `${percentage.toFixed(1)}%`}
+              animationEasing="ease-out"
+              label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
               labelLine={{ stroke: 'oklch(55% 0.01 260)', strokeWidth: 1 }}
             >
               {chartData.map((entry, index) => (
@@ -117,10 +117,6 @@ export default function PieChartComponent({ refererSources, loading, error, onRe
                   fill={COLORS[entry.source as keyof typeof COLORS] || COLORS.Other}
                   stroke="oklch(20% 0.015 260)"
                   strokeWidth={2}
-                  style={{
-                    filter: 'hover' ? 'brightness(1.05)' : 'none',
-                    transition: 'filter 150ms ease-out',
-                  }}
                 />
               ))}
             </Pie>

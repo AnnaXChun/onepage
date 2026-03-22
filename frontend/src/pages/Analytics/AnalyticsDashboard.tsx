@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from '../../i18n';
-import { getUserAnalytics, AnalyticsData } from '../../services/api';
+import { getUserAnalytics, AnalyticsData, RefererSource } from '../../services/api';
 import ChartCard from '@/components/charts/ChartCard';
 import ChartLine from '@/components/charts/LineChart';
 import PieChartComponent from '@/components/charts/PieChart';
@@ -32,7 +31,6 @@ function StatCard({ label, value, trend }: StatCardProps) {
 }
 
 export default function AnalyticsDashboard() {
-  const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('7d');
   const [analytics, setAnalytics] = useState<AnalyticsData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +76,7 @@ export default function AnalyticsDashboard() {
     .sort((a, b) => a.date.localeCompare(b.date));
 
   // Aggregate refererSources across all blogs
-  const sourceMap = new Map<string, { source: string; displayName: string; pageViews: number; percentage: number }>();
+  const sourceMap = new Map<string, RefererSource>();
   analytics.forEach((a) => {
     a.refererSources?.forEach((rs) => {
       const existing = sourceMap.get(rs.source);
@@ -90,7 +88,7 @@ export default function AnalyticsDashboard() {
     });
   });
   const allPageViews = Array.from(sourceMap.values()).reduce((sum, s) => sum + s.pageViews, 0);
-  const aggregatedRefererSources = Array.from(sourceMap.values()).map((s) => ({
+  const aggregatedRefererSources: RefererSource[] = Array.from(sourceMap.values()).map((s) => ({
     ...s,
     percentage: allPageViews > 0 ? (s.pageViews * 100) / allPageViews : 0,
   }));
