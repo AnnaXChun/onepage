@@ -52,10 +52,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ VIP & Payments Full — FulfillmentService dispatch, WeChat Pay callback fulfillment, VIP activation, template purchase — v1.1 (Phase 10)
 - ✓ Analytics Dashboard — visitor counts and page views per published site — v1.2 (Phase 11)
 - ✓ SEO Tools — custom meta tags, sitemap.xml, robots.txt, Open Graph, Twitter Cards — v1.3 (Phase 12)
+- ✓ Email Collection — required email at registration, email verification, account settings modal — v1.4 (Phase 13)
 
 ### Active
 
-(No active requirements — all v1.3 SEO features shipped)
+- Email & Notifications (v1.4) — Email collection (Phase 13 shipped), notifications and PDF delivery pending
 
 ### Out of Scope
 
