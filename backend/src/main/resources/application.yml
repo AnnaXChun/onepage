@@ -51,6 +51,21 @@ spring:
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
 
+  mail:
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey
+    password: ${SENDGRID_API_KEY:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        from:
+          default-encoding: UTF-8
+
   servlet:
     multipart:
       max-file-size: 10MB
@@ -104,3 +119,6 @@ hosting:
 logging:
   level:
     com.onepage: debug
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:5173}
