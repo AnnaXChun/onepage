@@ -3,6 +3,7 @@ package com.onepage.controller;
 import com.onepage.config.JwtUserPrincipal;
 import com.onepage.dto.BlockConfigDTO;
 import com.onepage.dto.BlogDTO;
+import com.onepage.dto.SeoDTO;
 import com.onepage.dto.Result;
 import com.onepage.exception.BusinessException;
 import com.onepage.model.Blog;
@@ -231,6 +232,33 @@ public class BlogController {
             throw BusinessException.badRequest("Blog is not published");
         }
         return Result.success(blog.getHtmlContent());
+    }
+
+    /**
+     * Update SEO settings for a blog.
+     * PUT /api/blog/{id}/seo
+     * SEO-01
+     */
+    @PutMapping("/{id}/seo")
+    public Result<Void> updateBlogSeo(
+            @PathVariable Long id,
+            @RequestBody SeoDTO dto) {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+
+        // Verify blog belongs to user
+        Blog blog = blogService.getBlogById(id);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to modify this blog");
+        }
+
+        blogService.updateSeo(id, userId, dto.getMetaTitle(), dto.getMetaDescription());
+        return Result.success();
     }
 
     private Long getCurrentUserId() {
