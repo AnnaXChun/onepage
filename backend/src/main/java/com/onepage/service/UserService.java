@@ -92,10 +92,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             throw BusinessException.forbidden("User account is disabled");
         }
 
-        // Check email verification
-        if (!user.getEmailVerified()) {
-            throw BusinessException.badRequest("EMAIL_NOT_VERIFIED:Please verify your email first. Check your inbox or request a new verification link.");
-        }
+        // TODO: Enable email verification after SMS verification is stable
+        // if (!user.getEmailVerified()) {
+        //     throw BusinessException.badRequest("EMAIL_NOT_VERIFIED:Please verify your email first. Check your inbox or request a new verification link.");
+        // }
 
         Map<String, String> tokens = jwtTokenProvider.generateTokenPair(user.getId(), user.getUsername());
         redisTemplate.opsForValue().set(
