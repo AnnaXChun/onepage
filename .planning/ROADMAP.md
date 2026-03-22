@@ -21,7 +21,7 @@
 
 ## Phases
 
-- [ ] **Phase 20: Public Profile Display** - Backend API and frontend display for public profile page
+- [x] **Phase 20: Public Profile Display** - Backend API and frontend display for public profile page
 - [ ] **Phase 21: Profile Editing** - Authenticated profile editing flow with bio, avatar, social links
 - [ ] **Phase 22: Integration and Polish** - Navigation integration, visitor counts, featured site pinning
 
@@ -45,7 +45,7 @@
 5. Profile displays grid of user's published blog cards with cover image, title, and link to published blog
 
 **Plans:** 1 plan
-- [ ] 20-01-PLAN.md - Backend API and frontend profile page with avatar, bio, social links, VIP badge, and published sites grid
+- [x] 20-01-PLAN.md - Backend API and frontend profile page with avatar, bio, social links, VIP badge, and published sites grid
 
 ---
 
@@ -88,10 +88,10 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 20. Public Profile Display | 1/1 | Planned | - |
+| 20. Public Profile Display | 1/1 | DONE | 2026-03-22 |
 | 21. Profile Editing | 0/1 | Not started | - |
 | 22. Integration and Polish | 0/1 | Not started | - |
 
 ---
 
-*Last updated: 2026-03-22 after Phase 20 plan created*
+*Last updated: 2026-03-22 after Phase 20 plan 01 completed*
