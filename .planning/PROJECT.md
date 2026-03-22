@@ -58,13 +58,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Analytics Data Layer — RefererParser utility, PageView refererSource field, BlogDailySourceStats entity — v1.5 (Phase 15)
 - ✓ Analytics API Layer — AnalyticsService with time-series + source breakdown, AnalyticsAggregationJob daily cron, @EnableScheduling — v1.5 (Phase 16)
 - ✓ Analytics UI Layer — LineChart for page views, PieChart for referral sources, Recharts ^3.8.0, data downsampling — v1.5 (Phase 17)
+- ✓ UI Foundation — White theme, CSS variables, button hover animations, template gallery polish — v1.6 (Phase 18)
 
 ### Active
 
-- [ ] **UIP-01**: White/light theme for all pages
-- [ ] **UIP-02**: Blue-black color scheme for components
-- [ ] **UIP-03**: Editor UX improvements (handles, config panel, animations)
-- [ ] **UIP-04**: Consistent hover animations on buttons
+- [ ] **UIP-03**: Editor UX improvements (handles, config panel, animations) — Phase 19
 
 ### Out of Scope
 
