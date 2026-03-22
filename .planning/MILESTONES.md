@@ -1,5 +1,22 @@
 # Milestones
 
+## v1.2 Analytics (Shipped: 2026-03-22)
+
+**Phases completed:** 6 phases, 11 plans, 34 tasks
+
+**Key accomplishments:**
+
+- Complete AI generation pipeline end-to-end: parse MiniMax JSON with confidence scoring, persist blocks via STOMP WebSocket progress, preview/reject/regenerate flow
+- Block configuration panel with alignment, colors, and visibility settings that persist to backend
+- User credit balance visible in header with backend API integration and database table
+- WeChat Pay credit top-up flow: POST /credit/topup creates order with QR code, processCreditTopupCallback adds credits on payment
+- Credit deduction atomicity, ownership validation, and scheduled cleanup for PDF export
+- PdfJob entity with Redis-backed 1h expiring preview URLs and ownership validation
+- Phase:
+- WeChat Pay callback triggers FulfillmentService after payment, routing to VIP activation, credits top-up, or template purchase based on order type
+
+---
+
 ## 1.2 Analytics (Shipped: 2026-03-22)
 
 **Phases completed:** 6 phases, 11 plans, 34 tasks
