@@ -4,21 +4,29 @@ import com.onepage.config.JwtUserPrincipal;
 import com.onepage.dto.PdfPreviewResponse;
 import com.onepage.dto.Result;
 import com.onepage.exception.BusinessException;
+import com.onepage.mapper.UserMapper;
 import com.onepage.messaging.PdfJobProducer;
 import com.onepage.model.Blog;
 import com.onepage.model.PdfJob;
+import com.onepage.model.User;
 import com.onepage.service.BlogService;
 import com.onepage.service.CreditLockService;
+import com.onepage.service.EmailService;
 import com.onepage.service.PdfGenerationService;
 import com.onepage.service.PdfJobService;
 import com.onepage.service.UserCreditsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/pdf")
@@ -32,8 +40,12 @@ public class PdfController {
     private final UserCreditsService userCreditsService;
     private final PdfJobService pdfJobService;
     private final CreditLockService creditLockService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final EmailService emailService;
+    private final UserMapper userMapper;
 
     private static final BigDecimal PDF_COST = new BigDecimal("0.3");
+    private static final long MAX_PDF_EMAIL_SIZE = 20 * 1024 * 1024;
 
     /**
      * Request PDF preview (free, no charge).
@@ -245,5 +257,93 @@ public class PdfController {
     @GetMapping("/balance")
     public Result<String> getBalance(@AuthenticationPrincipal JwtUserPrincipal principal) {
         return Result.success(userCreditsService.getCredits(principal.getUserId()).toString());
+    }
+
+    /**
+     * Send generated PDF to user's email.
+     * EML-05, EML-06: PDF delivered via email with 24h download link
+     */
+    @PostMapping("/send-to-email/{jobId}")
+    public Result<Map<String, String>> sendPdfToEmail(
+            @PathVariable String jobId,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+
+        // Verify job exists and belongs to user
+        PdfJob job = pdfJobService.getJobByJobId(jobId);
+        if (job == null) {
+            throw BusinessException.badRequest("PDF job not found or expired");
+        }
+        if (!job.getUserId().equals(principal.getUserId())) {
+            throw BusinessException.forbidden("Access denied");
+        }
+        if (job.getStatus() != 1) { // not completed
+            throw BusinessException.badRequest("PDF not ready");
+        }
+
+        // Get PDF bytes
+        byte[] pdfBytes = pdfGenerationService.getStoredPdf(jobId);
+        if (pdfBytes == null) {
+            throw BusinessException.badRequest("PDF not found or expired");
+        }
+
+        // Check PDF size limit
+        if (pdfBytes.length > MAX_PDF_EMAIL_SIZE) {
+            throw BusinessException.badRequest(
+                "PDF file is too large (" + (pdfBytes.length / 1024 / 1024) + "MB). Maximum size is 20MB.");
+        }
+
+        // Get user email
+        User user = userMapper.selectById(principal.getUserId());
+        if (user == null || user.getEmail() == null || !user.getEmailVerified()) {
+            throw BusinessException.badRequest("No verified email on account");
+        }
+
+        // Get blog for site name
+        Blog blog = blogService.getBlogById(job.getBlogId());
+        String siteName = blog != null ? blog.getTitle() : "Your Website";
+
+        // Generate download token and store in Redis with 24h TTL
+        String downloadToken = UUID.randomUUID().toString();
+        String tokenKey = "pdf:download:token:" + downloadToken;
+        redisTemplate.opsForValue().set(tokenKey, jobId, 24, TimeUnit.HOURS);
+
+        // Send email with PDF attached
+        emailService.sendPdfDeliveryEmail(
+            user.getEmail(),
+            user.getUsername(),
+            siteName,
+            pdfBytes,
+            downloadToken
+        );
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "PDF sent to " + user.getEmail());
+        response.put("expiresIn", "24 hours");
+
+        log.info("PDF email sent for jobId={} to {}", jobId, user.getEmail());
+        return Result.success(response);
+    }
+
+    /**
+     * Download PDF using token from email (24h expiry).
+     * EML-06: Download link valid for 24 hours
+     */
+    @GetMapping("/download-email/{token}")
+    public Result<byte[]> downloadPdfByToken(@PathVariable String token) {
+        // Look up jobId from Redis token
+        String tokenKey = "pdf:download:token:" + token;
+        String jobId = (String) redisTemplate.opsForValue().get(tokenKey);
+
+        if (jobId == null) {
+            throw BusinessException.badRequest("Download link has expired or is invalid");
+        }
+
+        // Get PDF bytes
+        byte[] pdfBytes = pdfGenerationService.getStoredPdf(jobId);
+        if (pdfBytes == null) {
+            throw BusinessException.badRequest("PDF not found or expired");
+        }
+
+        return Result.success(pdfBytes);
     }
 }

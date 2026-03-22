@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.core.io.ByteArrayResource;
 
 @Slf4j
 @Service
@@ -146,6 +147,41 @@ public class EmailService {
             log.info("Generation complete email sent to: {} for site: {}", to, siteName);
         } catch (Exception e) {
             log.error("Failed to send generation complete email to {}: {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Send PDF delivery email with PDF attachment.
+     * EML-05, EML-06: PDF delivered via email with 24h download link
+     */
+    public void sendPdfDeliveryEmail(String to, String username, String siteName, byte[] pdfBytes, String downloadToken) {
+        try {
+            String downloadUrl = baseUrl + "/pdf/download-email/" + downloadToken;
+
+            // Build Thymeleaf context with template variables
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("siteName", siteName);
+            context.setVariable("downloadUrl", downloadUrl);
+
+            // Render template using Thymeleaf
+            String htmlContent = templateEngine.process("email/pdf-delivery", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject("Your PDF Export - " + siteName);
+            helper.setText(htmlContent, true);
+
+            // Add PDF attachment
+            helper.addAttachment(siteName + ".pdf", new ByteArrayResource(pdfBytes));
+
+            mailSender.send(message);
+            log.info("PDF delivery email sent to: {} for site: {}", to, siteName);
+        } catch (Exception e) {
+            log.error("Failed to send PDF delivery email to {}: {}", to, e.getMessage());
+            // Fire-and-forget: failures are logged but do not block the operation
         }
     }
 }
