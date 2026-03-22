@@ -53,10 +53,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ SEO Tools — custom meta tags, sitemap.xml, robots.txt, Open Graph, Twitter Cards — v1.3 (Phase 12)
 - ✓ Email Collection — required email at registration, email verification, account settings modal — v1.4 (Phase 13)
 - ✓ Notification Emails — generation completion email, first visitor notification, PDF email delivery with 24hr link — v1.4 (Phase 14)
+- ✓ Analytics Data Layer — RefererParser utility, PageView refererSource field, BlogDailySourceStats entity — v1.5 (Phase 15)
 
 ### Active
 
-- Enhanced Analytics (v1.5) — Time-series page view charts, referral source tracking
+- Enhanced Analytics (v1.5) — Phase 15 complete, Phase 16 (API) in progress
 
 ### Out of Scope
 
