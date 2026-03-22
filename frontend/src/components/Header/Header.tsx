@@ -50,7 +50,7 @@ export default function Header({ user, onUserChange, onOpenAccountSettings }: He
           {/* Language Switcher */}
           <button
             onClick={toggleLanguage}
-            className="ml-4 px-3 py-1.5 text-sm font-medium rounded-lg bg-surface border border-border hover:border-borderLight transition-colors"
+            className="ml-4 px-3 py-1.5 text-sm font-medium rounded-lg bg-surface border border-border hover:border-borderLight btn-hover transition-colors"
           >
             {language === 'en' ? '中文' : 'EN'}
           </button>
@@ -59,7 +59,7 @@ export default function Header({ user, onUserChange, onOpenAccountSettings }: He
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="md:hidden w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center"
+          className="md:hidden w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center btn-hover"
           aria-label="Open menu"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

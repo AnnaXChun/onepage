@@ -103,12 +103,12 @@ export default function AuthButtons({ user, onLogout, onAccountSettings }: AuthB
 
   return (
     <div className="flex items-center gap-4">
-      <Link to="/login" className="btn-secondary !py-2 !px-6 !text-sm">
+      <Link to="/login" className="btn-secondary !py-2 !px-6 !text-sm btn-hover">
         {t('signIn')}
       </Link>
       <Link
         to="/register"
-        className="px-6 py-2 bg-primary text-text-primary-btn font-medium rounded-full hover:scale-[1.02] transition-all text-sm"
+        className="px-6 py-2 bg-primary hover:bg-primary-hover text-text-primary-btn font-medium rounded-full btn-hover transition-all text-sm"
       >
         {t('getStarted')}
       </Link>
