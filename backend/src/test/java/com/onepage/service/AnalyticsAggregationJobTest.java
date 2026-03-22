@@ -146,7 +146,6 @@ class AnalyticsAggregationJobTest {
     void testAggregateDailySourceStats_logsCompletion() {
         // Given
         when(pageViewMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of());
-        when(sourceStatsMapper.selectOne(any())).thenReturn(null);
 
         // When
         aggregationJob.aggregateDailySourceStats();
