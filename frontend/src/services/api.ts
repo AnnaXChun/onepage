@@ -192,6 +192,22 @@ export const updateEmail = async (email: string): Promise<ApiResponse> => {
   return response.data;
 };
 
+// Profile types
+export interface ProfileUpdateData {
+  bio?: string;
+  avatar?: string;
+  twitter?: string;
+  github?: string;
+  linkedin?: string;
+  website?: string;
+}
+
+// Update user profile
+export const updateProfile = async (data: ProfileUpdateData): Promise<ApiResponse> => {
+  const response = await api.put('/user/profile', data);
+  return response.data;
+};
+
 // Logout
 export const logout = async (): Promise<void> => {
   localStorage.removeItem('token');
