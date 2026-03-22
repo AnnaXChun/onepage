@@ -54,10 +54,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Email Collection — required email at registration, email verification, account settings modal — v1.4 (Phase 13)
 - ✓ Notification Emails — generation completion email, first visitor notification, PDF email delivery with 24hr link — v1.4 (Phase 14)
 - ✓ Analytics Data Layer — RefererParser utility, PageView refererSource field, BlogDailySourceStats entity — v1.5 (Phase 15)
+- ✓ Analytics API Layer — AnalyticsService with time-series + source breakdown, AnalyticsAggregationJob daily cron, @EnableScheduling — v1.5 (Phase 16)
 
 ### Active
 
-- Enhanced Analytics (v1.5) — Phase 15 complete, Phase 16 (API) in progress
+- Enhanced Analytics (v1.5) — Phase 17 (Analytics UI Layer) not started
 
 ### Out of Scope
 
