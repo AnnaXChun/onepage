@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from '../../i18n'
 import { getOrderList, getOrderDetail } from '../../services/api'
+import { setFeaturedBlog } from '../../services/api'
 
 function Orders() {
   const { t } = useTranslation()
