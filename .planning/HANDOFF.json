@@ -1,26 +1,31 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-22T16:00:00.000Z",
-  "milestone": "v1.4",
-  "milestone_name": "Email & Notifications",
-  "phase": "14",
-  "phase_name": "Notification Emails and PDF Delivery",
-  "phase_dir": "phases/14-notification-emails-and-pdf-delivery",
+  "timestamp": "2026-03-22T08:54:27.757Z",
+  "phase": "16",
+  "phase_name": "analytics-api-layer",
+  "phase_dir": "16-analytics-api-layer",
+  "plan": "01",
+  "task": 0,
+  "total_tasks": 6,
   "status": "paused",
-  "completed_tasks": [
-    {"id": 1, "name": "Phase 13: Email Collection", "status": "done", "plans": "3/3"},
-    {"id": 2, "name": "Phase 14: Notification Emails and PDF Delivery", "status": "done", "plans": "3/3"}
-  ],
+  "completed_tasks": [],
   "remaining_tasks": [
-    {"id": 1, "name": "Complete v1.4 milestone archival", "status": "not_started"}
+    {"id": 1, "name": "Add @EnableScheduling to OnePageApplication", "status": "not_started"},
+    {"id": 2, "name": "Add RefererSourceStat nested class to AnalyticsDTO", "status": "not_started"},
+    {"id": 3, "name": "Modify AnalyticsService to inject BlogDailySourceStatsMapper and add getRefererSources method", "status": "not_started"},
+    {"id": 4, "name": "Create AnalyticsAggregationJob scheduled job", "status": "not_started"},
+    {"id": 5, "name": "Create AnalyticsServiceTest unit tests", "status": "not_started"},
+    {"id": 6, "name": "Create AnalyticsAggregationJobTest unit tests", "status": "not_started"}
   ],
   "blockers": [],
   "human_actions_pending": [],
   "decisions": [
-    {"decision": "v1.4 Email & Notifications scope complete", "rationale": "Phases 13 & 14 shipped EML-01 through EML-06", "phase": "13-14"},
-    {"decision": "Phase 14 use SendGrid + Thymeleaf for emails", "rationale": "Reuse Phase 13 infrastructure", "phase": "14"}
+    {"decision": "@EnableScheduling annotation missing from OnePageApplication.java - must add for scheduled job to run", "rationale": "Phase 16 research identified @EnableScheduling is not present in the codebase", "phase": "16"},
+    {"decision": "AnalyticsDTO.RefererSourceStat nested class with source, displayName, pageViews, percentage fields", "rationale": "Pre-aggregated BlogDailySourceStats table queried for source breakdown - percentages calculated from totals", "phase": "16"},
+    {"decision": "AnalyticsAggregationJob runs daily at 00:05 via cron '0 5 0 * * ?'", "rationale": "Runs after midnight to aggregate previous day's page views; 5-minute buffer ensures all writes complete", "phase": "16"},
+    {"decision": "getRefererSources() uses BlogDailySourceStats pre-aggregated data (not raw page_views)", "rationale": "Phase 15-01-D03: pre-aggregation avoids per-page-view dashboard queries for performance", "phase": "16"}
   ],
   "uncommitted_files": [],
-  "next_action": "Run /gsd:complete-milestone to archive v1.4",
-  "context_notes": "v1.4 phases 13 and 14 complete. All 6 email requirements (EML-01 to EML-06) shipped. Milestone archival pending: create milestones/v1.4-ROADMAP.md, archive REQUIREMENTS.md, collapse ROADMAP.md to one line, tag v1.4, push tag. Context exhausted before completing milestone archival workflow."
+  "next_action": "Execute Phase 16 with /gsd:execute-phase 16 - Task 1: Add @EnableScheduling to OnePageApplication.java",
+  "context_notes": "Phase 16 plan (16-01-PLAN.md) is complete with 6 tasks. Phase 15 (Analytics Data Layer) completed successfully. Phase 17 (Analytics UI Layer) not yet planned. No execution started yet - was in middle of pause-work workflow when context exhausted."
 }
