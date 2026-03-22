@@ -20,7 +20,7 @@
 ## Phases
 
 - [x] **Phase 15: Analytics Data Layer** - Backend referral source categorization and storage
-- [ ] **Phase 16: Analytics API Layer** - Backend API exposing time-series and referral data
+- [x] **Phase 16: Analytics API Layer** - Backend API exposing time-series and referral data (completed 2026-03-22)
 - [ ] **Phase 17: Analytics UI Layer** - Frontend charts for visualization
 
 ---
@@ -60,7 +60,7 @@
 3. AnalyticsAggregationJob runs daily and pre-aggregates page views by source into BlogDailySourceStats
 4. API response latency under 200ms for dashboard load (using pre-aggregated data)
 
-**Plans:** TBD
+**Plans:** 1/1 plans complete
 
 ---
 

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Progress
 status: unknown
-last_updated: "2026-03-22T08:43:26.150Z"
+last_updated: "2026-03-22T09:00:29.361Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Vibe Onepage - Project State
@@ -25,14 +25,14 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
+Phase: 16 (analytics-api-layer) — COMPLETED
+Plan: 1 of 1 (complete)
 
 ## Current Milestone Progress
 
 ```
 v1.5 Enhanced Analytics
-[==========              ] 33% (1/3 phases completed)
+[================      ] 67% (2/3 phases completed)
 ```
 
 ## v1.5 Phase Summary
@@ -40,7 +40,7 @@ v1.5 Enhanced Analytics
 | Phase | Name | Status |
 |-------|------|--------|
 | 15 | Analytics Data Layer | Completed |
-| 16 | Analytics API Layer | Not started |
+| 16 | Analytics API Layer | Completed |
 | 17 | Analytics UI Layer | Not started |
 
 ## Roadmap Evolution
@@ -48,6 +48,10 @@ v1.5 Enhanced Analytics
 - v1.5 added: Enhanced Analytics — page view time series (ANLT-01) + referral sources (ANLT-02)
 
 ### Decisions Made (v1.5)
+
+- **16-01-D01**: Uses pre-aggregated BlogDailySourceStats for source breakdown queries (performance optimization)
+- **16-01-D02**: Division-by-zero protection: totalPageViews > 0 ? (pageViews * 100) / totalPageViews : 0
+- **16-01-D03**: Null refererSource defaults to DIRECT in aggregation job
 
 - **15-01-D01**: Recharts ^3.8.0 for frontend charting (line charts, pie charts)
 - **15-01-D02**: ReferralParser enum-based categorization (Direct, Search Engine, Social, Referral, Other)
@@ -95,7 +99,7 @@ v1.5 Enhanced Analytics
 ### TODOs
 
 - [x] Plan Phase 15 (Analytics Data Layer) — COMPLETED
-- [ ] Plan Phase 16 (Analytics API Layer)
+- [x] Plan Phase 16 (Analytics API Layer) — COMPLETED
 - [ ] Plan Phase 17 (Analytics UI Layer)
 
 ---
