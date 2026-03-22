@@ -41,7 +41,7 @@
 3. AnalyticsService.recordPageView() persists the categorized source to database
 4. BlogDailySourceStats entity and mapper exist for daily source aggregation
 
-**Plans:** 1/1 complete
+**Plans:** 1/1 plans complete
 - [x] 15-01-PLAN.md — Analytics Data Layer (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
 
 ---

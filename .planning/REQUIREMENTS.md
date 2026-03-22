@@ -7,8 +7,8 @@
 
 ### Analytics
 
-- [ ] **ANLT-01**: User can view page view trends over time displayed as a line chart with 7/30/90 day range selection
-- [ ] **ANLT-02**: User can see referral sources grouped and counted (Google, Bing, direct, social)
+- [x] **ANLT-01**: User can view page view trends over time displayed as a line chart with 7/30/90 day range selection
+- [x] **ANLT-02**: User can see referral sources grouped and counted (Google, Bing, direct, social)
 
 ## v1.4 Requirements
 
@@ -44,8 +44,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ANLT-01 | Phase 15, 16, 17 | Pending |
-| ANLT-02 | Phase 15, 16, 17 | Pending |
+| ANLT-01 | Phase 15, 16, 17 | Complete |
+| ANLT-02 | Phase 15, 16, 17 | Complete |
 | EML-01 | Phase 13 | Complete |
 | EML-02 | Phase 13 | Complete |
 | EML-03 | Phase 14 | Complete |
