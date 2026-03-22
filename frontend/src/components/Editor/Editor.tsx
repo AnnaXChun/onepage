@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useEditorStore } from '../../stores/editorStore';
 import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
 import BlockConfigPanel from './BlockConfigPanel';
 import BlockLibrary from './BlockLibrary';
+import SEOPanel from './SEOPanel';
 import useAutoSave from './useAutoSave';
 import { BlockManifest } from '../../types/block';
 
@@ -14,6 +15,7 @@ interface EditorProps {
 
 export default function Editor({ blogId, initialBlocks }: EditorProps) {
   const { setBlocks, blocks, selectBlock } = useEditorStore();
+  const [isSeoPanelOpen, setIsSeoPanelOpen] = useState(false);
 
   // Initialize blocks from initialBlocks (loaded from blocks.json)
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function Editor({ blogId, initialBlocks }: EditorProps) {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <EditorToolbar />
+      <EditorToolbar onSeoClick={() => setIsSeoPanelOpen(true)} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main editor area */}
@@ -69,6 +71,13 @@ export default function Editor({ blogId, initialBlocks }: EditorProps) {
         {/* Right sidebar - block config */}
         <BlockConfigPanel blogId={blogId} />
       </div>
+
+      {/* SEO Panel */}
+      <SEOPanel
+        blogId={Number(blogId)}
+        isOpen={isSeoPanelOpen}
+        onClose={() => setIsSeoPanelOpen(false)}
+      />
     </div>
   );
 }

@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 import { useEditorStore } from '../../stores/editorStore';
 
-export default function EditorToolbar() {
+interface EditorToolbarProps {
+  onSeoClick: () => void;
+}
+
+export default function EditorToolbar({ onSeoClick }: EditorToolbarProps) {
   const { isDirty, lastSaved, blocks } = useEditorStore();
 
   // Keyboard shortcuts for undo/redo
@@ -92,6 +96,18 @@ export default function EditorToolbar() {
         </button>
 
         <div className="w-px h-6 bg-border mx-2" />
+
+        {/* SEO button */}
+        <button
+          onClick={onSeoClick}
+          className="p-2 text-[oklch(55%_0_0)] hover:bg-[oklch(25%_0.015_260)] hover:text-[oklch(90%_0_0)] rounded-lg transition-colors"
+          title="SEO Settings"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M13 13l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </button>
 
         {/* Publish button */}
         <button
