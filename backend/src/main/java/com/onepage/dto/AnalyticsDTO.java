@@ -21,6 +21,8 @@ public class AnalyticsDTO {
 
     private List<DailyStat> dailyStats;
 
+    private List<RefererSourceStat> refererSources;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -28,5 +30,15 @@ public class AnalyticsDTO {
         private String date;
         private Integer pageViews;
         private Integer uniqueVisitors;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RefererSourceStat {
+        private String source;        // DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER
+        private String displayName;  // "Direct", "Search Engine", etc.
+        private Integer pageViews;
+        private Integer percentage;   // 0-100
     }
 }
