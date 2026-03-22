@@ -10,12 +10,15 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: None
+## Current Milestone: v1.6 UI Polish
 
-**v1.5 Enhanced Analytics — SHIPPED 2026-03-22**
-- Page view trends over time (line chart, 7/30/90 day views)
-- Referral source breakdown (Google, Bing, direct, social)
-- All 3 phases complete: Data Layer, API Layer, UI Layer
+**Goal:** Clean white theme across all pages, blue-black components for premium feel, enhanced editor UX, consistent hover animations on all buttons.
+
+**Target features:**
+- White/light theme for all pages (Home, Editor, Templates, Analytics, etc.)
+- Blue-black color scheme for buttons and components
+- Editor UX improvements (block handles, config panel, animations)
+- Consistent hover animations on all interactive elements
 
 ## Requirements
 
@@ -58,7 +61,10 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ### Active
 
-- No active milestone — v1.5 Enhanced Analytics shipped
+- [ ] **UIP-01**: White/light theme for all pages
+- [ ] **UIP-02**: Blue-black color scheme for components
+- [ ] **UIP-03**: Editor UX improvements (handles, config panel, animations)
+- [ ] **UIP-04**: Consistent hover animations on buttons
 
 ### Out of Scope
 

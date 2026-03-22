@@ -2,7 +2,7 @@
 
 **Project:** Vibe Onepage - AI-Powered Single-Page Website Builder
 **Granularity:** Standard
-**Total v1 Requirements:** 52 (31 existing, 21 v1.1 to build)
+**Total v1 Requirements:** 58 (52 validated, 6 v1.6 to build)
 
 ---
 
@@ -14,132 +14,64 @@
 - [x] **v1.3 SEO Tools** — Phase 12 (SHIPPED 2026-03-22)
 - [x] **v1.4 Email & Notifications** — Phases 13-14 (SHIPPED 2026-03-22)
 - [x] **v1.5 Enhanced Analytics** — Phases 15-17 (SHIPPED 2026-03-22)
+- [ ] **v1.6 UI Polish** — Phases 18-19 (planned)
 
 ---
 
 ## Phases
 
-- [x] **Phase 15: Analytics Data Layer** - Backend referral source categorization and storage
-- [x] **Phase 16: Analytics API Layer** - Backend API exposing time-series and referral data (completed 2026-03-22)
-- [x] **Phase 17: Analytics UI Layer** - Frontend charts for visualization
+- [ ] **Phase 18: UI Foundation** - White theme, global CSS variables, button animations, template gallery polish
+- [ ] **Phase 19: Editor Polish** - Block handle improvements, config panel refinement, editor theme consistency
 
 ---
 
 ## Phase Details
 
-### Phase 15: Analytics Data Layer
+### Phase 18: UI Foundation
 
-**Goal:** Analytics data layer can categorize and store referral sources for time-series and breakdown analysis
+**Goal:** Establish white/light theme foundation with blue-black accents across all pages
 
-**Depends on:** Nothing (first phase of milestone)
+**Depends on:** Nothing
 
-**Requirements:** ANLT-01 (data foundation), ANLT-02 (data foundation)
-
-**Success Criteria** (what must be TRUE):
-1. RefererParser utility categorizes referer URLs into Direct, Search Engine, Social, Referral, and Other categories
-2. PageView entity stores refererSource field when recording a page view
-3. AnalyticsService.recordPageView() persists the categorized source to database
-4. BlogDailySourceStats entity and mapper exist for daily source aggregation
-
-**Plans:** 1/1 plans complete
-- [x] 15-01-PLAN.md — Analytics Data Layer (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
-
----
-
-### Phase 16: Analytics API Layer
-
-**Goal:** API exposes time-series page view data and referral source breakdown for frontend consumption
-
-**Depends on:** Phase 15
-
-**Requirements:** ANLT-01 (API support), ANLT-02 (API support)
+**Requirements:** UIP-01, UIP-02, UIP-04, UIP-05
 
 **Success Criteria** (what must be TRUE):
-1. AnalyticsService.getBlogStats() returns dailyStats[] with filtering for 7/30/90 day periods
-2. AnalyticsService.getBlogStats() returns refererSources[] with source name, page view count, and percentage
-3. AnalyticsAggregationJob runs daily and pre-aggregates page views by source into BlogDailySourceStats
-4. API response latency under 200ms for dashboard load (using pre-aggregated data)
+1. All pages (Home, Templates, Analytics, Orders, etc.) use white/light background
+2. Global CSS variables define blue-black color scheme (navy accents)
+3. All buttons have consistent hover animations (scale, shadow, color)
+4. Template gallery cards have refined shadows and hover states
 
-**Plans:** 1/1 plans complete
-- [x] 16-01-PLAN.md — Analytics API Layer (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
+**Plans:** 1/1 plans
+- [ ] 18-01-PLAN.md — UI Foundation (UIP-01, UIP-02, UIP-04, UIP-05)
 
 ---
 
-### Phase 17: Analytics UI Layer
+### Phase 19: Editor Polish
 
-**Goal:** User can visualize page view trends and referral source breakdown in the analytics dashboard
+**Goal:** Refined editor experience with improved block handles, config panel, and theme consistency
 
-**Depends on:** Phase 16
+**Depends on:** Phase 18
 
-**Requirements:** ANLT-01 (visualization), ANLT-02 (visualization)
+**Requirements:** UIP-03, UIP-06
 
 **Success Criteria** (what must be TRUE):
-1. Time-series line chart displays daily page views with working 7d/30d/90d toggle
-2. Referral source pie/bar chart displays traffic breakdown with percentages and source labels
-3. Analytics dashboard renders both charts with proper loading and empty states
-4. Charts downsample data gracefully when dataset is large (>30 data points)
+1. Block handles are more visible and have smooth drag animations
+2. Config panel has refined styling matching white theme
+3. Editor toolbar and panels use consistent blue-black accents
+4. Analytics dashboard charts match new white theme
 
-**Plans:** 1/1 plans complete
-- [x] 17-01-PLAN.md — Analytics Charts (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
-
----
-
-### Phase 11: Analytics
-
-**Goal**: Users can view visitor counts and page views for their published sites
-
-**Depends on**: Phase 9 (platform hosting)
-
-**Requirements**: ANAL-01, ANAL-02, ANAL-03
-
-**Success Criteria** (what must be TRUE):
-1. User can view visitor counts for their published site
-2. User can view page views per published site
-3. Analytics data displays in user dashboard
-
-**Plans**: 2 plans
-- [x] 11-01-PLAN.md — Analytics Data Layer (ANAL-01, ANAL-02)
-- [x] 11-02-PLAN.md — Analytics Service & Dashboard (ANAL-01, ANAL-02, ANAL-03)
+**Plans:** 1/1 plans
+- [ ] 19-01-PLAN.md — Editor Polish (UIP-03, UIP-06)
 
 ---
 
-## v1.1 Progress
+## v1.6 Progress
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. AI Generation & Editor Polish | 2/2 | Complete    | 2026-03-21 |
-| 7. Credit System | 3/3 | Complete    | 2026-03-21 |
-| 8. PDF Export | 2/2 | Complete    | 2026-03-21 |
-| 9. Platform Hosting | 1/1 | Complete    | 2026-03-21 |
-| 10. Payments & VIP | 1/1 | Complete    | 2026-03-21 |
-
-## v1.2 Progress
-
-| Phase | Plans | Status | Completed |
-|-------|-------|--------|-----------|
-| 11. Analytics | 2/2 | Complete    | 2026-03-22 |
-
-## v1.3 Progress
-
-| Phase | Plans | Status | Completed |
-|-------|-------|--------|-----------|
-| 12. SEO Meta Tags and Open Graph | 4/4 | Complete | 2026-03-22 |
-
-## v1.4 Progress
-
-| Phase | Plans | Status | Completed |
-|-------|-------|--------|-----------|
-| 13. Email Collection | 3/3 | Complete | 2026-03-22 |
-| 14. Notification Emails and PDF Delivery | 3/3 | Complete | 2026-03-22 |
-
-## v1.5 Progress
-
-| Phase | Plans | Status | Completed |
-|-------|-------|--------|-----------|
-| 15. Analytics Data Layer | 1/1 | Complete | 2026-03-22 |
-| 16. Analytics API Layer | 1/1 | Complete | 2026-03-22 |
-| 17. Analytics UI Layer | 1/1 | Complete | 2026-03-22 |
+| 18. UI Foundation | 1/1 | Not started | - |
+| 19. Editor Polish | 1/1 | Not started | - |
 
 ---
 
-*Last updated: 2026-03-22 after v1.5 milestone*
+*Last updated: 2026-03-22 after v1.6 roadmap creation*
