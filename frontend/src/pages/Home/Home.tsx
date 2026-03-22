@@ -8,19 +8,28 @@ import { useTranslation } from '../../i18n';
 
 function Home() {
   const { t } = useTranslation();
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ username: string; email?: string } | null>(null);
+  const [showEmailBanner, setShowEmailBanner] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
 
   useEffect(() => {
     const loadUser = () => {
       const savedUser = localStorage.getItem('user');
+      const emailBannerDismissed = localStorage.getItem('emailBannerDismissed');
       if (savedUser) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          // Show banner if user exists but has no email and hasn't dismissed
+          if (parsedUser && !parsedUser.email && emailBannerDismissed !== 'true') {
+            setShowEmailBanner(true);
+          }
         } catch (e) {
           console.error('Failed to parse user:', e);
         }
       } else {
         setUser(null);
+        setShowEmailBanner(false);
       }
     };
 
@@ -39,6 +48,11 @@ function Home() {
     setUser(newUser);
   };
 
+  const dismissEmailBanner = () => {
+    setShowEmailBanner(false);
+    localStorage.setItem('emailBannerDismissed', 'true');
+  };
+
   const Blob = ({ className, delay }: { className: string; delay: number }) => (
     <div
       className={`absolute rounded-full blur-[120px] opacity-30 animate-glow-pulse ${className}`}
@@ -55,6 +69,39 @@ function Home() {
       </div>
 
       <Header user={user} onUserChange={handleUserChange} />
+
+      {showEmailBanner && (
+        <div className="relative z-10 bg-gradient-to-r from-primary/10 to-accent/10 border-b border-border">
+          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <p className="text-sm text-primary">
+                <span className="font-medium">Add your email</span>
+                <span className="text-secondary ml-2">to receive notifications and recover your account</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowAccountSettings(true)}
+                className="px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+              >
+                {t('addEmail')}
+              </button>
+              <button
+                onClick={dismissEmailBanner}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface transition-colors"
+                aria-label="Dismiss"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Hero />
       <TemplatePreview />
