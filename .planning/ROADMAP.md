@@ -184,11 +184,11 @@
 **Goal:** Collect user email during registration (with verification) and allow users to update their email in account settings
 **Requirements**: EML-01, EML-02
 **Depends on:** Phase 12
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 13-01-PLAN.md — Backend Email Infrastructure + Registration Enforcement
-- [ ] 13-02-PLAN.md — Frontend Registration + Login Updates
+- [x] 13-02-PLAN.md — Frontend Registration + Login Updates
 - [ ] 13-03-PLAN.md — Frontend Account Settings Modal
 
 ---

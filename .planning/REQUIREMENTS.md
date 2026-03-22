@@ -7,8 +7,8 @@
 
 ### Email Collection
 
-- [ ] **EML-01**: User must provide a valid email address during registration
-- [ ] **EML-02**: User can add or update their email address in account settings
+- [x] **EML-01**: User must provide a valid email address during registration
+- [x] **EML-02**: User can add or update their email address in account settings
 
 ### Notifications
 
@@ -34,8 +34,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EML-01 | TBD | Pending |
-| EML-02 | TBD | Pending |
+| EML-01 | TBD | Complete |
+| EML-02 | TBD | Complete |
 | EML-03 | TBD | Pending |
 | EML-04 | TBD | Pending |
 | EML-05 | TBD | Pending |

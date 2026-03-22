@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Email & Notifications
-status: in_progress
-last_updated: "2026-03-22T07:07:18.357Z"
+milestone: v1.1
+milestone_name: Completion
+status: unknown
+last_updated: "2026-03-22T07:11:20.885Z"
 progress:
-  total_phases: 7
+  total_phases: 6
   completed_phases: 6
-  total_plans: 14
-  completed_plans: 12
+  total_plans: 11
+  completed_plans: 11
 ---
 
 # Vibe Onepage - Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 13 (email-collection) — COMPLETE
-Plan: 1 of 3
+Plan: 2 of 3
 
 ## Roadmap Evolution
 
@@ -38,6 +38,9 @@ Plan: 1 of 3
 - **13-01-D02**: SendGrid SMTP via Spring Mail with Thymeleaf template rendering (per D-10)
 - **13-01-D03**: UUID tokens for email verification with 24hr expiry
 - **13-01-D04**: Max 3 resend requests per 24 hours per email
+- **13-02-D01**: Registration shows success message and redirects to login (no auto-login)
+- **13-02-D02**: Email banner is non-blocking with dismiss option
+- **13-02-D03**: Banner state persisted in localStorage
 
 ### Decisions Made (v1.3)
 
