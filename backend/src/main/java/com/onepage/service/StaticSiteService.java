@@ -27,9 +27,14 @@ public class StaticSiteService {
      * @param title Blog title
      * @param coverImage Cover image URL
      * @param blocksJson JSON string of blocks array
+     * @param metaTitle Custom SEO meta title (falls back to title if null)
+     * @param metaDescription Custom SEO meta description (falls back to content excerpt if null)
+     * @param siteUrl Base URL for og:url (e.g., http://localhost:8080 or production domain)
+     * @param username Username for constructing og:url path
      * @return Static HTML string
      */
-    public String generateStaticHtml(String title, String coverImage, String blocksJson) {
+    public String generateStaticHtml(String title, String coverImage, String blocksJson,
+                                     String metaTitle, String metaDescription, String siteUrl, String username) {
         try {
             List<Map<String, String>> blocks = parseBlocks(blocksJson);
 
@@ -38,6 +43,13 @@ public class StaticSiteService {
             context.setVariable("coverImage", coverImage);
             context.setVariable("blocks", blocks);
 
+            // SEO fields - use custom values or fall back to defaults
+            context.setVariable("metaTitle", metaTitle != null ? metaTitle : title);
+            context.setVariable("metaDescription", metaDescription != null ? metaDescription : truncateForMeta(contentExcerpt(blocks)));
+            context.setVariable("siteUrl", siteUrl != null ? siteUrl : "http://localhost:8080");
+            context.setVariable("ogImage", coverImage != null ? coverImage : "");
+            context.setVariable("username", username != null ? username : "");
+
             String html = templateEngine.process(BLOG_TEMPLATE, context);
             log.info("Generated static HTML for blog: {}", title);
             return html;
@@ -45,6 +57,43 @@ public class StaticSiteService {
             log.error("Failed to generate static HTML for blog: {}", title, e);
             throw new RuntimeException("Failed to generate static HTML", e);
         }
+    }
+
+    /**
+     * Legacy method for backward compatibility - generates HTML without SEO fields.
+     */
+    public String generateStaticHtml(String title, String coverImage, String blocksJson) {
+        return generateStaticHtml(title, coverImage, blocksJson, null, null, null, null);
+    }
+
+    /**
+     * Extract a plain text excerpt from blocks for meta description fallback.
+     */
+    private String contentExcerpt(List<Map<String, String>> blocks) {
+        if (blocks == null || blocks.isEmpty()) {
+            return "";
+        }
+        StringBuilder text = new StringBuilder();
+        for (Map<String, String> block : blocks) {
+            String type = block.get("type");
+            if ("text".equals(type) || "text-paragraph".equals(type)) {
+                String content = block.get("content");
+                if (content != null) {
+                    text.append(content).append(" ");
+                }
+            }
+        }
+        return text.toString().trim();
+    }
+
+    /**
+     * Truncate string for meta description (max 160 chars).
+     */
+    private String truncateForMeta(String text) {
+        if (text == null || text.length() <= 160) {
+            return text;
+        }
+        return text.substring(0, 157) + "...";
     }
 
     /**
