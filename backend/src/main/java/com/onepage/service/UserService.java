@@ -149,4 +149,24 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                 .eq(User::getUsername, username)
                 .one();
     }
+
+    /**
+     * Update robots.txt content for a user.
+     * SEO-03
+     */
+    public void updateRobotsTxt(Long userId, String robotsTxt) {
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        User user = this.getById(userId);
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        user.setRobotsTxt(robotsTxt);
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
+        log.info("User robots.txt updated: userId={}", userId);
+    }
 }
