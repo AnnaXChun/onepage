@@ -15,6 +15,7 @@ public class RegisterRequest {
     @Size(min = 8, max = 20, message = "密码长度必须在8-20个字符之间")
     private String password;
 
+    @NotBlank(message = "邮箱不能为空")
     @Email(message = "邮箱格式不正确")
     private String email;
 }
