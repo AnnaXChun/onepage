@@ -4,6 +4,7 @@ import { LanguageProvider } from './i18n'
 import { BlogProvider, useBlog } from './context/BlogContext'
 import { getBlogById } from './services/api'
 import Home from './pages/Home/Home'
+import AnalyticsDashboard from './pages/Analytics/AnalyticsDashboard'
 import Orders from './pages/Orders/Orders'
 import BlogView from './pages/BlogView/BlogView'
 import CreditTopup from './pages/Credit/CreditTopup'
@@ -422,6 +423,7 @@ function App() {
             <Route path="/payment/:blogId" element={<PaymentPage />} />
             <Route path="/success/:blogId" element={<SuccessPage />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/analytics" element={<AnalyticsDashboard />} />
             <Route path="/credit/topup" element={<CreditTopup />} />
             <Route path="/pdf/export" element={<PdfExport />} />
             <Route path="/blog/:shareCode" element={<BlogView />} />
