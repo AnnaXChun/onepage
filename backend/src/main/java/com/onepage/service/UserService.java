@@ -322,7 +322,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         // Get published blogs for this user
         List<Blog> publishedBlogs = blogService.getPublishedBlogsByUserId(user.getId());
 
-        // Build blog summaries
+        // Build blog summaries with featured flag
         List<ProfileDTO.BlogSummary> blogSummaries = publishedBlogs.stream()
                 .map(blog -> {
                     ProfileDTO.BlogSummary summary = new ProfileDTO.BlogSummary();
@@ -331,6 +331,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                     summary.setCoverImage(blog.getCoverImage());
                     summary.setShareCode(blog.getShareCode());
                     summary.setPublishTime(blog.getPublishTime());
+                    summary.setFeatured(blog.getFeatured());
                     return summary;
                 })
                 .collect(Collectors.toList());
@@ -347,6 +348,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         profile.setVipStatus(user.getVipStatus());
         profile.setVipExpireTime(user.getVipExpireTime());
         profile.setBlogs(blogSummaries);
+
+        // Set total visitors across all user's published sites
+        profile.setTotalVisitors(blogService.getTotalVisitorsByUserId(user.getId()));
 
         return profile;
     }

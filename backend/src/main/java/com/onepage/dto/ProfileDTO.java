@@ -16,6 +16,11 @@ public class ProfileDTO {
     private Boolean vipStatus;
     private LocalDateTime vipExpireTime;
     private List<BlogSummary> blogs;
+    /**
+     * Total visitor count across all user's published sites.
+     * PROF-11
+     */
+    private Long totalVisitors;
 
     @Data
     public static class BlogSummary {
@@ -24,5 +29,10 @@ public class ProfileDTO {
         private String coverImage;
         private String shareCode;
         private LocalDateTime publishTime;
+        /**
+         * Whether this blog is the user's featured/pinned site.
+         * PROF-12
+         */
+        private Boolean featured = false;
     }
 }

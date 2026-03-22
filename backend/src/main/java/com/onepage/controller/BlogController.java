@@ -261,6 +261,20 @@ public class BlogController {
         return Result.success();
     }
 
+    /**
+     * Set a blog as the featured/pinned site for the authenticated user.
+     * PUT /api/blog/{id}/featured
+     * Only one blog can be featured at a time per user.
+     * PROF-12
+     */
+    @PutMapping("/{id}/featured")
+    public Result<Void> setFeaturedBlog(
+            @PathVariable Long id,
+            @AuthenticationPrincipal JwtUserPrincipal principal) {
+        blogService.setFeaturedBlog(id, principal.getUserId());
+        return Result.success();
+    }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof JwtUserPrincipal principal) {

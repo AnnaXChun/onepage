@@ -46,6 +46,12 @@ public class Blog {
 
     private LocalDateTime publishTime;
 
+    /**
+     * Whether this blog is pinned as the user's featured site.
+     * Only one published blog can be featured per user at a time.
+     */
+    private Boolean featured = false;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

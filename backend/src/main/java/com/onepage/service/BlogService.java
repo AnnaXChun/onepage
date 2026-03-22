@@ -12,11 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -440,5 +442,41 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
                 .eq(Blog::getStatus, 1)
                 .orderByDesc(Blog::getPublishTime)
                 .list();
+    }
+
+    /**
+     * Get total visitor count across all published blogs for a user.
+     * Sums pageViews from blog_daily_stats for all user's published blogs.
+     * PROF-11
+     */
+    public Long getTotalVisitorsByUserId(Long userId) {
+        List<Blog> userBlogs = getPublishedBlogsByUserId(userId);
+        if (userBlogs.isEmpty()) {
+            return 0L;
+        }
+        List<Long> blogIds = userBlogs.stream().map(Blog::getId).collect(Collectors.toList());
+        Long total = baseMapper.selectTotalVisitorsByBlogIds(blogIds);
+        return total != null ? total : 0L;
+    }
+
+    /**
+     * Set a blog as the featured/pinned site for a user.
+     * Clears featured flag on all other published blogs for this user first.
+     * PROF-12
+     */
+    @Transactional
+    public void setFeaturedBlog(Long blogId, Long userId) {
+        // Clear existing featured for all user's published blogs
+        this.lambdaUpdate()
+                .eq(Blog::getUserId, userId)
+                .eq(Blog::getStatus, 1)
+                .set(Blog::getFeatured, false)
+                .update();
+        // Set new featured
+        this.lambdaUpdate()
+                .eq(Blog::getId, blogId)
+                .eq(Blog::getUserId, userId)
+                .set(Blog::getFeatured, true)
+                .update();
     }
 }

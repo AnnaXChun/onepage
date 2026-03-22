@@ -5,6 +5,7 @@ import com.onepage.dto.ProfileDTO;
 import com.onepage.dto.Result;
 import com.onepage.dto.UpdateProfileRequest;
 import com.onepage.exception.BusinessException;
+import com.onepage.service.BlogService;
 import com.onepage.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserProfileController {
 
     private final UserService userService;
+    private final BlogService blogService;
 
     /**
      * Get public profile by username.
