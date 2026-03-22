@@ -1,5 +1,17 @@
 # Milestones
 
+## v1.5 Enhanced Analytics (Shipped: 2026-03-22)
+
+**Phases completed:** 4 phases, 5 plans, 0 tasks
+
+**Key accomplishments:**
+
+- Executed:
+- 1. [Rule 3 - Blocking] Fixed pre-existing RefererParserTest JUnit 4/5 compatibility
+- ChartCard.tsx
+
+---
+
 ## v1.4 Email & Notifications (Shipped: 2026-03-22)
 
 **Phases completed:** 6 phases, 11 plans, 34 tasks
