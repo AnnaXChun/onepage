@@ -44,7 +44,7 @@
 4. Profile displays VIP badge for users with active VIP status
 5. Profile displays grid of user's published blog cards with cover image, title, and link to published blog
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 - [x] 20-01-PLAN.md - Backend API and frontend profile page with avatar, bio, social links, VIP badge, and published sites grid
 
 ---
@@ -88,7 +88,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 20. Public Profile Display | 1/1 | DONE | 2026-03-22 |
+| 20. Public Profile Display | 1/1 | Complete    | 2026-03-22 |
 | 21. Profile Editing | 0/1 | Not started | - |
 | 22. Integration and Polish | 0/1 | Not started | - |
 

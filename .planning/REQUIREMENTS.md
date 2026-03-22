@@ -9,10 +9,10 @@ Requirements for user profile pages. Each maps to roadmap phases.
 
 ### Profile Display
 
-- [ ] **PROF-01**: Public profile page at `/user/{username}` showing avatar, username, bio, social links
-- [ ] **PROF-02**: Published sites grid — cards with cover image, title, link to published blog
-- [ ] **PROF-03**: VIP badge on profile for VIP users
-- [ ] **PROF-04**: Social link icons (Twitter/X, GitHub, LinkedIn, website) with external links
+- [x] **PROF-01**: Public profile page at `/user/{username}` showing avatar, username, bio, social links
+- [x] **PROF-02**: Published sites grid — cards with cover image, title, link to published blog
+- [x] **PROF-03**: VIP badge on profile for VIP users
+- [x] **PROF-04**: Social link icons (Twitter/X, GitHub, LinkedIn, website) with external links
 
 ### Profile Editing
 
@@ -24,7 +24,7 @@ Requirements for user profile pages. Each maps to roadmap phases.
 ### Integration
 
 - [ ] **PROF-09**: "View My Profile" link in header navigation (authenticated users)
-- [ ] **PROF-10**: Profile accessible without login (public page)
+- [x] **PROF-10**: Profile accessible without login (public page)
 
 ### Differentiators
 
@@ -43,16 +43,16 @@ Requirements for user profile pages. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROF-01 | Phase 20 | Pending |
-| PROF-02 | Phase 20 | Pending |
-| PROF-03 | Phase 20 | Pending |
-| PROF-04 | Phase 20 | Pending |
+| PROF-01 | Phase 20 | Complete |
+| PROF-02 | Phase 20 | Complete |
+| PROF-03 | Phase 20 | Complete |
+| PROF-04 | Phase 20 | Complete |
 | PROF-05 | Phase 21 | Pending |
 | PROF-06 | Phase 21 | Pending |
 | PROF-07 | Phase 21 | Pending |
 | PROF-08 | Phase 21 | Pending |
 | PROF-09 | Phase 22 | Pending |
-| PROF-10 | Phase 20 | Pending |
+| PROF-10 | Phase 20 | Complete |
 | PROF-11 | Phase 22 | Pending |
 | PROF-12 | Phase 22 | Pending |
 
