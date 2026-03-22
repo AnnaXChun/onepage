@@ -21,9 +21,10 @@ interface PreviewProps {
   onGenerated?: (blog: Blog) => void;
   onBack?: () => void;
   onSuccess?: (blog: Blog) => void;
+  onEdit?: (blog: Blog) => void;
 }
 
-function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onBack, onSuccess }: PreviewProps) {
+function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onBack, onSuccess, onEdit }: PreviewProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -416,7 +417,16 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-border">
+        <div className="mt-6 pt-4 border-t border-border space-y-3">
+          {onEdit && (
+            <button
+              onClick={() => generatedBlog && onEdit?.(generatedBlog)}
+              className="w-full py-3 bg-surface border border-border text-text-primary font-medium rounded-xl hover:bg-background transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!generatedBlog}
+            >
+              {t('editYourPage') || 'Edit Your Page'}
+            </button>
+          )}
           <button
             onClick={() => generatedBlog && onSuccess?.(generatedBlog)}
             className="w-full py-3 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"

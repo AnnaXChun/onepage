@@ -127,7 +127,8 @@ function TemplatePage() {
   const handleSelect = (template: TemplateConfig) => {
     console.log('[TemplatePage] handleSelect:', { template, uploadedImage });
     setSelectedTemplate(template)
-    navigate('/editor', {
+    // Navigate to Preview first - it will create the blog and then allow editing
+    navigate('/preview', {
       state: {
         uploadedImage,
         selectedTemplate: template
@@ -227,6 +228,17 @@ function PreviewPage() {
     }
   }
 
+  // Handle edit - go to editor with blogId
+  const handleEdit = (blog: { id: number; coverImage?: string; templateId?: string; title?: string; content?: string }) => {
+    console.log('handleEdit called with blog:', blog);
+    if (blog?.id) {
+      setCurrentBlog(blog as never)
+      navigate(`/editor/${blog.id}`, {
+        state: { uploadedImage, selectedTemplate }
+      })
+    }
+  }
+
   return (
     <ProtectedRoute requireAuth>
       <Preview
@@ -237,6 +249,7 @@ function PreviewPage() {
         onGenerated={handleGenerated}
         onBack={() => navigate('/template', { state: { uploadedImage } })}
         onSuccess={handleSuccess}
+        onEdit={handleEdit}
       />
     </ProtectedRoute>
   )
