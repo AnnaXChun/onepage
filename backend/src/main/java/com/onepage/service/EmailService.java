@@ -1,0 +1,93 @@
+package com.onepage.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import jakarta.mail.internet.MimeMessage;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+
+    @Value("${spring.mail.username:noreply@vibe.com}")
+    private String fromAddress;
+
+    @Value("${app.base-url:http://localhost:5173}")
+    private String baseUrl;
+
+    /**
+     * Send email verification to user.
+     * Uses SendGrid SMTP via Spring Mail with Thymeleaf template rendering (per D-10).
+     */
+    public void sendVerificationEmail(String to, String username, String token) {
+        try {
+            String verifyUrl = baseUrl + "/verify-email?token=" + token;
+            int expiresInHours = 24;
+
+            // Build Thymeleaf context with template variables
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("verificationUrl", verifyUrl);
+            context.setVariable("expiresInHours", expiresInHours);
+
+            // Render template using Thymeleaf
+            String htmlContent = templateEngine.process("email/email-verification", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject("Verify your Vibe account email");
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Verification email sent to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send verification email to {}: {}", to, e.getMessage());
+            // Retry up to 3 times with exponential backoff
+            retrySendVerificationEmail(to, username, token, 1);
+        }
+    }
+
+    private void retrySendVerificationEmail(String to, String username, String token, int attempt) {
+        if (attempt > 3) {
+            log.error("Failed to send verification email after 3 attempts: {}", to);
+            return;
+        }
+        try {
+            long delay = (long) Math.pow(2, attempt) * 1000; // 2, 4, 8 seconds
+            Thread.sleep(delay);
+
+            String verifyUrl = baseUrl + "/verify-email?token=" + token;
+            int expiresInHours = 24;
+
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("verificationUrl", verifyUrl);
+            context.setVariable("expiresInHours", expiresInHours);
+
+            String htmlContent = templateEngine.process("email/email-verification", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject("Verify your Vibe account email");
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            log.info("Verification email sent after {} attempts to: {}", attempt, to);
+        } catch (Exception e) {
+            log.error("Retry {} failed for {}: {}", attempt, to, e.getMessage());
+            retrySendVerificationEmail(to, username, token, attempt + 1);
+        }
+    }
+}
