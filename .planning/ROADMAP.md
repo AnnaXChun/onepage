@@ -186,7 +186,7 @@
   4. Published sites include Open Graph and Twitter Card meta tags for social previews
   5. SEO changes require re-publish to take effect (amber warning shown)
 
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 12-01-PLAN.md — SEO Data Layer (SEO-01, SEO-03) — database schema, Blog/User models, PUT /api/blog/{id}/seo

@@ -52,13 +52,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ PDF Export Full — Free preview (1h), paid export (0.3 credits), 24h expiring links — v1.1 (Phase 8)
 - ✓ VIP & Payments Full — FulfillmentService dispatch, WeChat Pay callback fulfillment, VIP activation, template purchase — v1.1 (Phase 10)
 - ✓ Analytics Dashboard — visitor counts and page views per published site — v1.2 (Phase 11)
+- ✓ SEO Tools — custom meta tags, sitemap.xml, robots.txt, Open Graph, Twitter Cards — v1.3 (Phase 12)
 
 ### Active
 
-- [ ] **SEO-01**: User can set custom meta title and description per page
-- [ ] **SEO-02**: Published sites include auto-generated sitemap.xml
-- [ ] **SEO-03**: User can configure robots.txt (allow/block specific paths)
-- [ ] **SEO-04**: Published sites include Open Graph and Twitter Card meta tags
+(No active requirements — all v1.3 SEO features shipped)
 
 ### Out of Scope
 
