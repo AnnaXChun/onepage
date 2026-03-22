@@ -20,6 +20,18 @@ public class Blog {
 
     private String content;
 
+    /**
+     * Custom SEO meta title (max 255 chars)
+     * Falls back to title if not set
+     */
+    private String metaTitle;
+
+    /**
+     * Custom SEO meta description (max 500 chars recommended)
+     * Falls back to first 160 chars of content if not set
+     */
+    private String metaDescription;
+
     private String coverImage;
 
     private String templateId;
