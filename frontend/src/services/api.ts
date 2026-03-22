@@ -204,4 +204,29 @@ export const getPdfJobStatus = async (jobId: string): Promise<{ status: string; 
   return response.data.data;
 };
 
+// Analytics types
+export interface AnalyticsData {
+  blogId: number;
+  blogTitle: string;
+  totalPageViews: number;
+  totalUniqueVisitors: number;
+  dailyStats: Array<{
+    date: string;
+    pageViews: number;
+    uniqueVisitors: number;
+  }>;
+}
+
+// Get user analytics
+export const getUserAnalytics = async (period: string = '7d'): Promise<ApiResponse<AnalyticsData[]>> => {
+  const response = await api.get('/analytics', { params: { period } });
+  return response.data;
+};
+
+// Get blog analytics
+export const getBlogAnalytics = async (blogId: number, period: string = '7d'): Promise<ApiResponse<AnalyticsData>> => {
+  const response = await api.get(`/analytics/blog/${blogId}`, { params: { period } });
+  return response.data;
+};
+
 export default api;
