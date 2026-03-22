@@ -100,7 +100,7 @@ export default function EditorToolbar({ onSeoClick }: EditorToolbarProps) {
         {/* SEO button */}
         <button
           onClick={onSeoClick}
-          className="p-2 text-[oklch(55%_0_0)] hover:bg-[oklch(25%_0.015_260)] hover:text-[oklch(90%_0_0)] rounded-lg transition-colors"
+          className="p-2 text-primary hover:bg-primary hover:text-white rounded-lg transition-colors"
           title="SEO Settings"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

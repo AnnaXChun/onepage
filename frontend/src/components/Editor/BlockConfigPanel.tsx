@@ -33,14 +33,14 @@ export default function BlockConfigPanel({ blogId }: BlockConfigPanelProps) {
 
   if (!selectedBlock) {
     return (
-      <div className="w-72 border-l border-border p-4 bg-surface">
+      <div className="w-80 border-l border-border p-4 bg-white shadow-sm">
         <p className="text-sm text-text-muted">Select a block to configure</p>
       </div>
     );
   }
 
   return (
-    <div className="w-72 border-l border-border p-4 bg-surface overflow-y-auto">
+    <div className="w-80 border-l border-border bg-white shadow-sm overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-text-primary capitalize">
           {selectedBlock.type.replace('-', ' ')} Settings

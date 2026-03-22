@@ -1,9 +1,19 @@
 import { CSSProperties } from 'react';
 
-export default function DragHandle() {
+interface DragHandleProps {
+  isSelected?: boolean;
+}
+
+export default function DragHandle({ isSelected }: DragHandleProps) {
   return (
     <div
-      className="drag-handle cursor-grab active:cursor-grabbing p-1 text-text-muted hover:text-text-primary transition-colors"
+      className={`
+        cursor-grab active:cursor-grabbing p-1 transition-all duration-200
+        ${isSelected
+          ? 'text-primary bg-primary/10 rounded'
+          : 'text-text-muted hover:text-primary hover:bg-primary/5 rounded'
+        }
+      `}
       style={{ touchAction: 'none' } as CSSProperties}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

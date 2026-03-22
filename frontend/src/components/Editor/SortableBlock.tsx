@@ -21,10 +21,14 @@ export default function SortableBlock({ block }: SortableBlockProps) {
     isDragging,
   } = useSortable({ id: block.id });
 
+  // Apply smooth transition with ease-out-quart
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging
+      ? 'transform 200ms var(--ease-out-quart), opacity 200ms var(--ease-out-quart)'
+      : 'transform 200ms var(--ease-out-quart), opacity 200ms var(--ease-out-quart)',
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : 1,
   };
 
   const handleContentChange = (content: string) => {
@@ -44,16 +48,28 @@ export default function SortableBlock({ block }: SortableBlockProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group mb-4 ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+      className={`
+        relative group mb-4 transition-shadow duration-200
+        ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
+        ${isDragging ? 'shadow-xl scale-[1.02]' : 'hover:shadow-md'}
+      `}
       onClick={handleSelect}
     >
-      {/* Drag handle - positioned absolutely, visible on group hover */}
+      {/* Drag handle - visible when selected OR on hover */}
       <div
         {...attributes}
         {...listeners}
-        className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-surface-elevated/50 rounded-l-lg z-10"
+        className={`
+          absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center
+          transition-all duration-200
+          ${isSelected
+            ? 'opacity-100 text-primary bg-primary/10 rounded-l-lg'
+            : 'opacity-0 group-hover:opacity-100 bg-surface-elevated/50 rounded-l-lg'
+          }
+          z-10
+        `}
       >
-        <DragHandle />
+        <DragHandle isSelected={isSelected} />
       </div>
 
       {/* Delete button - top right, visible on hover */}
