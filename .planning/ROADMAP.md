@@ -177,7 +177,8 @@
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 13. Email Collection | 1/3 | Plan 1 complete |
+| 13. Email Collection | 3/3 | Complete |
+| 14. Notification Emails and PDF Delivery | 3/3 | Planned |
 
 ### Phase 13: Email Collection
 
@@ -193,14 +194,16 @@ Plans:
 
 ### Phase 14: Notification Emails and PDF Delivery
 
-**Goal:** [To be planned]
+**Goal:** Users receive email notifications when AI generation completes and first visitor arrives, and can request PDF delivered to their email with 24-hour download link
 **Requirements**: EML-03, EML-04, EML-05, EML-06
 **Depends on:** Phase 13
-**Plans:** 0 plans
+**Plans:** 3/3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 14 to break down)
+- [x] 14-01-PLAN.md — Generation Completion Email (EML-03)
+- [x] 14-02-PLAN.md — First Visitor Notification Email (EML-04)
+- [x] 14-03-PLAN.md — PDF Email Delivery (EML-05, EML-06)
 
 ---
 
-*Last updated: 2026-03-22 after Phase 13 planning*
+*Last updated: 2026-03-22 after Phase 14 planning*
