@@ -90,4 +90,62 @@ public class EmailService {
             retrySendVerificationEmail(to, username, token, attempt + 1);
         }
     }
+
+    /**
+     * Send first visitor notification email to blog owner.
+     * Fire-and-forget: failures are logged but do not throw.
+     */
+    public void sendFirstVisitorEmail(String to, String username, String siteName, String shareCode) {
+        try {
+            String shareUrl = baseUrl + "/share/" + shareCode;
+
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("siteName", siteName);
+            context.setVariable("shareUrl", shareUrl);
+
+            String htmlContent = templateEngine.process("email/first-visitor", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject("Your first visitor! - " + siteName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("First visitor email sent to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send first visitor email to {}: {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Send generation complete notification email to user.
+     * Fire-and-forget: failures are logged but do not block completion.
+     */
+    public void sendGenerationCompleteEmail(String to, String username, String siteName, String shareCode) {
+        try {
+            String shareUrl = baseUrl + "/share/" + shareCode;
+
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("siteName", siteName);
+            context.setVariable("shareUrl", shareUrl);
+
+            String htmlContent = templateEngine.process("email/generation-complete", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject("Your website is ready - " + siteName);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Generation complete email sent to: {} for site: {}", to, siteName);
+        } catch (Exception e) {
+            log.error("Failed to send generation complete email to {}: {}", to, e.getMessage());
+        }
+    }
 }
