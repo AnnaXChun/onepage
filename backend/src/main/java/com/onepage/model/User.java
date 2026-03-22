@@ -31,4 +31,6 @@ public class User {
     private Boolean vipStatus;          // true if VIP is active
 
     private LocalDateTime vipExpireTime; // VIP subscription expiration
+
+    private String robotsTxt;            // custom robots.txt content for SEO-03
 }
