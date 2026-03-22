@@ -8,6 +8,7 @@ function Register() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ username: '', password: '', confirmPassword: '', email: '' })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -25,6 +26,20 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
+
+    // Validate email is not empty
+    if (!formData.email || formData.email.trim() === '') {
+      setError(t('emailRequired'))
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError(t('invalidEmail'))
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError(t('passwordsDoNotMatch'))
@@ -44,12 +59,13 @@ function Register() {
         password: formData.password,
         email: formData.email
       })
-      if (response.code === 200 && response.data?.accessToken) {
-        localStorage.setItem('token', response.data.accessToken)
-        const userInfo = { username: formData.username, email: formData.email }
-        localStorage.setItem('user', JSON.stringify(userInfo))
-        navigate('/')
-        window.dispatchEvent(new Event('user-auth-change'))
+      if (response.code === 200) {
+        // Registration successful - show message instead of auto-login
+        // Email verification required before login
+        setSuccess(t('verificationEmailSent'))
+        setTimeout(() => {
+          navigate('/login', { state: { message: 'verificationEmailSent' } })
+        }, 2000)
       } else {
         setError(response.message || t('registrationFailed'))
       }
@@ -85,6 +101,12 @@ function Register() {
               <h1 className="text-2xl font-bold mb-2">{t('createAccount')}</h1>
               <p className="text-secondary">{t('startCreatingToday')}</p>
             </div>
+
+            {success && (
+              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-500 text-sm">
+                {success}
+              </div>
+            )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
