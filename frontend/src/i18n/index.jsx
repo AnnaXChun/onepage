@@ -175,6 +175,19 @@ const translations = {
     passwordsDoNotMatch: 'Passwords do not match',
     passwordTooShort: 'Password must be at least 6 characters',
 
+    // Email
+    emailRequired: 'Email is required',
+    invalidEmail: 'Please enter a valid email address',
+    verificationEmailSent: 'Registration successful! Please check your email to verify your account.',
+    verificationEmailSentDesc: 'Registration successful! Please check your email to verify your account.',
+    resendVerificationLink: 'Resend verification email',
+    verificationEmailResent: 'Verification email sent! Check your inbox.',
+    sending: 'Sending...',
+    resendFailed: 'Failed to resend verification email',
+    addEmail: 'Add Email',
+    emailNotVerified: 'Email not verified',
+    pleaseVerifyEmail: 'Please verify your email first',
+
     // Errors
     error: 'Error',
     failed: 'Failed',
@@ -351,6 +364,19 @@ const translations = {
     userMayExist: '注册失败，用户名可能已存在',
     passwordsDoNotMatch: '两次密码输入不一致',
     passwordTooShort: '密码至少需要6个字符',
+
+    // Email
+    emailRequired: '邮箱不能为空',
+    invalidEmail: '请输入有效的邮箱地址',
+    verificationEmailSent: '注册成功！请查收邮件验证您的账户。',
+    verificationEmailSentDesc: '注册成功！请查收邮件验证您的账户。',
+    resendVerificationLink: '重新发送验证邮件',
+    verificationEmailResent: '验证邮件已发送！请查收。',
+    sending: '发送中...',
+    resendFailed: '重发验证邮件失败',
+    addEmail: '添加邮箱',
+    emailNotVerified: '邮箱未验证',
+    pleaseVerifyEmail: '请先验证您的邮箱',
 
     // Errors
     error: '错误',
