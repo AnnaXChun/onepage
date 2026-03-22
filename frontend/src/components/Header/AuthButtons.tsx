@@ -50,11 +50,11 @@ export default function AuthButtons({ user, onLogout, onAccountSettings }: AuthB
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-10"
+              className="fixed inset-0 z-40"
               onClick={() => setDropdownOpen(false)}
             />
             {/* Dropdown menu */}
-            <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-lg overflow-hidden z-20">
+            <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-lg overflow-hidden z-50">
               <div className="p-2">
                 <button
                   onClick={() => {
