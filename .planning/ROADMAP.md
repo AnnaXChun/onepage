@@ -19,7 +19,7 @@
 
 ## Phases
 
-- [ ] **Phase 15: Analytics Data Layer** - Backend referral source categorization and storage
+- [x] **Phase 15: Analytics Data Layer** - Backend referral source categorization and storage
 - [ ] **Phase 16: Analytics API Layer** - Backend API exposing time-series and referral data
 - [ ] **Phase 17: Analytics UI Layer** - Frontend charts for visualization
 
@@ -41,7 +41,8 @@
 3. AnalyticsService.recordPageView() persists the categorized source to database
 4. BlogDailySourceStats entity and mapper exist for daily source aggregation
 
-**Plans:** TBD
+**Plans:** 1/1 complete
+- [x] 15-01-PLAN.md — Analytics Data Layer (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
 
 ---
 
@@ -157,10 +158,10 @@ Plans:
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 15. Analytics Data Layer | 0/? | Not started |
+| 15. Analytics Data Layer | 1/1 | Complete (2026-03-22) |
 | 16. Analytics API Layer | 0/? | Not started |
 | 17. Analytics UI Layer | 0/? | Not started |
 
 ---
 
-*Last updated: 2026-03-22 after v1.5 roadmap creation*
+*Last updated: 2026-03-22 after Phase 15-01 completion*
