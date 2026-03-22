@@ -267,6 +267,13 @@ export const updateRobotsTxt = async (robotsTxt: string): Promise<void> => {
 };
 
 // Analytics types
+export interface RefererSource {
+  source: 'Direct' | 'Search Engine' | 'Social' | 'Referral' | 'Other';
+  displayName: string;
+  pageViews: number;
+  percentage: number;
+}
+
 export interface AnalyticsData {
   blogId: number;
   blogTitle: string;
@@ -277,6 +284,7 @@ export interface AnalyticsData {
     pageViews: number;
     uniqueVisitors: number;
   }>;
+  refererSources: RefererSource[];
 }
 
 // Get user analytics
