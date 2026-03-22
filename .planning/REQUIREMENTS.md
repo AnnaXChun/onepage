@@ -44,8 +44,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ANLT-01 | TBD | Pending |
-| ANLT-02 | TBD | Pending |
+| ANLT-01 | Phase 15, 16, 17 | Pending |
+| ANLT-02 | Phase 15, 16, 17 | Pending |
 | EML-01 | Phase 13 | Complete |
 | EML-02 | Phase 13 | Complete |
 | EML-03 | Phase 14 | Complete |
@@ -55,9 +55,9 @@
 
 **Coverage:**
 - v1.5 requirements: 2 total
-- Mapped to phases: 0
-- Unmapped: 2 ⚠️
+- Mapped to phases: 2/2 (ANLT-01 across Phases 15-17, ANLT-02 across Phases 15-17)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after v1.5 milestone definition*
+*Last updated: 2026-03-22 after v1.5 roadmap creation*
