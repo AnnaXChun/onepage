@@ -2,10 +2,12 @@ package com.onepage.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.AnalyticsDTO;
+import com.onepage.mapper.BlogDailySourceStatsMapper;
 import com.onepage.mapper.BlogDailyStatsMapper;
 import com.onepage.mapper.PageViewMapper;
 import com.onepage.model.Blog;
 import com.onepage.model.BlogDailyStats;
+import com.onepage.model.BlogDailySourceStats;
 import com.onepage.model.PageView;
 import com.onepage.util.RefererParser;
 import com.onepage.model.User;
@@ -31,6 +33,7 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
 
     private final PageViewMapper pageViewMapper;
     private final BlogDailyStatsMapper blogDailyStatsMapper;
+    private final BlogDailySourceStatsMapper sourceStatsMapper;
     private final RedisTemplate<String, Object> redisTemplate;
     private final BlogService blogService;
     private final EmailService emailService;
@@ -121,7 +124,7 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
     public AnalyticsDTO getBlogStats(Long blogId, String period) {
         Blog blog = blogService.getById(blogId);
         if (blog == null) {
-            return new AnalyticsDTO(blogId, "Unknown", 0, 0, List.of());
+            return new AnalyticsDTO(blogId, "Unknown", 0, 0, List.of(), List.of());
         }
 
         int days = parsePeriod(period);
@@ -151,7 +154,7 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
                 stat.getUniqueVisitors()))
             .collect(Collectors.toList());
 
-        return new AnalyticsDTO(blogId, blog.getTitle(), totalPageViews, totalUniqueVisitors, dailyStatList);
+        return new AnalyticsDTO(blogId, blog.getTitle(), totalPageViews, totalUniqueVisitors, dailyStatList, getRefererSources(blogId, days));
     }
 
     /**
@@ -198,5 +201,34 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
         if ("30d".equals(period)) return 30;
         if ("90d".equals(period)) return 90;
         return 7; // Default to 7 days
+    }
+
+    /**
+     * Get referral source breakdown for a blog within the specified period.
+     * Queries pre-aggregated BlogDailySourceStats for performance.
+     */
+    private List<AnalyticsDTO.RefererSourceStat> getRefererSources(Long blogId, int days) {
+        LocalDate startDate = LocalDate.now().minusDays(days);
+
+        List<BlogDailySourceStats> sourceStats = sourceStatsMapper.selectList(
+            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<BlogDailySourceStats>()
+                .eq(BlogDailySourceStats::getBlogId, blogId)
+                .ge(BlogDailySourceStats::getStatDate, startDate)
+        );
+
+        int totalPageViews = sourceStats.stream().mapToInt(BlogDailySourceStats::getPageViews).sum();
+
+        return sourceStats.stream()
+            .map(stat -> {
+                int percentage = totalPageViews > 0 ? (stat.getPageViews() * 100) / totalPageViews : 0;
+                String displayName = RefererParser.Source.valueOf(stat.getSource()).getDisplayName();
+                return new AnalyticsDTO.RefererSourceStat(
+                    stat.getSource(),
+                    displayName,
+                    stat.getPageViews(),
+                    percentage
+                );
+            })
+            .collect(Collectors.toList());
     }
 }
