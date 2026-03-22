@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.onepage.dto.LoginRequest;
 import com.onepage.dto.ProfileDTO;
 import com.onepage.dto.RefreshTokenRequest;
+import com.onepage.dto.UpdateProfileRequest;
 import com.onepage.exception.BusinessException;
 import com.onepage.exception.ErrorCode;
 import com.onepage.mapper.UserMapper;
@@ -348,5 +349,86 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         profile.setBlogs(blogSummaries);
 
         return profile;
+    }
+
+    /**
+     * Update user profile (bio, avatar, social links).
+     * Extracts userId from SecurityContext to prevent IDOR.
+     * PROF-05, PROF-06, PROF-07
+     */
+    public void updateProfile(Long userId, UpdateProfileRequest request) {
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        User user = this.getById(userId);
+        if (user == null) {
+            throw BusinessException.userNotFound();
+        }
+
+        // Update bio with sanitization
+        if (request.getBio() != null) {
+            user.setBio(sanitizeContent(request.getBio()));
+        }
+
+        // Update avatar URL
+        if (request.getAvatar() != null) {
+            user.setAvatar(sanitizeUrl(request.getAvatar()));
+        }
+
+        // Update social links with sanitization
+        if (request.getTwitter() != null) {
+            user.setTwitter(sanitizeUsername(request.getTwitter()));
+        }
+        if (request.getGithub() != null) {
+            user.setGithub(sanitizeUsername(request.getGithub()));
+        }
+        if (request.getLinkedin() != null) {
+            user.setLinkedin(sanitizeUsername(request.getLinkedin()));
+        }
+        if (request.getWebsite() != null) {
+            user.setWebsite(sanitizeUrl(request.getWebsite()));
+        }
+
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
+
+        log.info("Profile updated for userId={}", userId);
+    }
+
+    /**
+     * Sanitize content to prevent XSS attacks.
+     * PROF-05
+     */
+    private String sanitizeContent(String content) {
+        if (content == null) return null;
+        // Remove script tags and event handlers
+        return content.replaceAll("<script[^>]*>.*?</script>", "")
+                      .replaceAll("on\\w+\\s*=\\s*[\"'][^\"']*[\"']", "")
+                      .replaceAll("javascript:", "")
+                      .trim();
+    }
+
+    /**
+     * Sanitize URL to prevent javascript: and data: URLs except for avatar uploads.
+     * PROF-06
+     */
+    private String sanitizeUrl(String url) {
+        if (url == null || url.isBlank()) return null;
+        // Only allow http:// and https:// URLs
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return url;
+        }
+        return null;
+    }
+
+    /**
+     * Sanitize social media username ( alphanumeric, underscore, hyphen only).
+     * PROF-07
+     */
+    private String sanitizeUsername(String username) {
+        if (username == null || username.isBlank()) return null;
+        // Only allow alphanumeric, underscore, hyphen
+        return username.replaceAll("[^a-zA-Z0-9_-]", "");
     }
 }
