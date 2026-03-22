@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from '../../i18n'
-import { login } from '../../services/api'
+import { login, resendVerification } from '../../services/api'
 
 function Login() {
   const { t } = useTranslation()
@@ -11,7 +11,10 @@ function Login() {
   const returnUrl = location.state?.returnUrl || searchParams.get('returnUrl') || '/'
   const [formData, setFormData] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -21,8 +24,29 @@ function Login() {
     }
   }, [navigate, returnUrl])
 
+  useEffect(() => {
+    // Check for verification email sent message from registration redirect
+    if (location.state?.message === 'verificationEmailSent') {
+      setSuccess(t('verificationEmailSentDesc'))
+      // Clear the state to prevent showing on refresh
+      navigate(location.pathname, { replace: true })
+    }
+  }, [location.state, navigate, t])
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleResendVerification = async () => {
+    setResendLoading(true)
+    try {
+      await resendVerification(formData.username)
+      setResendSuccess(true)
+    } catch (err) {
+      setError(t('resendFailed'))
+    } finally {
+      setResendLoading(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -42,7 +66,12 @@ function Login() {
         setError(response.message || t('loginFailed'))
       }
     } catch (err) {
-      setError(t('usernameOrPasswordError'))
+      const errorMsg = err.response?.data?.message || err.message || ''
+      if (errorMsg.includes('EMAIL_NOT_VERIFIED') || errorMsg.includes('verify your email')) {
+        setError(errorMsg)
+      } else {
+        setError(t('usernameOrPasswordError'))
+      }
     } finally {
       setLoading(false)
     }
@@ -74,9 +103,27 @@ function Login() {
               <p className="text-secondary">{t('signInToContinue')}</p>
             </div>
 
+            {success && (
+              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-500 text-sm">
+                {success}
+              </div>
+            )}
+
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
-                {error}
+                <p>{error}</p>
+                {(error.includes('verify') || error.includes('EMAIL_NOT_VERIFIED')) && !resendSuccess && (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                    className="mt-2 text-sm underline hover:no-underline"
+                  >
+                    {resendLoading ? t('sending') : t('resendVerificationLink')}
+                  </button>
+                )}
+                {resendSuccess && (
+                  <p className="mt-2 text-green-500">{t('verificationEmailResent')}</p>
+                )}
               </div>
             )}
 
