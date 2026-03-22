@@ -1,181 +1,155 @@
 # Project Research Summary
 
-**Project:** Vibe Onepage - Drag-and-Drop Single-Page Website Builder SaaS
-**Domain:** AI-powered website builder with block editor, PDF export, WeChat Pay credits, and subdomain hosting
-**Researched:** 2026-03-21
+**Project:** Vibe Onepage - v1.5 Enhanced Analytics
+**Domain:** Website analytics with time-series visualization and referral source tracking
+**Researched:** 2026-03-22
 **Confidence:** MEDIUM
 
 ## Executive Summary
 
-Vibe Onepage v1.1 is a drag-and-drop single-page website builder that uses AI to generate personalized sites from images. The existing codebase has structural foundations for all v1.1 features but requires completion of stub implementations and integration work. The core value proposition - "upload a photo, get a website in minutes" - requires finishing the AI generation pipeline (image analysis -> MiniMax -> block assembly), polishing the per-block AI writing assist, completing PDF export with credit deduction, and enabling subdomain hosting.
+The v1.5 Enhanced Analytics milestone adds two capabilities to the existing v1.2 analytics infrastructure: (1) time-series page view charts showing trends over 7/30/90 days, and (2) referral source breakdown categorizing traffic into Direct, Search Engine, Social, and Referral categories. The existing codebase already captures raw data (page_views table with referer field, blog_daily_stats aggregation), but lacks visualization and proper referer categorization.
 
-The recommended approach is to complete the AI pipeline first (since it is the core differentiator), then build the credit system (required for all paid features), then layer PDF preview and hosting on top. Key risks include: AI generation producing unusable output without validation gates, credit race conditions causing free PDFs, WeChat Pay v2 SDK used in a v3 API world, and no actual subdomain routing infrastructure.
+The recommended approach leverages existing infrastructure: AnalyticsService.recordPageView() already stores referer data, and dailyStats[] exists in AnalyticsDTO. The primary work involves adding a ReferralParser utility to categorize referer URLs, exposing the existing dailyStats data properly, and integrating a frontend charting library (Recharts). No new backend dependencies or database tables are strictly required for MVP, though a separate blog_daily_source_stats table enables better per-source trend analysis at scale.
+
+Key risks include: performance issues from querying raw page_views on dashboard load (must use pre-aggregated daily stats), timezone handling bugs in time-series data, and potential referral data loss from HTTPS->HTTP transitions (browser privacy feature). The frontend must implement data downsampling to avoid chart rendering crashes with large datasets.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**Summary from STACK.md:** The v1.0 stack is complete and validated. v1.1 requires minimal additions - primarily WebSocket for real-time AI progress, a form library for the configuration panel, and a PDF preview component.
+The existing v1.2 stack is validated and sufficient. No backend dependency changes are needed.
 
 **Core technologies:**
-- **Spring Boot 3.2.0 + Java 17** - Backend framework (existing, stable)
-- **React 18.2.0 + Vite 5.0.8 + TailwindCSS 3.3.6** - Frontend framework (existing, validated)
-- **@stomp/stompjs 7.3.0 + sockjs-client 1.6.2** - WebSocket for AI progress (NEW: enables real-time generation status)
-- **react-hook-form 7.71.2** - Configuration panel forms (NEW: lightweight form state for block settings)
-- **react-pdf 3.4.1** - PDF preview before charge (NEW: in-browser preview capability)
-- **Spring AI 1.0.0-M6 + MiniMax** - AI generation (existing, needs completion of parseAndAssemble stub)
-- **RabbitMQ + Redis** - Async jobs and caching (existing, well-configured)
-- **Flying Saucer 9.3.1** - PDF generation (existing, working but limited CSS support)
+- **Recharts ^3.8.0** — Time-series line charts and pie/bar charts for referral breakdown; declarative React components, ~15KB core bundle, native time-series support
+- **ReferralParser (new utility)** — Backend enum-based parser to categorize referer URLs into Direct, Search Engine, Social, Referral, Other; no external library needed
+- **Existing: MySQL 8, Redis 6.x, Spring Boot 3.2.0, MyBatis-Plus 3.5.5** — All remain unchanged; page_views and blog_daily_stats tables already exist
 
-**What NOT to add:** socket.io (use STOMP instead), Redux/MobX (Zustand sufficient), react-query (not needed), Builder.io/GrapesJS (overkill), LangChain4j (Spring AI sufficient), iText 7 (AGPL license issue).
+**Avoid:** Chart.js (imperative canvas API requires wrapper overhead), Tremor (heavy ~100KB+ bundle), Victory (complex API), Redis Stack time-series (overkill for project scale), ClickHouse (operational complexity unjustified).
 
 ### Expected Features
 
-**Summary from FEATURES.md:** The v1.1 milestone focuses on completing the AI generation pipeline, polishing AI writing assist, finalizing the block editor, completing PDF export, implementing WeChat Pay credit deduction, and enabling platform hosting.
-
 **Must have (table stakes):**
-- **Complete AI Generation Pipeline** - Image upload -> MiniMax -> Block assembly -> Editor display; current stub returns empty blocks with 0.0 confidence
-- **AI Writing Assist Polish** - Replace/Append modes, confidence highlighting (amber ring when < 0.7), sparkle button visibility on hover
-- **Block Configuration Panel** - Right sidebar for block-level settings (alignment, colors, visibility)
-- **PDF Preview + Export** - Preview free, export charges 0.3 credits, 24h download links, quality validation before charging
-- **WeChat Pay Credit Flow** - Order creation, callback handling, credit deduction (atomic operation)
-- **Publish/Unpublish** - Static HTML generation, status management, subdomain hosting
+- Time-series line chart — Display daily page views as line chart with 7d/30d/90d toggle; existing dailyStats[] in AnalyticsDTO provides data
+- Referral source categorization — Parse referer into Direct/Search/Social/Referral categories; raw referer field exists but needs parsing
+- Referral pie/bar chart — Visual breakdown of traffic sources with percentages
 
-**Should have (competitive differentiators):**
-- **AI Generation from Image** - "Upload a photo, get a website" is the core magical experience
-- **Per-Block AI Write Assist** - Context-aware inline AI without disrupting workflow
-- **Async Generation with Progress** - Non-blocking UI during 5-30s AI calls via WebSocket
-- **Confidence-Based Highlighting** - Visual indicator of AI certainty (amber ring)
-- **One-Click Regeneration** - Iterate on AI output quickly
+**Should have (competitive):**
+- UTM parameter parsing — Track campaign sources from URL parameters (P2 complexity)
+- Traffic spike alerts — Email notification when traffic exceeds rolling average (P3, EmailService exists)
 
 **Defer (v2+):**
-- Real-Time Collaborative Editing - Extreme complexity; single-user only for v1
-- Full Code Export - Removes SaaS lock-in; hosting included instead
-- Custom Domain for Free Users - Infrastructure cost; reserve for VIP
-- Block Animations - Entrance animations, hover effects
-- More Templates - Expand based on usage data after launch
+- Geographic breakdown — Requires IP geolocation service, privacy concerns, cost
+- Device/browser breakdown — Requires UA parsing library
+- Real-time analytics (live visitor count) — WebSocket infrastructure needed
+- Custom date range picker — 7/30/90d presets sufficient for v1.5
 
 ### Architecture Approach
 
-**Summary from ARCHITECTURE.md:** The existing 3-layer Spring Boot architecture (Controller-Service-Repository) with RabbitMQ async consumers, Redis caching, JWT auth, and WebSocket via SimpMessagingTemplate is sound. Key integration challenges are completing the AI generation pipeline and credit system.
+The existing analytics pipeline is: SiteController.servePublishedSite() -> AnalyticsService.recordPageView() [@Async] -> Save to page_views table (referer stored) + Redis Set (visitor fingerprint). AnalyticsService.getBlogStats() queries blog_daily_stats and returns dailyStats[].
+
+**Target data flow for v1.5:**
+1. recordPageView() parses referer URL via RefererParser, stores source category
+2. Scheduled aggregation job (daily at 00:05) groups page_views by blog_id and referer_source, upserts into blog_daily_source_stats (or queries directly for MVP)
+3. getBlogStats() returns existing dailyStats[] plus new refererSources[] breakdown
+4. Frontend renders line chart (dailyStats) and pie chart (refererSources) via Recharts
 
 **Major components:**
-1. **AIGenerationController + AIGenerationConsumer** - Receives generation requests, queues async job, orchestrates pipeline via RabbitMQ, notifies frontend via WebSocket
-2. **BlockAssemblyService** - Parses AI JSON response into structured block data (NOT raw HTML - preserves editability)
-3. **CreditDeductionService + WalletService** - Atomic credit operations with idempotency keys and distributed locks (Redis)
-4. **PdfPreviewController + PdfPreviewService** - Two-phase PDF: free low-res preview, then full export with credit deduction
-5. **SubdomainFilter + SiteController** - Wildcard DNS routing to serve published blogs via subdomains
-
-**Key patterns:**
-- Always use async RabbitMQ-based pipeline for AI calls (5-30s latency, 500 QPS requirement)
-- AI outputs structured block JSON, NOT rendered HTML (preserves user editability)
-- Credit deduction uses idempotency keys + distributed locks (prevents race conditions)
-- Two-phase PDF: preview before charge with automatic refund on failure
+1. **RefererParser** (util/) — Enum-based categorization of referer URLs into Source enum (DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER)
+2. **BlogDailySourceStats** (model/) — Entity for daily source breakdown; new table or JSON column in blog_daily_stats
+3. **AnalyticsAggregationJob** (job/) — @Scheduled job at 00:05 to aggregate previous day's page_views by source into blog_daily_source_stats
+4. **AnalyticsDTO.RefererSourceStat** (dto/) — New nested class for API response: {source, displayName, pageViews, percentage}
+5. **TimeSeriesChart + ReferralChart** (frontend) — Recharts LineChart and PieChart wrappers
 
 ### Critical Pitfalls
 
-**Top 5 from PITFALLS.md:**
+1. **Referral data normalization missing** — Storing raw referer URLs causes useless noise (dozens of google.com variants). Prevention: Parse and normalize domains at insert time via RefererParser.
 
-1. **AI Generation Produces Unusable Output** - AIGenerationService.parseAndAssemble() is a stub returning empty blocks. Without validation gates, users get garbage output. Prevention: confidence scoring, preview/approval step before commit.
+2. **Per-page-view aggregation on dashboard load** — Querying raw page_views with GROUP BY causes 10+ second loads or timeouts at scale. Prevention: Pre-aggregate via scheduled job; serve from blog_daily_stats or blog_daily_source_stats.
 
-2. **PDF Credits Deducted After Generation - No Rollback** - PdfJobConsumer deducts credits AFTER PDF is generated and stored. If deduction fails, user gets free PDF. Prevention: deduct BEFORE generation, or use transaction spanning both.
+3. **Synchronous analytics recording blocks site serving** — recordPageView() in request thread adds 50-200ms latency. Prevention: Already @Async in existing code; verify dedicated thread pool exists.
 
-3. **WeChat Pay v2 SDK in v3 API World** - wxpay-sdk 0.0.3 uses v2 protocol (MD5 signatures), but WeChat Pay API v3 requires RSA certificates and HMAC-SHA256. Payments will silently fail in production. Prevention: migrate to v3 native SDK.
+4. **Timezone handling bugs in time-series** — LocalDateTime.now() uses server timezone; aggregation by day is ambiguous. Prevention: Store timestamps in UTC; convert to user timezone at display time.
 
-4. **Race Condition in Credit Balance Check vs Deduction** - Two concurrent PDF requests both pass balance check before either deduction. User gets 2 PDFs for 0.6 credits when they only had 0.5. Prevention: Redis distributed lock per user during check-and-deduct.
-
-5. **Static Site Hosting Has No Actual Subdomain Routing** - BlogService.publish() saves HTML to DB but no DNS, Nginx, or CDN configuration exists. Prevention: implement SubdomainFilter + wildcard DNS + OSS storage.
+5. **Frontend chart rendering crashes** — Recharts renders all data points; 90 days of data = 2160 points, DOM cannot handle. Prevention: Downsample to daily for >30 points; disable animation for large datasets; lazy load historical data.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on research, the v1.5 Enhanced Analytics work splits into three phases:
 
-### Phase 1: Block Schema Contract + AI Generation Pipeline
-**Rationale:** AI generation is the core differentiator and depends on agreeing on block JSON schema first.
-**Delivers:** Block schema contract, AI generation pipeline with WebSocket progress, block assembly service
-**Addresses:** AI Website Generation completion, AI Writing Assist polish, Block Editor polish
-**Avoids:** AI generates HTML (wrong), Synchronous AI calls (UI freeze), MiniMax API latency blocking UI
+### Phase 1: Backend Data Layer
+**Rationale:** Foundation must be solid before API and UI layers. Referer categorization requires database schema changes (add referer_source column to page_views).
 
-### Phase 2: Credit System Infrastructure
-**Rationale:** All paid features (PDF export, template purchases, VIP) depend on atomic credit operations. Build this before payments.
-**Delivers:** User credit_balance field, atomic WalletService, CreditDeductionService with idempotency + distributed lock, Redis caching
-**Addresses:** WeChat Pay Credit Deduction flow
-**Avoids:** Race condition in credit balance, double-deduction from retries
+**Delivers:** PageView entity updated with refererSource field; RefererParser utility with categorization logic; AnalyticsService.recordPageView() stores categorized source; BlogDailySourceStats entity and mapper (if using separate table).
 
-### Phase 3: PDF Preview-Before-Charge
-**Rationale:** Depends on credit system; implements two-phase pattern to prevent broken PDFs being charged.
-**Delivers:** PdfPreviewService (low-res preview), preview endpoint with 1h expiring URL, full export with credit deduction, auto-refund on failure
-**Addresses:** PDF Export completion
-**Avoids:** Credits deducted after generation (no rollback), PDF quality no validation, PDF 24h expiration cleanup never runs
+**Implements:** STACK.md ReferralParser, ARCHITECTURE.md Phase A components.
 
-### Phase 4: Subdomain Routing & Publishing
-**Rationale:** Final publish step; depends on complete blogs (AI + editor done).
-**Delivers:** SubdomainFilter, SiteController, BlogService.publish() with OSS upload, wildcard DNS configuration
-**Addresses:** Subdomain Hosting completion
-**Avoids:** No actual subdomain routing, published blogs not accessible via subdomain
+### Phase 2: Backend API Layer
+**Rationale:** API must expose categorized data before frontend can visualize. Builds directly on Phase 1.
 
-### Phase 5: VIP & Payments Completion
-**Rationale:** WeChat Pay v2->v3 migration and final integration.
-**Delivers:** WeChat Pay v3 API integration, certificate authentication, proper signature validation
-**Avoids:** WeChat Pay signature validation bypass when not configured, v2 SDK in v3 world
+**Delivers:** AnalyticsDTO.RefererSourceStat nested class; AnalyticsService.getBlogStats() returns refererSources[] breakdown; AnalyticsAggregationJob for daily source aggregation.
+
+**Implements:** ARCHITECTURE.md Phase B components, API changes from STACK.md.
+
+### Phase 3: Frontend UI Layer
+**Rationale:** UI layer depends on API. Final integration of Recharts for visualization.
+
+**Delivers:** Recharts installed; TimeSeriesChart component for daily page view trends; ReferralChart component (PieChart) for traffic source breakdown; Period toggle (7d/30d/90d); Updated AnalyticsDashboard.
+
+**Implements:** FEATURES.md P1 features (time-series chart, referral chart), STACK.md Recharts integration.
 
 ### Phase Ordering Rationale
 
-- **Block schema first** because both AI pipeline (backend) and editor (frontend) must agree on contract
-- **AI pipeline second** because it is the core differentiator and provides user value early for testing
-- **Credit system third** because all paid features depend on atomic operations; build infrastructure before building on top
-- **PDF preview fourth** because it uses credit system and completes the export feature
-- **Subdomain hosting fifth** because it depends on complete blogs from AI + editor
-- **VIP/Payments last** because WeChat Pay v3 migration is a known complex integration
+- **Phase 1 before 2:** API cannot return source breakdown without data layer changes
+- **Phase 2 before 3:** Frontend needs API contract to render charts
+- **Grouping by layer:** Backend (data + API) separated from frontend to enable parallel work after Phase 1
+- **Avoids pitfalls:** Async recording already exists (Pitfall 15 mitigated), pre-aggregation design (Pitfall 14 mitigated), timezone handling in schema design (Pitfall 16 mitigation)
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 1 (AI Pipeline):** MiniMax API response format needs verification; confidence scoring threshold needs user testing
-- **Phase 2 (Credit System):** Redis lock implementation details; idempotency key TTL decision
-- **Phase 5 (VIP/Payments):** WeChat Pay v3 API migration path; certificate management in production
+- **Phase 1:** RefererParser domain list completeness — need to verify coverage for Chinese platforms (Baidu, Sogou, Weibo) with actual traffic patterns
+- **Phase 2:** Aggregation job scaling — if blog has 100K+ daily page views, job execution time needs measurement
 
 Phases with standard patterns (skip research-phase):
-- **Phase 3 (PDF Preview):** Flying Saucer + RabbitMQ consumer is well-documented pattern
-- **Phase 4 (Subdomain Routing):** Wildcard DNS + Spring Filter is established pattern
+- **Phase 3:** Recharts is well-documented; LineChart/PieChart patterns are standard React charting approaches
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | v1.0 stack validated; v1.1 additions from official documentation |
-| Features | MEDIUM | Codebase analysis + training data patterns; WebSearch unavailable |
-| Architecture | MEDIUM | Well-established patterns from training data; WebSearch unavailable |
-| Pitfalls | MEDIUM | Code analysis verified; some external sources unverifiable due to WebSearch errors |
+| Stack | HIGH | Existing v1.2 stack validated; Recharts v3.8.0 confirmed compatible with React 18 |
+| Features | MEDIUM | Based on existing codebase analysis + industry standard patterns (Umami, Plausible); competitor comparison available |
+| Architecture | HIGH | Integration points verified via codebase analysis; @Async, scheduled jobs, aggregation patterns standard |
+| Pitfalls | MEDIUM | Based on code analysis + common analytics pitfalls; some (referer normalization, timezone) require production validation |
 
 **Overall confidence:** MEDIUM
 
 ### Gaps to Address
 
-- **MiniMax API exact response format:** parseAndAssemble() needs to handle actual MiniMax JSON; verify with API docs
-- **WeChat Pay v3 migration path:** Current wxpay-sdk v2 will fail; need concrete migration plan with code examples
-- **Confidence threshold validation:** Amber ring at < 0.7 needs user testing to verify if this is the right threshold
-- **PDF quality validation:** Flying Saucer CSS limitations need testing with real blog content
+- **ReferralParser domain coverage:** Chinese search engines (Sogou, 360so) and social platforms (Douyin, Xiaohongshu) may need inclusion; validate against actual traffic during implementation
+- **Timezone validation:** UTC storage and display-time conversion needs testing with users in different timezones
+- **Chart performance at scale:** 90-day view with high-traffic blogs needs load testing; downsampling thresholds may need tuning
+- **HTTPS referer loss:** Cannot be fully solved; need to validate acceptable "Unknown" percentage with real traffic
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Spring Framework WebSocket documentation (docs.spring.io) - STOMP patterns, WebSocketMessageBrokerConfigurer
-- @stomp/stompjs npm registry (verified 7.3.0) - TypeScript types, compatibility
-- react-hook-form npm registry (verified 7.71.2) - Form validation patterns
-- react-pdf npm registry (verified 3.4.1) - PDF worker configuration
+- Existing project codebase analysis (AnalyticsService.java, AnalyticsDTO.java, PageView.java, BlogDailyStats.java, SiteController.java)
+- Recharts official documentation (recharts.org) — v3.8.0 release confirmed
+- MyBatis-Plus documentation (BaseMapper, LambdaQueryWrapper patterns)
+- Spring @Scheduled documentation (cron expressions)
 
 ### Secondary (MEDIUM confidence)
-- Existing codebase analysis (AIService.java, AIGenerationService.java, PdfJobConsumer.java, WeChatPayService.java) - Stub implementations identified
-- WeChat Pay API v3 documentation via WebFetch - Signature validation patterns
-- Spring AI documentation - Streaming, retry patterns
-- Block editor architecture patterns (grapesjs.com, contentful.com) - CMS patterns
+- Standard analytics patterns from training data (time-series visualization, referer categorization)
+- Competitor feature analysis: umami.is, plausible.io (simple analytics feature set)
+- Spring Async execution patterns
+- Redis HyperLogLog for approximate unique counting (reference, not implemented)
 
 ### Tertiary (LOW confidence)
-- Credit system patterns from Stripe billing docs - Wallet patterns need verification
-- Subdomain routing from Netlify docs - Specific implementation needs validation
-- LangChain pipeline patterns - Not directly applicable (Spring AI sufficient)
+- RefererParser domain lists — need production traffic validation
+- Aggregation job performance at 100K+ page views/day — needs load testing
+- Chinese platform categorization (Weibo, Douyin, Xiaohongshu) — need user base validation
 
 ---
-*Research completed: 2026-03-21*
+*Research completed: 2026-03-22*
 *Ready for roadmap: yes*

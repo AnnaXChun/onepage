@@ -1,366 +1,344 @@
 # Feature Research
 
-**Domain:** Drag-and-Drop Website Builder SaaS (v1.1 Milestone)
-**Researched:** 2026-03-21
-**Confidence:** MEDIUM (existing codebase analysis + training data patterns)
+**Domain:** Website Analytics - Time-Series Charts and Referral Source Tracking (v1.5 Milestone)
+**Researched:** 2026-03-22
+**Confidence:** MEDIUM (existing infrastructure analyzed; standard analytics patterns from training data)
 
 ## Executive Summary
 
-This document focuses on the v1.1 milestone features: completing the AI website generation pipeline, polishing the AI writing assist, finalizing the block editor, completing PDF export, implementing WeChat Pay credit deduction, and enabling platform hosting. The existing codebase has structural foundations for all these features but requires completion of stub implementations and integration of existing components.
+This document covers the v1.5 milestone features: enhanced analytics with time-series page view charts and referral source tracking. The existing codebase has foundational analytics (page_views table, blog_daily_stats aggregation, AnalyticsService) but lacks:
+1. **Time-series data exposure** - daily stats exist but frontend needs chart-ready format
+2. **Referral source categorization** - raw referer field exists but is not parsed into categories (direct, search, social, referral)
 
-## Feature Landscape (v1.1 Focus)
+The existing AnalyticsService.getBlogStats() already returns a `dailyStats` array with date/pageViews/uniqueVisitors. The primary work is exposing this data properly and implementing referer parsing.
+
+---
+
+## Feature Landscape (v1.5 Focus)
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist. Missing these = product feels broken or incomplete.
+Features users assume exist. Missing these = product feels incomplete.
 
 | Feature | Why Expected | Complexity | Existing State | What's Needed |
 |---------|--------------|------------|----------------|---------------|
-| AI Website Generation | "Upload photo, get website" is the core promise | HIGH | Stub: `AIGenerationService.generate()` returns empty blocks | Complete LangChain pipeline: image analysis, content gen, block assembly |
-| AI Writing Assist | Inline AI help without leaving editor context | MEDIUM | Working: `AIWriteModal` with Replace/Append modes | Polish: confidence highlighting, sparkle button visibility |
-| Block Editor | Core UX paradigm for editing | MEDIUM | Working: 5 block types, drag-drop, click-to-edit | Polish: configuration panel, block settings persistence |
-| PDF Export | Offline sharing capability | MEDIUM | Working: preview and export endpoints, async job queue | Completion: PDF quality validation, 24h link expiration |
-| WeChat Pay Credit Deduction | Payment flow for paid features | MEDIUM | Working: `WeChatPayService`, `UserCreditsService` | Completion: callback handling, proper state transitions |
-| Subdomain Hosting | Live URL for published sites | MEDIUM | Working: `BlogController.publish()`, static HTML generation | Completion: DNS routing, CDN configuration |
+| Page view trends over time | "Are my visitor numbers going up or down?" | LOW | `dailyStats` array exists in AnalyticsDTO | Chart component with 7/30/90 day toggle |
+| Referral source breakdown | "Where are my visitors coming from?" | MEDIUM | `referer` field stored but not categorized | Parse referer into: Direct, Search, Social, Referral |
+| Time period selection | "Show me last week's vs last month's trends" | LOW | `period` param (7d/30d/90d) exists | Frontend toggle buttons |
+| Chart visualization | "Raw numbers are hard to read" | MEDIUM | None | Line chart component (Recharts, Chart.js, or similar) |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set products apart. Not required, but valuable for conversion and retention.
+Features that set products apart. Not required, but valuable for retention.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| AI Generation from Image | "Upload a photo, get a website" is magical and viral | HIGH | MiniMax image analysis + style extraction + content generation chain |
-| Per-Block AI Write Assist | Context-aware inline AI without disrupting workflow | MEDIUM | Sparkle button appears on text block hover; Replace/Append modes |
-| One-Click Regeneration | Iterate on AI output quickly | LOW | Regenerate button in AIWriteModal; re-calls MiniMax |
-| Confidence-Based Highlighting | Visual indicator of AI certainty | LOW | Amber ring on blocks with confidence < 0.7 |
-| Async Generation with Progress | Non-blocking UI during 5-30s AI calls | MEDIUM | WebSocket progress updates via `/topic/progress/{blogId}` |
+| First-touch attribution | Track which channel brought the visitor originally | MEDIUM | Store initial referer on first visit, persist with visitor session |
+| Top pages breakdown | "Which page gets the most traffic?" | MEDIUM | Currently single-page sites, but could track hero/section engagement |
+| Traffic spike alerts | "Notify me when traffic exceeds normal" | LOW | Compare against rolling average, alert via email |
+| UTM parameter parsing | "Track which campaign brought visitors" | MEDIUM | Parse utm_source, utm_medium, utm_campaign from URL |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
-Features that seem good but create problems.
-
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Real-Time Collaborative Editing | "Work together like Google Docs" | Extreme complexity; locking, conflicts, presence | Single-user editing only for v1 |
-| Full Code Export (HTML/CSS/JS) | "I want to own my code" | Removes SaaS lock-in; infrastructure without recurring revenue | Hosting included; code view-only |
-| Custom Domain for Free Users | "I want my site on my domain" | Infrastructure cost, SSL management, support burden | Reserve for VIP; subdomain for free |
+| Real-time analytics (live visitors) | "See visitors right now" | WebSocket infrastructure needed, high complexity for marginal value | Refresh page for current day counts |
+| Geographic breakdown | "Where in the world are visitors?" | Requires IP geolocation service, privacy concerns, cost | Defer to v2 |
+| Device/browser breakdown | "Optimize for mobile vs desktop" | Requires UA parsing library, secondary metric | User-agent is stored, add aggregation later |
+| Custom date range picker | "I want March 1-15 specifically" | UI complexity, edge cases with partial weeks | 7/30/90 day presets are sufficient for v1.5 |
+
+---
 
 ## Feature Details
 
-### 1. AI Website Generation Pipeline
+### 1. Time-Series Page View Charts
 
-**Current State:** `AIGenerationService.generate()` builds a prompt, calls MiniMax, but `parseAndAssemble()` returns empty blocks. `GenerationMessageConsumer` orchestrates progress via WebSocket.
-
-**How It Should Work:**
-
-```
-[User uploads image + text description]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ 1. Color Extraction (ColorThief client-side)       │
-│    - Extract dominant colors as RGB arrays         │
-│    - Already exists in frontend                    │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ 2. Queue Generation Job (RabbitMQ)                 │
-│    - POST /api/blog/generate with image + desc     │
-│    - Returns jobId immediately (non-blocking)      │
-│    - GenerationMessageProducer sends message       │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ 3. Async Generation (GenerationMessageConsumer)    │
-│    Stage STARTING (0%) ────────────────────────────│
-│    Stage GENERATING (25%) ─ AIGenerationService   │
-│    - Build prompt with description + colors        │
-│    - Call MiniMax chat model                       │
-│    - Parse JSON response                           │
-│    Stage ASSEMBLING_BLOCKS (75%) ─ BlockAssembly  │
-│    - Create BlockData objects with confidence      │
-│    - Persist to blog.blocks JSON field            │
-│    Stage COMPLETED (100%) ─────────────────────────│
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ 4. Frontend Progress (WebSocket)                  │
-│    - Subscribe to /topic/progress/{blogId}         │
-│    - Show progress bar during generation           │
-│    - Auto-navigate to editor on COMPLETED          │
-└─────────────────────────────────────────────────────┘
-```
-
-**Required Completions:**
-- `AIGenerationService.parseAndAssemble()`: Parse MiniMax JSON response into structured blocks with confidence scores
-- `BlockAssemblyService.assembleBlocks()`: Save assembled blocks to blog, update blog.blocks field
-- Frontend: Subscribe to WebSocket progress, show progress UI, handle final state
-
-### 2. AI Writing Assist
-
-**Current State:** `AIWriteModal.tsx` with Replace/Append mode selection. `aiWrite()` calls `/api/ai/write`. `TextBlock.tsx` shows sparkle button on hover with group-hover opacity.
+**Current State:**
+- `AnalyticsService.getBlogStats()` returns `List<DailyStat>` with `{date, pageViews, uniqueVisitors}`
+- Data is already time-ordered (ORDER BY statDate ASC)
+- Period parameter supports 7d, 30d, 90d
 
 **How It Works:**
 
 ```
-[User clicks sparkle button on text block]
+[User opens analytics dashboard]
          │
          ▼
 ┌─────────────────────────────────────────────────────┐
-│ AIWriteModal Opens                                  │
-│ ┌─────────────────────────────────────────────────┐ │
-│ │ Current Text Preview (read-only)                │ │
-│ │ Mode Selection: [Replace] [Append]               │ │
-│ │ [Generate] button ──calls──> POST /api/ai/write  │ │
-│ └─────────────────────────────────────────────────┘ │
+│ Frontend: Fetch analytics data                      │
+│ GET /api/analytics/stats/{blogId}?period=7d        │
 └────────────────────────┬──────────────────────────┘
                          │
                          ▼
 ┌─────────────────────────────────────────────────────┐
-│ Backend: AIWriteService.write()                     │
-│ - Replace mode: Generate new text based on context  │
-│ - Append mode: Generate continuation of existing   │
-│ - Returns: String content                          │
+│ Backend: AnalyticsService.getBlogStats()           │
+│ - Query blog_daily_stats for date range           │
+│ - Add today's Redis real-time counts               │
+│ - Return AnalyticsDTO with dailyStats[]            │
 └────────────────────────┬──────────────────────────┘
                          │
                          ▼
 ┌─────────────────────────────────────────────────────┐
-│ Frontend: Apply Preview                            │
-│ ┌─────────────────────────────────────────────────┐ │
-│ │ Generated Preview (highlighted)                 │ │
-│ │ [Regenerate] [Apply] [Cancel]                   │ │
-│ └─────────────────────────────────────────────────┘ │
+│ Frontend: Render line chart                        │
+│ - X-axis: dates                                    │
+│ - Y-axis: page views / unique visitors            │
+│ - Toggle between 7d / 30d / 90d                  │
 └─────────────────────────────────────────────────────┘
 ```
 
-**Polish Needed:**
-- Confidence highlighting: `isLowConfidence = confidence < 0.7` in TextBlock shows amber ring
-- Currently confidence is passed but block assembly doesn't populate it
-- Sparkle button visibility: Uses `group-hover:opacity-100` - ensure block container has `group` class
+**Data Shape for Charts:**
 
-### 3. PDF Preview Flow
+```typescript
+// Frontend expects this for chart rendering
+interface ChartDataPoint {
+  date: string;           // "2026-03-15"
+  pageViews: number;
+  uniqueVisitors: number;
+}
 
-**Current State:** `PdfController` has `/api/pdf/preview/{blogId}` (free) and `/api/pdf/export/{blogId}` (paid). `PdfJobConsumer` generates PDF, stores it, then deducts credits for non-preview jobs.
-
-**How It Works:**
-
-```
-[User clicks "Preview PDF" (free)]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ POST /api/pdf/preview/{blogId}                     │
-│ - Verifies blog ownership                           │
-│ - Queues job with isPreview=true                   │
-│ - Returns jobId immediately                        │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-[User polls GET /api/pdf/status/{jobId}]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ PdfJobConsumer.processPdfJob()                     │
-│ - isPreview=true: generatePdfPreview()              │
-│ - storeForDownload() with 24h expiration           │
-│ - NO credit deduction for preview                   │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-[User clicks "Export PDF" (0.3 credits)]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ POST /api/pdf/export/{blogId}                      │
-│ - Check hasEnoughCredits() - throw if insufficient │
-│ - Queue job with isPreview=false                  │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ PdfJobConsumer on completion:                      │
-│ - generatePdf() - storeForDownload()               │
-│ - deductCredits(userId, PDF_COST)                  │
-│ - Log transaction                                  │
-└─────────────────────────────────────────────────────┘
-                         │
-                         ▼
-[User downloads GET /api/pdf/download/{jobId}]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ PdfGenerationService.getStoredPdf()                │
-│ - Returns stored PDF bytes                         │
-│ - Returns null if expired/missing                  │
-└─────────────────────────────────────────────────────┘
-```
-
-**Required Completions:**
-- PDF quality validation: Ensure fonts, images render correctly
-- Expiration enforcement: Redis TTL or explicit cleanup job
-
-### 4. WeChat Pay Credit Deduction Flow
-
-**Current State:** `WeChatPayService.createPrepayOrder()` creates unified order. `UserCreditsService.deductCredits()` subtracts from balance. Payment callback handling is implied but not fully visible.
-
-**How It Works:**
-
-```
-[User initiates payment (VIP or template purchase)]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ PaymentService.createOrder()                       │
-│ - Create order record with PENDING status          │
-│ - Call WeChatPayService.createPrepayOrder()        │
-│ - Return qrcodeUrl for QR display                 │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ WeChat Pay QR Code Display                         │
-│ - User scans with WeChat app                       │
-│ - WeChat processes payment                          │
-│ - WeChat sends callback to /api/payment/callback   │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│ PaymentCallback handling:                          │
-│ - verifyCallback() - validate signature            │
-│ - Update order status: PAYING -> PAID             │
-│ - addCredits(userId, amount) for purchase         │
-│ - For template purchase: deduct credits           │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-[Order complete]
-```
-
-**Credit Deduction Pattern (for paid features):**
-```java
-// In PdfJobConsumer (example of deduction pattern)
-if (!message.isPreview()) {
-    BigDecimal pdfCost = userCreditsService.getPdfCost();
-    if (!userCreditsService.hasEnoughCredits(message.getUserId(), pdfCost)) {
-        throw BusinessException.insufficientCredits();
-    }
-    userCreditsService.deductCredits(message.getUserId(), pdfCost);
+// Example API response enhancement
+interface AnalyticsResponse {
+  blogId: number;
+  blogTitle: string;
+  totalPageViews: number;
+  totalUniqueVisitors: number;
+  period: string;         // "7d" | "30d" | "90d"
+  dailyStats: ChartDataPoint[];
+  // NEW for v1.5:
+  referralSources?: ReferralSourceBreakdown;
 }
 ```
 
-### 5. Subdomain Hosting
+### 2. Referral Source Tracking
 
-**Current State:** `BlogController.publish()` generates static HTML from blocks, sets status=1 (published), stores in `htmlContent`. `getBlogHtml()` serves HTML for shareCode.
+**Current State:**
+- `page_views.referer` stores raw HTTP Referer header
+- No categorization is performed
 
-**How It Works:**
+**How Referral Categorization Works:**
 
 ```
-[User clicks Publish]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ POST /api/blog/publish/{id}                        │
-│ - BlogService.publish(blogId, userId)              │
-│ - Generate static HTML from blocks + template      │
-│ - Set blog.status = 1, blog.publishTime = now     │
-│ - Invalidate Redis cache                           │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-[Visitor accesses username.vibe.com/shareCode]
-         │
-         ▼
-┌─────────────────────────────────────────────────────┐
-│ GET /api/blog/share/{shareCode}                    │
-│ - Return blog data with blocks                     │
-│ - OR: GET /api/blog/html/{shareCode}              │
-│ - Return pre-generated htmlContent                 │
-└────────────────────────┬──────────────────────────┘
-                         │
-                         ▼
-[Browser renders published page]
+Raw Referer Header                              Categorized Source
+─────────────────────────────────────────────────────────────────────
+(no referer)                              →  Direct
+https://www.google.com/search?q=...       →  Search: Google
+https://www.bing.com/search?q=...         →  Search: Bing
+https://www.baidu.com/s?wd=...            →  Search: Baidu
+https://www.facebook.com/...              →  Social: Facebook
+https://twitter.com/...                   →  Social: Twitter (X)
+https://weibo.com/...                     →  Social: Weibo
+https://www.linkedin.com/...              →  Social: LinkedIn
+https://t.co/... (shortened)             →  Social: Twitter (X)
+https://pinterest.com/...                  →  Social: Pinterest
+https://example.com/blog/post             →  Referral: example.com
 ```
 
-**Required Completions:**
-- DNS routing: subdomain.vibe.com -> server
-- CDN configuration: Cache-Control headers, asset optimization
-- SSL certificate: HTTPS for subdomains
+**Referer Parsing Logic (Backend):**
+
+```java
+public enum ReferralSource {
+    DIRECT("Direct", "none"),
+    SEARCH_GOOGLE("Search", "google"),
+    SEARCH_BING("Search", "bing"),
+    SEARCH_BAIDU("Search", "baidu"),
+    SEARCH_YAHOO("Search", "yahoo"),
+    SEARCH_DUCKDUCKGO("Search", "duckduckgo"),
+    SOCIAL_FACEBOOK("Social", "facebook"),
+    SOCIAL_TWITTER("Social", "twitter"),
+    SOCIAL_INSTAGRAM("Social", "instagram"),
+    SOCIAL_LINKEDIN("Social", "linkedin"),
+    SOCIAL_WEIBO("Social", "weibo"),
+    SOCIAL_PINTEREST("Social", "pinterest"),
+    REFERRAL("Referral", null);  // hostname becomes the source
+
+    // Plus Referral source hostname extraction
+}
+
+public ReferralSource categorizeReferer(String referer) {
+    if (referer == null || referer.isEmpty()) {
+        return ReferralSource.DIRECT;
+    }
+
+    try {
+        URL url = new URL(referer);
+        String host = url.getHost().toLowerCase();
+
+        // Search engines
+        if (host.contains("google")) return SEARCH_GOOGLE;
+        if (host.contains("bing")) return SEARCH_BING;
+        if (host.contains("baidu")) return SEARCH_BAIDU;
+        if (host.contains("yahoo")) return SEARCH_YAHOO;
+        if (host.contains("duckduckgo")) return SEARCH_DUCKDUCKGO;
+
+        // Social platforms
+        if (host.contains("facebook") || host.contains("fb.")) return SOCIAL_FACEBOOK;
+        if (host.contains("twitter") || host.contains("t.co")) return SOCIAL_TWITTER;
+        if (host.contains("instagram") || host.contains("instagr")) return SOCIAL_INSTAGRAM;
+        if (host.contains("linkedin")) return SOCIAL_LINKEDIN;
+        if (host.contains("weibo")) return SOCIAL_WEIBO;
+        if (host.contains("pinterest")) return SOCIAL_PINTEREST;
+
+        // Default to referral with hostname
+        return REFERRAL;
+
+    } catch (MalformedURLException e) {
+        return ReferralSource.DIRECT;
+    }
+}
+```
+
+**Referral Source Aggregation:**
+
+```sql
+-- Query to get referral breakdown for a blog
+SELECT
+    CASE
+        WHEN referer IS NULL OR referer = '' THEN 'Direct'
+        WHEN referer LIKE '%google%' THEN 'Search: Google'
+        WHEN referer LIKE '%bing%' THEN 'Search: Bing'
+        WHEN referer LIKE '%baidu%' THEN 'Search: Baidu'
+        WHEN referer LIKE '%facebook%' THEN 'Social: Facebook'
+        WHEN referer LIKE '%twitter%' OR referer LIKE '%t.co%' THEN 'Social: Twitter'
+        WHEN referer LIKE '%weibo%' THEN 'Social: Weibo'
+        ELSE 'Referral'
+    END AS source_category,
+    COUNT(*) AS visits
+FROM page_views
+WHERE blog_id = ? AND visited_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+GROUP BY source_category
+ORDER BY visits DESC;
+```
+
+---
 
 ## Feature Dependencies
 
 ```
-[Image Upload]
-    └──feeds──> [AI Generation Pipeline]
-                       └──produces──> [Editable Blocks]
-                                          └──edited by──> [AI Writing Assist]
+[Page Views Recorded]
+    └──produces──> [page_views table]
+                           └──aggregated by──> [blog_daily_stats table]
+                                                      └──queried by──> [AnalyticsService]
+                                                                              └──serves──> [Frontend Chart]
 
-[Block Editor]
-    └──produces──> [Published HTML]
-                       └──exported as──> [PDF]
-
-[Payment]
-    └──purchases──> [Credits]
-                       └──deducted for──> [PDF Export], [Template Purchase]
-
-[Publish]
-    └──creates──> [Public URL]
-                       └──accesses via──> [Subdomain Hosting]
+[Referer Header]
+    └──captured in──> [page_views.referer]
+                           └──parsed by──> [ReferralParser]
+                                               └──aggregated by──> [ReferralSourceStats]
+                                                                       └──served via──> [Analytics API]
 ```
 
-## MVP Definition (v1.1)
+### Dependency Notes
 
-### Launch With (v1.1)
+- **Page view recording** is already implemented in SiteController and AnalyticsService.recordPageView()
+- **Time-series display** requires AnalyticsDTO enhancement + frontend chart component
+- **Referral tracking** requires new parser service + aggregation query + API endpoint + frontend breakdown display
 
-Minimum viable product for v1.1 milestone completion.
+---
 
-- [ ] **Complete AI Generation Pipeline** - Image upload -> MiniMax -> Block assembly -> Editor display
-- [ ] **AI Writing Assist Polish** - Replace/Append modes, confidence highlighting, sparkle button
-- [ ] **Block Configuration Panel** - Right sidebar for block-level settings
-- [ ] **PDF Preview + Export** - Preview free, export charges 0.3 credits, 24h download links
-- [ ] **WeChat Pay Credit Flow** - Order creation, callback handling, credit deduction
-- [ ] **Publish/Unpublish** - Static HTML generation, status management
+## MVP Definition (v1.5)
 
-### Add After v1.1
+### Launch With (v1.5)
 
-Features to add after v1.1 is validated.
+Minimum viable product for enhanced analytics.
 
-- [ ] **Block Animations** - Entrance animations, hover effects
-- [ ] **More Templates** - Expand catalog based on usage data
-- [ ] **Custom Domain (VIP)** - Own domain for premium users
+- [ ] **Time-series line chart** - Display daily page views as a line chart (7d/30d/90d toggle)
+- [ ] **Referral source breakdown** - Categorize referers into Direct/Search/Social/Referral
+- [ ] **Referral pie/bar chart** - Visual breakdown of traffic sources
+
+### Add After v1.5 (Future)
+
+Features to add after v1.5 is validated.
+
+- [ ] **UTM parameter parsing** - Track campaign sources from URL parameters
+- [ ] **Traffic spike alerts** - Email notification when traffic exceeds threshold
+- [ ] **Device breakdown** - Parse user agent for desktop/mobile/tablet stats
+
+---
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority | Dependencies |
 |---------|------------|---------------------|----------|--------------|
-| AI Generation Pipeline Completion | HIGH | HIGH | P1 | Image upload exists |
-| AI Writing Assist Polish | MEDIUM | MEDIUM | P1 | Basic modal exists |
-| Block Configuration Panel | MEDIUM | MEDIUM | P1 | Block editor exists |
-| PDF Export Completion | MEDIUM | MEDIUM | P1 | Preview endpoint exists |
-| WeChat Pay Credit Deduction | HIGH | MEDIUM | P1 | WeChatPayService exists |
-| Subdomain Hosting | HIGH | MEDIUM | P1 | Publish endpoint exists |
-
-## Competitor Feature Analysis
-
-| Feature | Wix ADI | Squarespace AI | Elementor AI | Durable | Our v1.1 |
-|---------|---------|---------------|-------------|---------|----------|
-| AI Generation from Image | Yes | Limited | Yes | Yes (30s) | Full pipeline |
-| AI Writing Assist | Per-section | Limited | Yes | Yes | Per-block inline |
-| Replace/Append Modes | No | No | No | No | Yes |
-| Confidence Highlighting | No | No | No | No | Yes (amber ring) |
-| PDF Export | Premium | No | Via plugin | No | Yes (paid) |
-| Subdomain Hosting | Yes | Yes | Self-hosted | Yes | Yes |
-| Credit-based Payments | No | No | No | No | Yes (WeChat Pay) |
-
-## Sources
-
-- Existing codebase analysis: `AIService.java`, `AIGenerationService.java`, `BlockAssemblyService.java`, `GenerationMessageConsumer.java`, `AIWriteController.java`, `AIWriteModal.tsx`, `TextBlock.tsx`, `PdfController.java`, `PdfJobConsumer.java`, `WeChatPayService.java`, `UserCreditsService.java`, `BlogController.java`, `BlogService.java`
-- Training data patterns for SaaS payment flows and AI generation UX
+| Time-series line chart | HIGH | MEDIUM | P1 | Existing dailyStats in AnalyticsDTO |
+| Period toggle (7/30/90d) | MEDIUM | LOW | P1 | Existing period param |
+| Referral source categorization | HIGH | MEDIUM | P1 | New ReferralParser service |
+| Referral pie/bar chart | HIGH | LOW | P1 | ReferralSourceStats DTO |
+| UTM parameter parsing | MEDIUM | HIGH | P2 | URL parsing, new fields |
+| Traffic spike alerts | LOW | MEDIUM | P3 | EmailService exists |
 
 ---
 
-*Feature research for: Drag-and-Drop Website Builder SaaS v1.1 Milestone*
-*Researched: 2026-03-21*
+## Competitor Feature Analysis
+
+| Feature | Google Analytics | Umami | Plausible | Our v1.5 |
+|---------|-----------------|-------|-----------|----------|
+| Time-series charts | Yes (complex) | Yes (simple) | Yes | Line chart |
+| 7/30/90 day periods | Yes | Yes | Yes | 7d/30d/90d toggle |
+| Referral source breakdown | Yes (complex) | Yes (simple) | Yes (basic) | Direct/Search/Social/Referral |
+| Real-time visitors | Yes | No | No | No (acceptable) |
+| Geographic breakdown | Yes | Optional | No | No (deferred) |
+| Device breakdown | Yes | No | No | No (deferred) |
+
+**Key insight:** Simple analytics (Umami, Plausible) provide exactly what v1.5 targets - time-series trends and traffic source breakdown - without the complexity of Google Analytics. We can match this with minimal additional code.
+
+---
+
+## Data Collection, Storage, and Display
+
+### Data Collection (Already Implemented)
+
+| Field | Source | Storage | Status |
+|-------|--------|---------|--------|
+| blog_id | SiteController on page serve | page_views | EXISTS |
+| visited_at | Server timestamp | page_views | EXISTS |
+| visitor_fingerprint | SHA-256(IP + User-Agent) | page_views | EXISTS |
+| referer | HTTP Referer header | page_views | EXISTS |
+| user_agent | HTTP User-Agent header | page_views | EXISTS |
+
+### Data Storage (Exists, Needs Aggregation Query)
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| page_views | Raw page view events | EXISTS |
+| blog_daily_stats | Daily aggregates | EXISTS |
+
+**New storage needed for referral breakdown:**
+
+```sql
+-- Optional: Pre-aggregated referral stats table
+CREATE TABLE IF NOT EXISTS `blog_referral_stats` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `blog_id` BIGINT NOT NULL,
+    `stat_date` DATE NOT NULL,
+    `source_category` VARCHAR(50) NOT NULL,  -- 'Direct', 'Search: Google', 'Social: Facebook', 'Referral'
+    `source_host` VARCHAR(255),              -- For referrals: the actual hostname
+    `visits` INT DEFAULT 0,
+    `unique_visitors` INT DEFAULT 0,
+    UNIQUE KEY `uk_blog_date_source` (`blog_id`, `stat_date`, `source_category`),
+    INDEX `idx_blog_id` (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+**Alternative:** Query `page_views` directly for referral breakdown (simpler for v1.5, less storage overhead).
+
+### Data Display (Needs Implementation)
+
+| Component | Implementation | Complexity |
+|-----------|----------------|------------|
+| Line chart | Recharts `<LineChart>` or Chart.js | MEDIUM |
+| Period toggle | Button group (7d / 30d / 90d) | LOW |
+| Referral pie chart | Recharts `<PieChart>` or Chart.js | MEDIUM |
+| Referral breakdown list | Table with source and visit count | LOW |
+
+---
+
+## Sources
+
+- Existing codebase analysis: `AnalyticsService.java`, `AnalyticsDTO.java`, `PageView.java`, `BlogDailyStats.java`
+- Industry standard analytics patterns from training data
+- Competitor feature analysis: umami.is, plausible.io
+
+---
+
+*Feature research for: Vibe Onepage v1.5 - Time-Series Analytics and Referral Source Tracking*
+*Researched: 2026-03-22*

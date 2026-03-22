@@ -345,6 +345,252 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 
 ---
 
+## Critical Pitfalls (v1.5 Enhanced Analytics)
+
+### Pitfall 13: Storing Raw Referer Headers Without Normalization
+
+**What goes wrong:**
+Referral data becomes useless noise. "https://www.google.com/search?q=foo", "https://www.google.com/", "https://google.com/", "https://www.google.co.uk/" all appear as separate sources when they should all be "Google".
+
+**Why it happens:**
+The HTTP Referer header contains the raw URL. Developers store it directly instead of parsing and normalizing the domain.
+
+**How to avoid:**
+Create a referral parser that:
+1. Extracts the domain from the Referer header
+2. Normalizes known sources (google.com, google.co.uk, google.de -> "Google")
+3. Categorizes by type (search, social, direct, unknown)
+4. Falls back to "Direct" when Referer is empty or same-domain
+
+```java
+// Normalization map (partial)
+private static final Map<String, String> REFERRAL_SOURCES = Map.of(
+    "google.com", "Google",
+    "google.co.uk", "Google",
+    "bing.com", "Bing",
+    "baidu.com", "Baidu",
+    "facebook.com", "Facebook",
+    "twitter.com", "Twitter",
+    "instagram.com", "Instagram",
+    "linkedin.com", "LinkedIn",
+    "tiktok.com", "TikTok",
+    "weixin.qq.com", "WeChat",
+    "wx.qq.com", "WeChat"
+);
+
+private String normalizeReferrer(String referer) {
+    if (referer == null || referer.isBlank()) {
+        return "Direct";
+    }
+    try {
+        String domain = new URL(referer).getHost().toLowerCase();
+        domain = domain.startsWith("www.") ? domain.substring(4) : domain;
+        String normalized = REFERRAL_SOURCES.get(domain);
+        if (normalized != null) {
+            return normalized;
+        }
+        if (isOwnDomain(domain)) {
+            return "Internal";
+        }
+        return domain;
+    } catch (MalformedURLException e) {
+        return "Unknown";
+    }
+}
+```
+
+**Warning signs:**
+- Dashboard shows dozens of variations of the same source
+- "Unknown" or "Direct" exceeds 80% despite known traffic sources
+- Users complain that referral data is not actionable
+
+**Phase to address:**
+v1.5 Enhanced Analytics - implement normalization before storing referer data
+
+---
+
+### Pitfall 14: Per-Page-View Aggregation Queries on Dashboard Load
+
+**What goes wrong:**
+Dashboard loads take 10+ seconds or timeout entirely for blogs with 10k+ page views. Users see loading spinners and assume the feature is broken.
+
+**Why it happens:**
+Querying raw `page_views` table with `GROUP BY DATE(visited_at)` for every dashboard load. Without proper indexes or pre-aggregation, MySQL scans millions of rows.
+
+**How to avoid:**
+1. **Pre-aggregate to daily tables** - `blog_daily_stats` should include referral breakdown columns:
+   - page_views, unique_visitors per day
+   - referral_google, referral_bing, referral_direct, etc.
+
+2. **Create composite index** on (blog_id, stat_date) for fast lookups
+
+3. **Update aggregates incrementally** via scheduled job, not on every insert
+
+4. **Redis cache** for hot data (recent 7 days) with 5-minute TTL
+
+```sql
+CREATE TABLE `blog_daily_stats` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `blog_id` BIGINT NOT NULL,
+    `stat_date` DATE NOT NULL,
+    `page_views` INT DEFAULT 0,
+    `unique_visitors` INT DEFAULT 0,
+    `referral_google` INT DEFAULT 0,
+    `referral_bing` INT DEFAULT 0,
+    `referral_direct` INT DEFAULT 0,
+    `referral_other` INT DEFAULT 0,
+    UNIQUE KEY `uk_blog_date` (`blog_id`, `stat_date`),
+    INDEX `idx_blog_id` (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+**Warning signs:**
+- Dashboard query times increase over time
+- EXPLAIN shows "Using filesort" or "Using temporary"
+- MySQL CPU spikes during dashboard loads
+
+**Phase to address:**
+v1.5 Enhanced Analytics - design aggregation strategy before implementation
+
+---
+
+### Pitfall 15: Recording Page Views Synchronously in SiteController
+
+**What goes wrong:**
+Published site serving latency increases by 50-200ms. Users notice slow page loads. Core business metric (site serving) is degraded by analytics tracking.
+
+**Why it happens:**
+Analytics recording happens in the same request thread as serving the published blog. Every page view waits for database insert to complete.
+
+**How to avoid:**
+Use `@Async` with a dedicated thread pool for analytics recording:
+
+```java
+@Configuration
+@EnableAsync
+public class AnalyticsAsyncConfig {
+    @Bean(name = "analyticsExecutor")
+    public Executor analyticsExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("analytics-");
+        executor.initialize();
+        return executor;
+    }
+}
+
+@Service
+public class AnalyticsService {
+    @Async("analyticsExecutor")
+    public void recordPageViewAsync(Long blogId, HttpServletRequest request) {
+        // Recording logic here
+    }
+}
+```
+
+Implement **sampling** for high-traffic blogs to reduce write load.
+
+**Warning signs:**
+- SiteController response times increase after analytics deployment
+- Users report slower published site performance
+- APM shows analytics recording in critical path
+
+**Phase to address:**
+v1.5 Enhanced Analytics - must use async recording from day one
+
+---
+
+### Pitfall 16: Missing Time Zone Handling in Time-Series Data
+
+**What goes wrong:**
+Daily charts show impossible patterns - page views spike at midnight, or data appears shifted by hours. Users in different time zones see inconsistent data.
+
+**Why it happens:**
+Java stores `LocalDateTime.now()` which uses server timezone. MySQL `DATETIME` has no timezone info. When aggregating by day, the definition of "day" is ambiguous across time zones.
+
+**How to avoid:**
+1. **Store all timestamps in UTC** - convert at display time
+2. **Use MySQL's time zone-aware functions** when aggregating
+3. **Respect user's timezone for display** - store user preference, convert when rendering
+
+```java
+// Recording
+pageView.setVisitedAt(LocalDateTime.now(ZoneOffset.UTC));
+
+// Querying - use UTC-based aggregation
+@Query("SELECT DATE(visited_at AT TIME ZONE 'UTC') FROM page_views...")
+```
+
+**Warning signs:**
+- Charts show spikes or dips at unusual hours
+- Daily totals don't match sum of hourly data
+- Users in different locations report different numbers
+
+**Phase to address:**
+v1.5 Enhanced Analytics - implement timezone handling in schema and queries
+
+---
+
+### Pitfall 17: Referral Data Lost to HTTPS->HTTP Transitions
+
+**What goes wrong:**
+Almost no referral data from major search engines. Google, Bing, Baidu all report 0 or near-0 traffic despite known search traffic.
+
+**Why it happens:**
+Modern browsers don't send Referer headers when navigating from HTTPS to HTTP pages (security feature). If the published blog is served over HTTP, referral data from HTTPS sources is stripped.
+
+**How to avoid:**
+1. **Ensure published sites use HTTPS in production** - this is the real fix
+2. **Use UTM parameters as fallback** - encourage users to share links with UTM codes
+3. **Track via redirects** - instead of serving blog directly, use a tracking redirect:
+   ```
+   /t/{shareCode} -> 302 redirect to published blog + record referer
+   ```
+4. **Accept that ~30% of traffic will always be "Unknown"** due to browser privacy features
+
+**Warning signs:**
+- All referral sources show 0 or negligible traffic
+- Direct traffic dominates (>90%) despite known search queries
+- UTM-tagged campaigns show data but organic search doesn't
+
+**Phase to address:**
+v1.5 Enhanced Analytics - implement redirect-based tracking for referral preservation
+
+---
+
+### Pitfall 18: Frontend Chart Rendering With Large Datasets
+
+**What goes wrong:**
+Browser tab crashes or becomes unresponsive when viewing analytics dashboard. Charts take 5+ seconds to render. Mobile devices show blank charts.
+
+**Why it happens:**
+Recharts attempts to render all data points. 90 days of hourly data = 2,160 points. The DOM cannot handle this many SVG elements efficiently.
+
+**How to avoid:**
+1. **Downsample for display** - aggregate to daily points for line charts:
+   - 7-day view: hourly if <1000 views, else daily
+   - 30-day view: always daily
+   - 90-day view: weekly averages
+
+2. **Disable animations** for large datasets: `isAnimationActive={false}`
+
+3. **Lazy load historical data** - fetch last 30 days first, load older on scroll
+
+4. **Virtualize long lists** - if showing referrer breakdown table
+
+**Warning signs:**
+- Dashboard freezes on initial load
+- Browser memory usage spikes
+- Mobile devices show blank chart areas
+- Console shows "long task" warnings
+
+**Phase to address:**
+v1.5 Enhanced Analytics - frontend must implement data downsampling before charts ship
+
+---
+
 ## Technical Debt Patterns
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
@@ -355,6 +601,10 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 | Credit check separate from deduction | Simple code flow | Race condition, free PDFs | Never - atomic operation |
 | Flying Saucer for PDF | Java-native, no external deps | Limited CSS, font issues | MVP only - consider Puppeteer |
 | Store HTML in database | Simple, no file system | Slow reads at scale | MVP only - consider S3/CDN |
+| Store raw referer URLs | Fast to implement | Useless data, no aggregation | Never - normalize domains |
+| Query raw table on dashboard load | Simple code | O(n) scans, timeout at scale | Only for <1k total views |
+| Sync analytics recording | Simpler code | Blocked requests, slow sites | Never - use @Async |
+| Use line charts for everything | Familiar UX | Renders poorly with many points | Only for <30 data points |
 
 ---
 
@@ -363,15 +613,19 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
 | MiniMax API | Calling synchronously, blocking UI | Async job pattern with polling |
-| MiniMax API | No timeout configuration | Set 30s timeout, implement retry with exponential backoff |
-| MiniMax API | Passing user content in system prompt | Sandboxed prompt templates with explicit input schemas |
-| WeChat Pay v3 | Using v2 SDK (wxpay-sdk) | Migrate to v3 native SDK with RSA certificates |
-| WeChat Pay | Not validating callback signatures | Fail fast if not configured, validate on every callback |
-| WeChat Pay | Assuming immediate callback | Implement polling for async payment confirmation |
+| MiniMax API | No timeout configuration | Set 30s timeout, retry with backoff |
+| MiniMax API | Passing user content in system prompt | Sandboxed prompt templates |
+| WeChat Pay v3 | Using v2 SDK (wxpay-sdk) | Migrate to v3 native SDK with RSA certs |
+| WeChat Pay | Not validating callback signatures | Fail fast if not configured |
+| WeChat Pay | Assuming immediate callback | Implement polling for async confirmation |
 | RabbitMQ | Not handling dead letters | Configure DLQ with retry limits |
-| RabbitMQ | Fire-and-forget message publishing | Use confirm mode, handle publisher confirms |
-| PDF Generation | Not validating output quality | Check file size > threshold before storing |
-| PDF Storage | No automatic cleanup | @Scheduled cleanup job or TTL-based storage |
+| RabbitMQ | Fire-and-forget publishing | Use confirm mode |
+| PDF Generation | Not validating output quality | Check file size > threshold |
+| PDF Storage | No automatic cleanup | @Scheduled cleanup or TTL storage |
+| Redis | Using String type for counters, overflow | Use INCR (handles 2^64) |
+| MySQL | Storing referer without size limit | Truncate to 500 chars, preserve domain |
+| SiteController | Forgetting analytics recording | Extract to interceptor/filter |
+| Timezone | Mixing server and UTC times | Always store UTC, convert on display |
 
 ---
 
@@ -379,11 +633,16 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Synchronous AI calls | UI freeze, timeout errors | Async job queue pattern | Any AI generation >2s |
-| PDF generation blocking worker thread | Queue backup, slow responses | Use dedicated thread pool for PDF | >10 concurrent PDF requests |
+| Synchronous AI calls | UI freeze, timeouts | Async job queue pattern | Any AI generation >2s |
+| PDF generation blocking worker thread | Queue backup, slow responses | Dedicated thread pool for PDF | >10 concurrent PDF requests |
 | Credit check race condition | Negative balance, free PDFs | Distributed lock or atomic deduction | Concurrent PDF requests |
 | /tmp/pdfs filling up | Disk space exhaustion | Scheduled cleanup or TTL storage | Long-running server |
 | No connection pooling for WeChat Pay | Connection exhaustion | Configure HikariCP appropriately | >50 concurrent payments |
+| GROUP BY on raw page_views | Dashboard timeout | Pre-aggregate to daily stats | >10k page views per blog |
+| No index on (blog_id, visited_at) | Full table scan | Composite index from day one | Any real traffic |
+| Redis KEYS command for analytics | Redis CPU spike | Use SCAN or specific key patterns | >1k keys |
+| Synchronous chart data fetching | UI freeze | Fetch async, show loading state | Any dashboard load |
+| Loading all chart data at once | Browser crash | Pagination + downsampling | >90 day range |
 
 ---
 
@@ -394,8 +653,12 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 | WeChat Pay signature validation bypassed when not configured | Forged payment notifications | Fail fast on startup if not configured |
 | PDF job ID enumerable without ownership check | Access other users' PDFs | Validate userId match on download |
 | User content in AI prompts without sanitization | Prompt injection, data exfiltration | Sandboxed prompts, separate user/system content |
-| No rate limiting on AI endpoints | Cost overrun, DoS | Rate limit per user, monthly quota enforcement |
+| No rate limiting on AI endpoints | Cost overrun, DoS | Rate limit per user, monthly quota |
 | Credit deduction without atomic operation | Race condition, free features | Distributed lock or database-level locking |
+| Exposing raw page_views via API | Privacy violation - user IPs visible | Only expose aggregated counts |
+| No rate limiting on analytics endpoint | DoS - fan-out query overloads DB | Rate limit by user/blog |
+| Storing full User-Agent strings | GDPR concerns, storage bloat | Truncate to 500 chars, hash fingerprints |
+| Allowing analytics queries across all blogs | Data leakage - users probe others' traffic | Always filter by authenticated user's blog_id |
 
 ---
 
@@ -403,11 +666,16 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| AI generation has no progress indication | User thinks app is broken | Show stages: "Analyzing image... Generating content... Building page..." |
+| AI generation has no progress indication | User thinks app is broken | Show stages: "Analyzing image... Generating content..." |
 | PDF preview before charge but no quality check | User charged for broken PDF | Validate PDF quality before marking complete |
 | Credit deduction failure gives no clear error | User doesn't know if charged | Show clear credit balance and transaction status |
 | Published site not accessible via subdomain | User can't share their site | Prominent subdomain display, copy link action |
 | Block reorder has no undo | Mistakes require manual correction | Command pattern with undo stack for all operations |
+| Showing "0 views" for new blogs | Discouraging - user thinks feature is broken | Show "No data yet" with explanation |
+| No date range selector | Inflexible - can't compare periods | Add 7d/30d/90d toggles |
+| Tiny chart with no hover details | Unreadable - can't see exact numbers | Enlarge chart, add tooltip with values |
+| Loading spinner forever on error | Frustrating - user doesn't know what happened | Show error message with retry button |
+| Mixing unique visitors and page views in same chart | Confusing - different magnitudes | Use dual-axis or separate charts |
 
 ---
 
@@ -424,6 +692,11 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 - [ ] **Hosting:** publish() saves to DB only - verify actual DNS/routing implementation
 - [ ] **Hosting:** No subdomain routing exists - verify wildcard DNS and Nginx config
 - [ ] **Credit Balance:** Race condition on concurrent requests - verify distributed lock
+- [ ] **Referral Tracking:** Often shows all sources as "Direct" or "Unknown" - verify with UTM-tagged test links
+- [ ] **Time-Series Charts:** Often crash on mobile - test with 90-day view on small screen
+- [ ] **Unique Visitor Count:** Often wrong due to fingerprint hash collisions - verify against raw data
+- [ ] **Daily Aggregation:** Often has off-by-one timezone errors - compare with server log timestamps
+- [ ] **Async Recording:** Often still blocks due to shared thread pool - measure SiteController latency
 
 ---
 
@@ -437,6 +710,11 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 | Subdomain routing not working | MEDIUM (user trust) | Show clear error message, provide fallback share link |
 | Negative credit balance from race | LOW (small amount) | Cap at zero, implement atomic deduction, credit adjustment |
 | AI generates inappropriate content | MEDIUM (reputation) | Add content filter, allow user to regenerate, log for review |
+| Wrong referral normalization | MEDIUM | Write migration to re-normalize existing data, backfill from raw referer |
+| Full table scan on dashboard | HIGH | Add missing indexes (blocks writes briefly), implement caching layer |
+| Timezone shift in reports | MEDIUM | Migrate to UTC storage, recalculate aggregates with correct timezone |
+| Missing async annotation | LOW | Add @Async, restart service, no data migration needed |
+| Chart performance issues | LOW | Implement downsampling, no backend changes needed |
 
 ---
 
@@ -454,6 +732,12 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 | No subdomain routing | Phase 3: Platform Hosting | Publish blog, check subdomain accessibility |
 | Block reorder desync | Phase 1: Block Editor Polish | Concurrent edit test, verify saved order |
 | AI prompt injection | Phase 1: AI Generation Pipeline | Security review, penetration test |
+| Referral normalization | v1.5 Enhanced Analytics | Test with known URLs from each source |
+| Aggregation query performance | v1.5 Enhanced Analytics | Load test with 100k simulated page views |
+| Sync analytics recording | v1.5 Enhanced Analytics | Measure SiteController p99 latency |
+| Timezone handling | v1.5 Enhanced Analytics | Compare dashboard with server timestamps |
+| HTTPS referer loss | v1.5 Enhanced Analytics | Test with real Google search click |
+| Chart rendering performance | v1.5 Enhanced Analytics | Test on low-end mobile device |
 
 ---
 
@@ -478,6 +762,8 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 - PDF generation common issues (Flying Saucer limitations)
 - Race condition patterns in credit systems
 - WeChat Pay integration known issues
+- Time-series analytics common pitfalls (MySQL aggregation, timezone handling)
+- Referral tracking browser privacy limitations
 
 **Note:** Web search API was unavailable during research. Confidence levels reflect this limitation.
 
@@ -485,3 +771,5 @@ Phase 1 (Block Editor Polish) - Implement robust state persistence before drag f
 
 *Pitfalls research for: Vibe Onepage v1.1 - AI Generation, PDF Export, WeChat Pay, and Hosting completion*
 *Researched: 2026-03-21*
+
+*Analytics enhancements added: 2026-03-22 for v1.5 Enhanced Analytics milestone*

@@ -1,201 +1,163 @@
-# Stack Research — v1.1 Additions
+# Stack Research — v1.5 Enhanced Analytics
 
-**Domain:** Single-page website builder SaaS with AI generation, editor polish, payments, and hosting
-**Researched:** 2026-03-21
+**Domain:** Time-series analytics visualization and referral source tracking
+**Researched:** 2026-03-22
 **Confidence:** MEDIUM
 
 ## Executive Summary
 
-The v1.0 stack is complete for core features. v1.1 requires **minimal additions** — primarily WebSocket infrastructure for real-time AI progress, a form library for the configuration panel, and a PDF preview component. Most features can be completed with existing infrastructure (RabbitMQ for async, MiniMax via Spring AI for generation, Flying Saucer for PDF).
+The v1.5 Enhanced Analytics milestone requires two new capabilities: (1) time-series page view charts showing trends over 7/30/90 days, and (2) referral source breakdown (Google, Bing, direct, social). The existing infrastructure already captures the raw data needed for both features. No backend dependencies are required. Only a frontend charting library is needed.
 
-## What Stays the Same (v1.0 Stack Validated)
+## What Stays the Same (v1.2 Analytics Stack Validated)
 
 | Technology | Current Version | Status | Notes |
 |------------|-----------------|--------|-------|
-| React | 18.2.0 | Keep | Stable, no upgrade needed |
-| Vite | 5.0.8 | Keep | Fast, well-supported |
-| TailwindCSS | 3.3.6 | Keep | Matches design skill guidelines |
-| TypeScript | 5.4 | Keep | Already integrated |
-| Spring Boot | 3.2.0 | Keep | Stable, all starters available |
-| MyBatis-Plus | 3.5.5 | Keep | Active record pattern working |
-| dnd-kit | 6.3.1 | Keep | Already in use |
-| Zustand | 5.0.12 | Keep | Temporal middleware working |
-| ColorThief | 3.3.1 | Keep | Color extraction working |
-| Spring AI | 1.0.0-M6 | Keep | MiniMax integration working |
-| Flying Saucer | 9.3.1 | Keep | PDF generation working |
-| WeChat Pay SDK | 0.0.3 | Keep | Already integrated |
-| RabbitMQ | - | Keep | Already configured for async jobs |
+| React | 18.2.0 | Keep | Stable |
+| MySQL 8 | 8.x | Keep | Stores page_views and blog_daily_stats |
+| Redis | 6.x | Keep | Already used for visitor Sets |
+| Spring Boot | 3.2.0 | Keep | No changes needed |
+| MyBatis-Plus | 3.5.5 | Keep | Working mapper pattern |
 
 ---
 
-## New Additions for v1.1
+## New Additions for v1.5
 
-### 1. WebSocket — Real-time AI Generation Progress
+### 1. Recharts — Time-Series Line Charts
 
 **Frontend:**
 | Library | Version | Purpose |
 |---------|---------|---------|
-| @stomp/stompjs | 7.3.0 | STOMP over WebSocket client |
-| sockjs-client | 1.6.2 | SockJS fallback for non-WebSocket environments |
+| recharts | ^3.8.0 | Line chart for page view trends |
 
-**Backend:**
-No new Maven dependency needed — `spring-boot-starter-websocket` is already a transitive dependency of `spring-boot-starter-web` in Spring Boot 3.x.
+**Why Recharts:**
 
-**Why STOMP over socket.io:**
-- STOMP is native to Spring's WebSocket implementation
-- Spring Security integrates with STOMP out-of-the-box
-- No custom server implementation needed
-- Works with Spring's `@MessageMapping` annotated controllers
+| Criterion | Recharts | Chart.js (react-chartjs-2) | Tremor |
+|-----------|----------|---------------------------|--------|
+| React 18 support | v3.8.0 confirmed | Works via wrapper | Works |
+| Bundle size | Tree-shakeable, ~15KB core | ~50KB min | ~100KB+ |
+| Time series | Native XAxis with date scale | Manual configuration | Native |
+| Learning curve | Low - declarative components | Medium - canvas API | Medium |
+| Maintenance | Active (GitHub releases) | Active | Active |
+| Customization | Good theming support | Extensive | Limited |
 
-**Why not socket.io:**
-- Requires custom server (not native to Spring)
-- More complex authentication integration
-- Additional maintenance burden
+**Why not Chart.js:** Imperative canvas API requires wrapper library (react-chartjs-2) adding overhead and complexity.
 
-**Configuration Required (Backend):**
-```java
-@Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefix("/app");
-    }
+**Why not Tremor:** Heavy bundle (~100KB+), less customization for time-series, design-system locked.
 
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("*").withSockJS();
-    }
-}
+**Installation:**
+```bash
+npm install recharts
 ```
 
-**Security Update:**
-Add `/ws/**` to permitted paths in SecurityConfig.
+### 2. Referral Source Parser — Backend Utility (No Library)
 
----
+No new Maven dependency needed. Implement a simple enum-based parser:
 
-### 2. React Hook Form — Configuration Panel
-
-**Frontend:**
-| Library | Version | Purpose |
-|---------|---------|---------|
-| react-hook-form | 7.71.2 | Form state management |
-| @hookform/resolvers | 5.2.2 | Validation resolver support |
-
-**Why needed:**
-The block configuration panel (right sidebar) requires form handling for block settings (alignment, colors, visibility, etc.). react-hook-form provides:
-- Lightweight (no Redux-like overhead)
-- Built-in validation
-- Uncontrolled inputs (better performance)
-- Integration with existing Zod validation
-
-**Why not Redux Form or Formik:**
-- Too heavy for this use case
-- Zustand is already in use for editor state
-- react-hook-form is the modern standard for React forms
-
-**Alternative:** Plain React state — acceptable if panel is simple, but react-hook-form scales better.
-
----
-
-### 3. PDF Preview — React PDF Rendering
-
-**Frontend:**
-| Library | Version | Purpose |
-|---------|---------|---------|
-| react-pdf | 3.4.1 | In-browser PDF preview |
-
-**Why needed:**
-PDF export completion requires preview before charge. User should see PDF in a modal before confirming download/credit deduction.
-
-**Alternative considered: pdfjs-dist**
-- Lower-level (Mozilla's PDF.js)
-- More boilerplate for React integration
-- react-pdf provides better React component API
-
-**Note:** react-pdf requires a PDF worker. Configure in your app entry:
-```tsx
-import { PdfWorker } from 'react-pdf';
-PdfWorker.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-```
-
----
-
-### 4. AI Pipeline Completion (Implementation, Not Libraries)
-
-No new libraries needed. The existing stack handles the full pipeline:
-
-| Component | Current Status | What's Needed |
-|-----------|---------------|---------------|
-| ColorThief | Working (3.3.1) | Extracts dominant colors client-side |
-| MiniMax via Spring AI | Working (1.0.0-M6) | Generate block content from prompts |
-| Image upload | Working | Send to backend for analysis |
-| Block assembly | Stub in AIService | Implement prompt engineering for full page |
-
-**Implementation approach:**
-1. Client uploads image, ColorThief extracts palette
-2. Image + palette sent to `/api/ai/generate` endpoint
-3. RabbitMQ queues job for async processing
-4. MiniMax analyzes image and generates block content (structured JSON)
-5. WebSocket pushes progress updates to client
-6. Blocks assembled and returned for editor
-
-**No additional AI libraries needed.** Spring AI ChatClient handles prompts; MiniMax provides generation.
-
----
-
-### 5. Hosting — Subdomain Routing (No Libraries)
-
-Subdomain routing is a **deployment concern**, not a library concern.
-
-**What's needed:**
-1. **DNS configuration** — Wildcard CNAME record pointing to server
-2. **Spring Boot request routing** — Filter requests by subdomain
-3. **Blog lookup** — Map subdomain to blog shareCode
-
-**Implementation:**
 ```java
-@Component
-public class SubdomainFilter extends OncePerRequestFilter {
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, ...) {
-        String host = request.getHeader("Host");
-        String subdomain = extractSubdomain(host); // e.g., "user1" from "user1.onepage.com"
-        if (subdomain != null && !subdomain.equals("www")) {
-            // Look up blog by subdomain, forward to blog controller
+public enum ReferralSource {
+    DIRECT("Direct", null),
+    GOOGLE("Google", "google.com"),
+    BING("Bing", "bing.com"),
+    BAIDU("Baidu", "baidu.com"),
+    YANDEX("Yandex", "yandex.ru"),
+    TWITTER("Twitter", "twitter.com"),
+    FACEBOOK("Facebook", "facebook.com"),
+    INSTAGRAM("Instagram", "instagram.com"),
+    LINKEDIN("LinkedIn", "linkedin.com"),
+    OTHER("Other", null);
+
+    private final String label;
+    private final String domain;
+
+    public static ReferralSource fromUrl(String referer) {
+        if (referer == null || referer.isBlank()) {
+            return DIRECT;
         }
+        String lower = referer.toLowerCase();
+        for (ReferralSource source : values()) {
+            if (source.domain != null && lower.contains(source.domain)) {
+                return source;
+            }
+        }
+        return OTHER;
     }
 }
 ```
 
-**No new libraries needed.** Spring MVC handles routing.
-
 ---
 
-## What NOT to Add
+## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| socket.io | Requires custom server; Spring native STOMP is sufficient | @stomp/stompjs |
-| Redux / MobX | Zustand is sufficient; heavy for this use case | Zustand (existing) |
-| react-query | Not needed for this app's server state complexity | Zustand + existing API layer |
-| Builder.io / GrapesJS | Full frameworks; overkill for block editing | Existing dnd-kit + React |
-| LangChain4j | Spring AI is sufficient for linear pipeline | Spring AI ChatClient |
-| iText 7 | AGPL license; Flying Saucer is working | Flying Saucer (existing) |
+| Chart.js (direct) | Imperative canvas API, requires react-chartjs-2 wrapper | Recharts (declarative React components) |
+| Tremor | Heavy bundle (~100KB+), less customization | Recharts (lighter, more flexible) |
+| Victory | Heavy bundle, complex API | Recharts (simpler, lighter) |
+| Redis Stack time-series | Requires Redis Stack installation; existing Redis Sets + MySQL already sufficient | Existing approach with `blog_daily_stats` table |
+| ClickHouse | Overkill for project scale; adds operational complexity | MySQL aggregation (existing) |
+| Any paid charting library | Unnecessary cost for basic analytics | Recharts (free, open-source) |
 
 ---
 
-## Installation Commands
+## Architecture for Time-Series Charts
 
-```bash
-# Frontend
-npm install @stomp/stompjs sockjs-client react-hook-form @hookform/resolvers react-pdf
+### Data Flow
 
-# Backend
-# No new dependencies — spring-boot-starter-websocket is transitive
-# Just add @Configuration class to enable
 ```
+1. Frontend: User requests analytics dashboard
+   |
+2. GET /api/analytics/stats?blogId={id}&period=7d
+   |
+3. AnalyticsService.getBlogStats(blogId, period)
+   - Query blog_daily_stats for date range (MySQL)
+   - Already returns dailyStats list with date/pageViews/visitors
+   |
+4. Frontend transforms to chart format:
+   [{ date: "2026-03-15", pageViews: 42, visitors: 38 }, ...]
+   |
+5. Recharts <LineChart> renders trend line
+```
+
+### Data Flow for Referral Sources
+
+```
+1. Page view recorded via @Async AnalyticsService.recordPageView()
+   - Stores referer in page_views.referer
+   |
+2. GET /api/analytics/referrals?blogId={id}&period=7d
+   |
+3. AnalyticsService.getReferralStats(blogId, period)
+   - SELECT referer, COUNT(*) FROM page_views WHERE blog_id=? AND visited_at BETWEEN ? AND ?
+   - Group by categorized ReferralSource
+   - Calculate percentages
+   |
+4. Return List<ReferralStatsDTO>
+5. Frontend renders <BarChart> or <PieChart>
+```
+
+---
+
+## Backend Additions Summary
+
+**No new Maven dependencies.**
+
+| Addition | Type | Location | Purpose |
+|----------|------|----------|---------|
+| ReferralSource enum | New file | com.onepage.util.ReferralSource | Categorize referer URLs |
+| ReferralStatsDTO | New file | com.onepage.dto.ReferralStatsDTO | API response for referral breakdown |
+| AnalyticsService.getReferralStats() | Method addition | AnalyticsService.java | Query and aggregate referral data |
+| AnalyticsController endpoint | Method addition | AnalyticsController.java | Expose GET /api/analytics/referrals |
+
+---
+
+## Frontend Additions Summary
+
+| Addition | Type | Purpose |
+|----------|------|---------|
+| recharts | npm install | Line chart for time-series, bar/pie for referral breakdown |
+| TimeSeriesChart component | New | Recharts LineChart wrapper for page view trends |
+| ReferralChart component | New | Recharts BarChart or PieChart for referral sources |
+| AnalyticsDashboard updates | Modify | Add chart sections below stat cards |
 
 ---
 
@@ -203,11 +165,8 @@ npm install @stomp/stompjs sockjs-client react-hook-form @hookform/resolvers rea
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| @stomp/stompjs@7.3.0 | React 18, SockJS 1.6.x | TypeScript types included |
-| sockjs-client@1.6.2 | All modern browsers | WebSocket fallback |
-| react-hook-form@7.71.2 | React 18 | UseFormContext for complex forms |
-| @hookform/resolvers@5.2.2 | react-hook-form@7.x | Supports Zod |
-| react-pdf@3.4.1 | React 18 | Worker loaded separately |
+| recharts@^3.8.0 | React 18.x, React 17.x | Requires react-is peer dependency |
+| recharts@^2.15.0 | React 18.x, React 17.x | Alternative version, same API |
 
 ---
 
@@ -215,13 +174,12 @@ npm install @stomp/stompjs sockjs-client react-hook-form @hookform/resolvers rea
 
 | Technology | Source | Confidence |
 |-----------|--------|------------|
-| Spring WebSocket | [docs.spring.io/spring-framework/reference/web/websocket](https://docs.spring.io/spring-framework/reference/web/websocket.html) | HIGH |
-| Spring STOMP | [docs.spring.io/spring-framework/reference/web/websocket/stomp](https://docs.spring.io/spring-framework/reference/web/websocket/stomp.html) | HIGH |
-| @stomp/stompjs | npm registry (verified 7.3.0) | HIGH |
-| react-hook-form | npm registry (verified 7.71.2) | HIGH |
-| react-pdf | npm registry (verified 3.4.1) | HIGH |
+| Recharts | [github.com/recharts/recharts](https://github.com/recharts/recharts) | HIGH — v3.8.0 release verified March 2026 |
+| Recharts React 18 | npm registry package info | HIGH — react-is peer dependency confirmed |
+| Chart.js | [chartjs.org](https://www.chartjs.org/) | MEDIUM — alternative comparison |
+| Redis time-series | [redis.io/docs/stack/timeseries](https://redis.io/docs/stack/timeseries/) | MEDIUM — for reference, not used |
 
 ---
 
-*Stack research for: Vibe Onepage v1.1 additions*
-*Researched: 2026-03-21*
+*Stack research for: v1.5 Enhanced Analytics (time-series + referral tracking)*
+*Researched: 2026-03-22*
