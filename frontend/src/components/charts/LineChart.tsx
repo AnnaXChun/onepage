@@ -112,7 +112,7 @@ export default function ChartLine({ dailyStats, loading, error, onRetry }: LineC
   }
 
   const chartData = downsampleData(dailyStats);
-  const accentColor = 'oklch(70% 0.14 50)';
+  const accentColor = 'var(--chart-primary)';
 
   return (
     <div className="h-[300px] transition-opacity duration-300">
@@ -126,7 +126,7 @@ export default function ChartLine({ dailyStats, loading, error, onRetry }: LineC
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="oklch(30% 0.01 260)"
+            stroke="var(--chart-grid)"
             strokeOpacity={0.3}
             vertical={false}
           />

@@ -37,6 +37,13 @@
     /* Semantic */
     --color-success: #10b981;
     --color-error: #ef4444;
+
+    /* Chart colors - blue-black palette for white theme */
+    --chart-primary: #2563eb;
+    --chart-accent: #1e3a5f;
+    --chart-secondary: #3b82f6;
+    --chart-muted: #64748b;
+    --chart-grid: oklch(30% 0.01 260);
   }
 
   * {

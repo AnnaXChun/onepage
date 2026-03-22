@@ -20,13 +20,13 @@ interface PieChartComponentProps {
   onRetry?: () => void;
 }
 
-// Pie chart segment colors (5 categories)
+// Pie chart segment colors (5 categories) - blue-black palette
 const COLORS = {
-  Direct: '#b85c38',         // accent coral
-  'Search Engine': '#7c6cbc', // primary purple
-  Social: '#4caf50',           // success green
-  Referral: '#5c8cc4',        // cool blue
-  Other: '#6e6e6e',            // muted neutral
+  Direct: '#1e3a5f',           // accent navy
+  'Search Engine': '#2563eb',  // primary blue
+  Social: '#3b82f6',           // light blue
+  Referral: '#64748b',         // slate
+  Other: '#94a3b8',            // muted
 };
 
 interface CustomTooltipProps {
@@ -109,13 +109,13 @@ export default function PieChartComponent({ refererSources, loading, error, onRe
               animationDuration={300}
               animationEasing="ease-out"
               label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-              labelLine={{ stroke: 'oklch(55% 0.01 260)', strokeWidth: 1 }}
+              labelLine={{ stroke: 'var(--chart-grid)', strokeWidth: 1 }}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[entry.source as keyof typeof COLORS] || COLORS.Other}
-                  stroke="oklch(20% 0.015 260)"
+                  stroke="var(--chart-grid)"
                   strokeWidth={2}
                 />
               ))}
