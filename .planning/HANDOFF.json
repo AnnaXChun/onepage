@@ -1,27 +1,26 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-22T15:00:00.000Z",
+  "timestamp": "2026-03-22T16:00:00.000Z",
   "milestone": "v1.4",
-  "phase": "13",
-  "phase_name": "Email Collection",
-  "phase_dir": "phases/13-email-collection",
+  "milestone_name": "Email & Notifications",
+  "phase": "14",
+  "phase_name": "Notification Emails and PDF Delivery",
+  "phase_dir": "phases/14-notification-emails-and-pdf-delivery",
   "status": "paused",
-  "completed_tasks": [],
+  "completed_tasks": [
+    {"id": 1, "name": "Phase 13: Email Collection", "status": "done", "plans": "3/3"},
+    {"id": 2, "name": "Phase 14: Notification Emails and PDF Delivery", "status": "done", "plans": "3/3"}
+  ],
   "remaining_tasks": [
-    "Plan Phase 13 (Email Collection)",
-    "Research (if needed)",
-    "Execute Phase 13 plans"
+    {"id": 1, "name": "Complete v1.4 milestone archival", "status": "not_started"}
   ],
   "blockers": [],
   "human_actions_pending": [],
   "decisions": [
-    {
-      "decision": "v1.4 Email & Notifications milestone scope defined",
-      "rationale": "Email collection (EML-01, EML-02), completion notification (EML-03), first visitor notification (EML-04), PDF delivery (EML-05, EML-06)",
-      "phase": "13"
-    }
+    {"decision": "v1.4 Email & Notifications scope complete", "rationale": "Phases 13 & 14 shipped EML-01 through EML-06", "phase": "13-14"},
+    {"decision": "Phase 14 use SendGrid + Thymeleaf for emails", "rationale": "Reuse Phase 13 infrastructure", "phase": "14"}
   ],
   "uncommitted_files": [],
-  "next_action": "Run /gsd:plan-phase 13 to plan the Email Collection phase",
-  "context_notes": "Session paused during v1.4 milestone start. Phase 13 (Email Collection) was just added to ROADMAP.md under v1.4. Requirements EML-01 through EML-06 are defined in REQUIREMENTS.md. No planning or execution has started yet. Was about to proceed with planning Phase 13 when context exhausted."
+  "next_action": "Run /gsd:complete-milestone to archive v1.4",
+  "context_notes": "v1.4 phases 13 and 14 complete. All 6 email requirements (EML-01 to EML-06) shipped. Milestone archival pending: create milestones/v1.4-ROADMAP.md, archive REQUIREMENTS.md, collapse ROADMAP.md to one line, tag v1.4, push tag. Context exhausted before completing milestone archival workflow."
 }
