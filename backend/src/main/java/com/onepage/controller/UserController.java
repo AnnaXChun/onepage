@@ -76,6 +76,23 @@ public class UserController {
     }
 
     /**
+     * Update robots.txt for the current user.
+     * PUT /api/user/robots
+     * SEO-03
+     */
+    @PutMapping("/robots")
+    public Result<Void> updateRobotsTxt(@RequestBody Map<String, String> request) {
+        JwtUserPrincipal principal = getCurrentUser();
+        if (principal == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+
+        String robotsTxt = request.get("robotsTxt");
+        userService.updateRobotsTxt(principal.getUserId(), robotsTxt);
+        return Result.success();
+    }
+
+    /**
      * Get current authenticated user from SecurityContext.
      */
     private JwtUserPrincipal getCurrentUser() {
