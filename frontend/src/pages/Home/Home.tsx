@@ -86,13 +86,13 @@ function Home() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowAccountSettings(true)}
-                className="px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                className="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg btn-hover transition-colors"
               >
                 {t('addEmail')}
               </button>
               <button
                 onClick={dismissEmailBanner}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-primary hover:bg-surface btn-hover transition-colors"
                 aria-label="Dismiss"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
