@@ -39,4 +39,12 @@ public class User {
     private LocalDateTime verificationExpiresAt;      // token expiry time (24hrs from creation)
     private Integer verificationResendCount = 0;       // count of resend requests (max 3 per 24hrs)
     private LocalDateTime verificationResendResetAt;  // when the resend count resets (24hrs)
+
+    // Phone and SMS verification
+    private String phone;                              // 手机号
+    private Boolean phoneVerified = false;            // 手机号是否已验证
+    private String smsCode;                            // SMS验证码
+    private LocalDateTime smsCodeExpiresAt;           // 验证码过期时间
+    private Integer smsSendCount = 0;                 // 今日发送次数
+    private LocalDateTime smsSendResetAt;             // 发送计数重置时间
 }

@@ -63,8 +63,12 @@ spring:
           starttls:
             enable: true
             required: true
-        from:
-          default-encoding: UTF-8
+        from: ${MAIL_FROM:noreply@vibeonepage.com}
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  from-number: ${TWILIO_FROM_NUMBER:}
 
   servlet:
     multipart:

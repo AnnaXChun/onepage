@@ -21,7 +21,13 @@ CREATE TABLE IF NOT EXISTS `users` (
     `verification_token` VARCHAR(64) DEFAULT NULL COMMENT 'UUID token for email verification',
     `verification_expires_at` DATETIME DEFAULT NULL COMMENT 'Token expiry time',
     `verification_resend_count` INT DEFAULT 0 COMMENT 'Resend count (max 3 per 24hrs)',
-    `verification_resend_reset_at` DATETIME DEFAULT NULL COMMENT 'When resend count resets'
+    `verification_resend_reset_at` DATETIME DEFAULT NULL COMMENT 'When resend count resets',
+    `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号',
+    `phone_verified` TINYINT DEFAULT 0 COMMENT '1:verified 0:unverified',
+    `sms_code` VARCHAR(6) DEFAULT NULL COMMENT 'SMS验证码',
+    `sms_code_expires_at` DATETIME DEFAULT NULL COMMENT '验证码过期时间',
+    `sms_send_count` INT DEFAULT 0 COMMENT 'SMS发送次数(每天3次)',
+    `sms_send_reset_at` DATETIME DEFAULT NULL COMMENT 'SMS计数重置时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Blogs table
@@ -163,3 +169,11 @@ INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) V
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
 ('技术文章', '适合技术文档和代码展示的模板', 2, 1, 19.90),
 ('作品集', '展示个人作品和项目的模板', 3, 1, 29.90);
+
+-- Phone and SMS verification fields for users
+ALTER TABLE `users` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL COMMENT '手机号' AFTER `email`;
+ALTER TABLE `users` ADD COLUMN `phone_verified` TINYINT DEFAULT 0 COMMENT '1:已验证 0:未验证' AFTER `phone`;
+ALTER TABLE `users` ADD COLUMN `sms_code` VARCHAR(6) DEFAULT NULL COMMENT 'SMS验证码' AFTER `phone_verified`;
+ALTER TABLE `users` ADD COLUMN `sms_code_expires_at` DATETIME DEFAULT NULL COMMENT '验证码过期时间' AFTER `sms_code`;
+ALTER TABLE `users` ADD COLUMN `sms_send_count` INT DEFAULT 0 COMMENT 'SMS发送次数(每天3次)' AFTER `sms_code_expires_at`;
+ALTER TABLE `users` ADD COLUMN `sms_send_reset_at` DATETIME DEFAULT NULL COMMENT 'SMS计数重置时间' AFTER `sms_send_count`;
