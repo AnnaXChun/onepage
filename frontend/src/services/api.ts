@@ -204,6 +204,46 @@ export const getPdfJobStatus = async (jobId: string): Promise<{ status: string; 
   return response.data.data;
 };
 
+// SEO types
+export interface SeoData {
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+/**
+ * Update SEO settings for a blog.
+ * PUT /api/blog/{id}/seo
+ * SEO-01
+ */
+export const updateBlogSeo = async (blogId: number, seoData: SeoData): Promise<void> => {
+  const response = await api.put(`/blog/${blogId}/seo`, seoData);
+  return response.data;
+};
+
+/**
+ * Get blog SEO settings.
+ * GET /api/blog/{id}
+ * SEO-01
+ */
+export const getBlogSeo = async (blogId: number): Promise<SeoData> => {
+  const response = await api.get(`/blog/${blogId}`);
+  const blog = response.data.data;
+  return {
+    metaTitle: blog.metaTitle,
+    metaDescription: blog.metaDescription,
+  };
+};
+
+/**
+ * Update user robots.txt content.
+ * PUT /api/user/robots
+ * SEO-03
+ */
+export const updateRobotsTxt = async (robotsTxt: string): Promise<void> => {
+  const response = await api.put('/user/robots', { robotsTxt });
+  return response.data;
+};
+
 // Analytics types
 export interface AnalyticsData {
   blogId: number;
