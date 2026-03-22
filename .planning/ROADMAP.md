@@ -22,7 +22,7 @@
 ## Phases
 
 - [x] **Phase 20: Public Profile Display** - Backend API and frontend display for public profile page
-- [ ] **Phase 21: Profile Editing** - Authenticated profile editing flow with bio, avatar, social links
+- [x] **Phase 21: Profile Editing** - Authenticated profile editing flow with bio, avatar, social links (completed 2026-03-22)
 - [ ] **Phase 22: Integration and Polish** - Navigation integration, visitor counts, featured site pinning
 
 ---
@@ -90,7 +90,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 20. Public Profile Display | 1/1 | Complete    | 2026-03-22 |
-| 21. Profile Editing | 1/1 | Complete    | 2026-03-23 |
+| 21. Profile Editing | 1/1 | Complete    | 2026-03-22 |
 | 22. Integration and Polish | 0/1 | Not started | - |
 
 ---
