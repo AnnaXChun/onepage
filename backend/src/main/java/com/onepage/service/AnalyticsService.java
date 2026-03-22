@@ -7,6 +7,7 @@ import com.onepage.mapper.PageViewMapper;
 import com.onepage.model.Blog;
 import com.onepage.model.BlogDailyStats;
 import com.onepage.model.PageView;
+import com.onepage.util.RefererParser;
 import com.onepage.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,9 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
             String fingerprint = generateFingerprint(clientIp, userAgent);
             LocalDateTime now = LocalDateTime.now();
 
+            // Parse referer to categorize source
+            RefererParser.Source source = RefererParser.categorize(referer);
+
             // Save raw page view
             PageView pageView = new PageView();
             pageView.setBlogId(blogId);
@@ -57,6 +61,7 @@ public class AnalyticsService extends ServiceImpl<PageViewMapper, PageView> {
             pageView.setVisitedAt(now);
             pageView.setUserAgent(truncate(userAgent, 500));
             pageView.setReferer(truncate(referer, 500));
+            pageView.setRefererSource(source.name());  // Store categorized source
             pageViewMapper.insert(pageView);
 
             // Increment Redis counters for real-time aggregation
