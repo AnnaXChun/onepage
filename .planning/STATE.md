@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Progress
 status: unknown
-last_updated: "2026-03-22T09:00:29.361Z"
+last_updated: "2026-03-22T09:20:29.941Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 4
+  total_plans: 5
   completed_plans: 4
 ---
 
@@ -25,14 +25,14 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Current Position
 
-Phase: 16 (analytics-api-layer) — COMPLETED
-Plan: 1 of 1 (complete)
+Phase: 17 (analytics-ui-layer) — COMPLETED
+Plan: 1 of 1
 
 ## Current Milestone Progress
 
 ```
 v1.5 Enhanced Analytics
-[================      ] 67% (2/3 phases completed)
+[======================] 100% (3/3 phases completed)
 ```
 
 ## v1.5 Phase Summary
@@ -41,13 +41,17 @@ v1.5 Enhanced Analytics
 |-------|------|--------|
 | 15 | Analytics Data Layer | Completed |
 | 16 | Analytics API Layer | Completed |
-| 17 | Analytics UI Layer | Not started |
+| 17 | Analytics UI Layer | Completed |
 
 ## Roadmap Evolution
 
 - v1.5 added: Enhanced Analytics — page view time series (ANLT-01) + referral sources (ANLT-02)
 
 ### Decisions Made (v1.5)
+
+- **17-01-D01**: Chart components use OKLCH colors from global.css (accent coral for line, specific colors per pie segment)
+- **17-01-D02**: Downsampling threshold of 30 points for line chart (per 15-01-D05 design)
+- **17-01-D03**: Aggregation combines dailyStats and refererSources across all blogs for dashboard view
 
 - **16-01-D01**: Uses pre-aggregated BlogDailySourceStats for source breakdown queries (performance optimization)
 - **16-01-D02**: Division-by-zero protection: totalPageViews > 0 ? (pageViews * 100) / totalPageViews : 0
@@ -100,7 +104,7 @@ v1.5 Enhanced Analytics
 
 - [x] Plan Phase 15 (Analytics Data Layer) — COMPLETED
 - [x] Plan Phase 16 (Analytics API Layer) — COMPLETED
-- [ ] Plan Phase 17 (Analytics UI Layer)
+- [x] Plan Phase 17 (Analytics UI Layer) — COMPLETED
 
 ---
 

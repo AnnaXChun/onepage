@@ -13,7 +13,7 @@
 - [x] **v1.2 Analytics** — Phase 11 (COMPLETED 2026-03-22)
 - [x] **v1.3 SEO Tools** — Phase 12 (SHIPPED 2026-03-22)
 - [x] **v1.4 Email & Notifications** — Phases 13-14 (SHIPPED 2026-03-22)
-- [ ] **v1.5 Enhanced Analytics** — Phases 15-17 (planning)
+- [x] **v1.5 Enhanced Analytics** — Phases 15-17 (SHIPPED 2026-03-22)
 
 ---
 
@@ -21,7 +21,7 @@
 
 - [x] **Phase 15: Analytics Data Layer** - Backend referral source categorization and storage
 - [x] **Phase 16: Analytics API Layer** - Backend API exposing time-series and referral data (completed 2026-03-22)
-- [ ] **Phase 17: Analytics UI Layer** - Frontend charts for visualization
+- [x] **Phase 17: Analytics UI Layer** - Frontend charts for visualization
 
 ---
 
@@ -79,8 +79,8 @@
 3. Analytics dashboard renders both charts with proper loading and empty states
 4. Charts downsample data gracefully when dataset is large (>30 data points)
 
-**Plans:** 1/1 plans planned
-- [ ] 17-01-PLAN.md — Analytics Charts (ANLT-01, ANLT-02) — PENDING
+**Plans:** 1/1 plans complete
+- [x] 17-01-PLAN.md — Analytics Charts (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
 
 ---
 
@@ -138,7 +138,7 @@
 |-------|-------|--------|
 | 15. Analytics Data Layer | 1/1 | Complete (2026-03-22) |
 | 16. Analytics API Layer | 1/1 | Complete (2026-03-22) |
-| 17. Analytics UI Layer | 1/1 | Planned |
+| 17. Analytics UI Layer | 1/1 | Complete (2026-03-22) |
 
 ---
 
