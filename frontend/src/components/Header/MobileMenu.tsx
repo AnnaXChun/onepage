@@ -46,12 +46,13 @@ export default function MobileMenu({ isOpen, onClose, user, onLogout }: MobileMe
           >
             {t('templates')}
           </Link>
-          <button
+          <Link
+            to="/templates"
             onClick={onClose}
-            className="px-4 py-3 text-left text-secondary hover:text-primary hover:bg-background rounded-xl transition-colors"
+            className="px-4 py-3 text-secondary hover:text-primary hover:bg-background rounded-xl transition-colors"
           >
             {t('pricing')}
-          </button>
+          </Link>
           {user && (
             <Link
               to="/orders"

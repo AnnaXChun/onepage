@@ -41,9 +41,12 @@ export default function Header({ user, onUserChange, onOpenAccountSettings }: He
           >
             {t('templates')}
           </Link>
-          <button className="text-secondary hover:text-primary transition-colors">
+          <Link
+            to="/templates"
+            className="text-secondary hover:text-primary transition-colors"
+          >
             {t('pricing')}
-          </button>
+          </Link>
 
           <AuthButtons user={user} onLogout={handleLogout} onAccountSettings={onOpenAccountSettings} />
 

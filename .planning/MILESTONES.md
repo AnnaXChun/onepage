@@ -1,5 +1,15 @@
 # Milestones
 
+## v1.6 UI Polish (Shipped: 2026-03-22)
+
+**Phases completed:** 2 phases, 2 plans, 2 tasks
+
+**Key accomplishments:**
+
+- Editor UX improved with selection-state drag handles, smooth ease-out-quart transitions, refined white theme config panel, and analytics charts using blue-black palette
+
+---
+
 ## v1.5 Enhanced Analytics (Shipped: 2026-03-22)
 
 **Phases completed:** 4 phases, 5 plans, 0 tasks
