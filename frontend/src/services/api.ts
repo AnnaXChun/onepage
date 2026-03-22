@@ -315,4 +315,10 @@ export const getBlogAnalytics = async (blogId: number, period: string = '7d'): P
   return response.data;
 };
 
+// Set featured/pinned blog
+export const setFeaturedBlog = async (blogId: number, featured: boolean): Promise<ApiResponse<null>> => {
+  const response = await api.put(`/blog/${blogId}/featured`, { featured });
+  return response.data;
+};
+
 export default api;
