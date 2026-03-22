@@ -22,5 +22,7 @@ public class PageView {
 
     private String referer;
 
+    private String refererSource;  // DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER
+
     private String userAgent;
 }
