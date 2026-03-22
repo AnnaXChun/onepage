@@ -189,6 +189,8 @@ const translations = {
     emailNotVerified: 'Email not verified',
     pleaseVerifyEmail: 'Please verify your email first',
 
+    viewProfile: 'View My Profile',
+
     // Account Settings
     accountSettings: 'Account Settings',
     emailAddress: 'Email Address',
@@ -390,6 +392,8 @@ const translations = {
     addEmail: '添加邮箱',
     emailNotVerified: '邮箱未验证',
     pleaseVerifyEmail: '请先验证您的邮箱',
+
+    viewProfile: '查看我的主页',
 
     // Account Settings
     accountSettings: '账户设置',

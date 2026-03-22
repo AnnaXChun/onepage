@@ -79,6 +79,17 @@ export default function AuthButtons({ user, onLogout, onAccountSettings }: AuthB
                   </svg>
                   <span className="text-sm font-medium">{t('myPages')}</span>
                 </Link>
+                <Link
+                  to={`/user/${user.username}`}
+                  onClick={() => setDropdownOpen(false)}
+                  target="_blank"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-secondary hover:text-primary hover:bg-background rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span className="text-sm font-medium">{t('viewProfile')}</span>
+                </Link>
               </div>
               <div className="border-t border-border p-2">
                 <button

@@ -61,9 +61,16 @@ export default function Profile() {
 
         {/* Published Sites Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold text-text-primary mb-6">
-            Published Sites ({profile.blogs.length})
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-text-primary">
+              Published Sites ({profile.blogs.length})
+            </h2>
+            {profile.totalVisitors > 0 && (
+              <span className="text-sm text-text-muted">
+                {profile.totalVisitors.toLocaleString()} total views
+              </span>
+            )}
+          </div>
           <BlogGrid blogs={profile.blogs} />
         </div>
       </div>

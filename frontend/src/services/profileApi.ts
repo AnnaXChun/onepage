@@ -7,6 +7,7 @@ export interface BlogSummary {
   coverImage: string | null;
   shareCode: string;
   publishTime: string;
+  featured: boolean;
 }
 
 export interface ProfileData {
@@ -20,6 +21,7 @@ export interface ProfileData {
   vipStatus: boolean;
   vipExpireTime: string | null;
   blogs: BlogSummary[];
+  totalVisitors: number;
 }
 
 export const fetchProfile = async (username: string): Promise<ApiResponse<ProfileData>> => {
