@@ -90,6 +90,17 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
     }
   }, [existingBlog]);
 
+  // Reset blog creation when template changes (for re-creation with new template)
+  useEffect(() => {
+    if (blogCreated && template) {
+      console.log('[Preview] Template changed, resetting blogCreated to allow re-creation');
+      setBlogCreated(false);
+      setGeneratedBlog(null);
+      setLoading(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template?.id]);
+
   // Create new blog if needed
   useEffect(() => {
     // Skip if: already created, no image/template, or existing blog
