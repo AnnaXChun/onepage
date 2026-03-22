@@ -61,6 +61,7 @@
 4. API response latency under 200ms for dashboard load (using pre-aggregated data)
 
 **Plans:** 1/1 plans complete
+- [x] 16-01-PLAN.md — Analytics API Layer (ANLT-01, ANLT-02) — COMPLETED 2026-03-22
 
 ---
 
@@ -78,7 +79,8 @@
 3. Analytics dashboard renders both charts with proper loading and empty states
 4. Charts downsample data gracefully when dataset is large (>30 data points)
 
-**Plans:** TBD
+**Plans:** 1/1 plans planned
+- [ ] 17-01-PLAN.md — Analytics Charts (ANLT-01, ANLT-02) — PENDING
 
 ---
 
@@ -130,38 +132,14 @@
 | 13. Email Collection | 3/3 | Complete | 2026-03-22 |
 | 14. Notification Emails and PDF Delivery | 3/3 | Complete | 2026-03-22 |
 
-### Phase 13: Email Collection
-
-**Goal:** Collect user email during registration (with verification) and allow users to update their email in account settings
-**Requirements**: EML-01, EML-02
-**Depends on:** Phase 12
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 13-01-PLAN.md — Backend Email Infrastructure + Registration Enforcement
-- [x] 13-02-PLAN.md — Frontend Registration + Login Updates
-- [x] 13-03-PLAN.md — Frontend Account Settings Modal
-
-### Phase 14: Notification Emails and PDF Delivery
-
-**Goal:** Users receive email notifications when AI generation completes and first visitor arrives, and can request PDF delivered to their email with 24-hour download link
-**Requirements**: EML-03, EML-04, EML-05, EML-06
-**Depends on:** Phase 13
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 14-01-PLAN.md — Generation Completion Email (EML-03)
-- [x] 14-02-PLAN.md — First Visitor Notification Email (EML-04)
-- [x] 14-03-PLAN.md — PDF Email Delivery (EML-05, EML-06)
-
 ## v1.5 Progress (Active)
 
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 15. Analytics Data Layer | 1/1 | Complete (2026-03-22) |
-| 16. Analytics API Layer | 0/? | Not started |
-| 17. Analytics UI Layer | 0/? | Not started |
+| 16. Analytics API Layer | 1/1 | Complete (2026-03-22) |
+| 17. Analytics UI Layer | 1/1 | Planned |
 
 ---
 
-*Last updated: 2026-03-22 after Phase 15-01 completion*
+*Last updated: 2026-03-22 after Phase 17 planning*
