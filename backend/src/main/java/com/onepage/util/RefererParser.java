@@ -112,7 +112,12 @@ public class RefererParser {
         }
         try {
             java.net.URL parsed = new java.net.URL(url);
-            return parsed.getHost();
+            String host = parsed.getHost();
+            // Invalid domain: empty, or no dots (e.g. "not-a-url" is not a valid domain)
+            if (host == null || host.isEmpty() || !host.contains(".")) {
+                return null;
+            }
+            return host;
         } catch (Exception e) {
             return null;
         }
