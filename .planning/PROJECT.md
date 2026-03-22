@@ -10,13 +10,12 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.5
+## Current Milestone: None
 
-**Goal:** Enhanced Analytics — richer metrics with time-series charts and referral source tracking.
-
-**Target features:**
+**v1.5 Enhanced Analytics — SHIPPED 2026-03-22**
 - Page view trends over time (line chart, 7/30/90 day views)
 - Referral source breakdown (Google, Bing, direct, social)
+- All 3 phases complete: Data Layer, API Layer, UI Layer
 
 ## Requirements
 
@@ -55,10 +54,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Notification Emails — generation completion email, first visitor notification, PDF email delivery with 24hr link — v1.4 (Phase 14)
 - ✓ Analytics Data Layer — RefererParser utility, PageView refererSource field, BlogDailySourceStats entity — v1.5 (Phase 15)
 - ✓ Analytics API Layer — AnalyticsService with time-series + source breakdown, AnalyticsAggregationJob daily cron, @EnableScheduling — v1.5 (Phase 16)
+- ✓ Analytics UI Layer — LineChart for page views, PieChart for referral sources, Recharts ^3.8.0, data downsampling — v1.5 (Phase 17)
 
 ### Active
 
-- Enhanced Analytics (v1.5) — Phase 17 (Analytics UI Layer) not started
+- No active milestone — v1.5 Enhanced Analytics shipped
 
 ### Out of Scope
 
@@ -117,5 +117,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-22 after v1.5 milestone definition*
+*Last updated: 2026-03-22 after v1.5 milestone shipped*
 
