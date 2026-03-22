@@ -29,6 +29,6 @@ upload:
 wechatpay:
   app-id: your-app-id
   mch-id: your-merchant-id
-  api-key: your-api-key
+  api-key: sk-cp-vgQgQXWq5gG4Ix39ibAfJMA25ACkaGr3QuBSj9pQnIr8jQOp353RAJhWfF_jvRM--q2bDG2kMzXJPa3AQjnt_3XrAXQMWhLOBxmYSXuZ063ykRJY69vUmu8
   notify-url: http://your-domain/api/payment/notify
   refund-notify-url: http://your-domain/api/payment/refund-notify
