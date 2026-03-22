@@ -10,14 +10,13 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.4
+## Current Milestone: v1.5
 
-**Goal:** Email & Notifications — collect user email, notify on site completion, deliver PDF via email.
+**Goal:** Enhanced Analytics — richer metrics with time-series charts and referral source tracking.
 
 **Target features:**
-- User email collection (registration/profile)
-- Completion notification email (AI generation done)
-- PDF delivery via email
+- Page view trends over time (line chart, 7/30/90 day views)
+- Referral source breakdown (Google, Bing, direct, social)
 
 ## Requirements
 
@@ -53,10 +52,11 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Analytics Dashboard — visitor counts and page views per published site — v1.2 (Phase 11)
 - ✓ SEO Tools — custom meta tags, sitemap.xml, robots.txt, Open Graph, Twitter Cards — v1.3 (Phase 12)
 - ✓ Email Collection — required email at registration, email verification, account settings modal — v1.4 (Phase 13)
+- ✓ Notification Emails — generation completion email, first visitor notification, PDF email delivery with 24hr link — v1.4 (Phase 14)
 
 ### Active
 
-- Email & Notifications (v1.4) — Email collection (Phase 13 shipped), notifications and PDF delivery pending
+- Enhanced Analytics (v1.5) — Time-series page view charts, referral source tracking
 
 ### Out of Scope
 
@@ -115,5 +115,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-22 after v1.2 milestone complete*
+*Last updated: 2026-03-22 after v1.5 milestone definition*
 
