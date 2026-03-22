@@ -1,152 +1,115 @@
-# Stack Research — v1.5 Enhanced Analytics
+# Stack Research: Public Profile Pages (v1.7)
 
-**Domain:** Time-series analytics visualization and referral source tracking
+**Domain:** User profile pages with bio, avatar, social links, and published sites grid
 **Researched:** 2026-03-22
-**Confidence:** MEDIUM
+**Confidence:** HIGH
 
 ## Executive Summary
 
-The v1.5 Enhanced Analytics milestone requires two new capabilities: (1) time-series page view charts showing trends over 7/30/90 days, and (2) referral source breakdown (Google, Bing, direct, social). The existing infrastructure already captures the raw data needed for both features. No backend dependencies are required. Only a frontend charting library is needed.
+Public profile pages at `/user/{username}` require minimal stack additions. The existing infrastructure (User model, ImageController, Blog model) already provides 80% of what's needed. Only two database columns and one new API endpoint are required on the backend. Frontend needs a new route and profile components.
 
-## What Stays the Same (v1.2 Analytics Stack Validated)
+## What Stays the Same (Existing Stack Validated)
 
 | Technology | Current Version | Status | Notes |
 |------------|-----------------|--------|-------|
 | React | 18.2.0 | Keep | Stable |
-| MySQL 8 | 8.x | Keep | Stores page_views and blog_daily_stats |
-| Redis | 6.x | Keep | Already used for visitor Sets |
 | Spring Boot | 3.2.0 | Keep | No changes needed |
 | MyBatis-Plus | 3.5.5 | Keep | Working mapper pattern |
+| MySQL 8 | 8.x | Keep | JSON column support confirmed |
+| Redis | 6.x | Keep | No profile caching needed initially |
+| ImageController | Existing | Keep | Reuse for avatar upload |
 
 ---
 
-## New Additions for v1.5
+## New Additions for v1.7
 
-### 1. Recharts — Time-Series Line Charts
+### 1. User Model Extensions
 
-**Frontend:**
-| Library | Version | Purpose |
-|---------|---------|---------|
-| recharts | ^3.8.0 | Line chart for page view trends |
+**Database changes (MySQL DDL):**
 
-**Why Recharts:**
-
-| Criterion | Recharts | Chart.js (react-chartjs-2) | Tremor |
-|-----------|----------|---------------------------|--------|
-| React 18 support | v3.8.0 confirmed | Works via wrapper | Works |
-| Bundle size | Tree-shakeable, ~15KB core | ~50KB min | ~100KB+ |
-| Time series | Native XAxis with date scale | Manual configuration | Native |
-| Learning curve | Low - declarative components | Medium - canvas API | Medium |
-| Maintenance | Active (GitHub releases) | Active | Active |
-| Customization | Good theming support | Extensive | Limited |
-
-**Why not Chart.js:** Imperative canvas API requires wrapper library (react-chartjs-2) adding overhead and complexity.
-
-**Why not Tremor:** Heavy bundle (~100KB+), less customization for time-series, design-system locked.
-
-**Installation:**
-```bash
-npm install recharts
+```sql
+ALTER TABLE users ADD COLUMN bio VARCHAR(500) DEFAULT NULL;
+ALTER TABLE users ADD COLUMN social_links JSON DEFAULT NULL;
 ```
 
-### 2. Referral Source Parser — Backend Utility (No Library)
+**Why JSON for social_links:**
+- MySQL 8 JSON column stores structured data natively
+- MyBatis-Plus handles JSON with TypeHandler (no extra library)
+- Schema flexibility: add/remove platforms without migrations
+- Indexable viaGenerated Columns if search needed later
 
-No new Maven dependency needed. Implement a simple enum-based parser:
-
-```java
-public enum ReferralSource {
-    DIRECT("Direct", null),
-    GOOGLE("Google", "google.com"),
-    BING("Bing", "bing.com"),
-    BAIDU("Baidu", "baidu.com"),
-    YANDEX("Yandex", "yandex.ru"),
-    TWITTER("Twitter", "twitter.com"),
-    FACEBOOK("Facebook", "facebook.com"),
-    INSTAGRAM("Instagram", "instagram.com"),
-    LINKEDIN("LinkedIn", "linkedin.com"),
-    OTHER("Other", null);
-
-    private final String label;
-    private final String domain;
-
-    public static ReferralSource fromUrl(String referer) {
-        if (referer == null || referer.isBlank()) {
-            return DIRECT;
-        }
-        String lower = referer.toLowerCase();
-        for (ReferralSource source : values()) {
-            if (source.domain != null && lower.contains(source.domain)) {
-                return source;
-            }
-        }
-        return OTHER;
-    }
+**social_links JSON structure:**
+```json
+{
+  "twitter": "https://twitter.com/username",
+  "github": "https://github.com/username",
+  "linkedin": "https://linkedin.com/in/username",
+  "instagram": "https://instagram.com/username",
+  "website": "https://example.com"
 }
 ```
 
----
+### 2. Backend API Endpoints
 
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| Chart.js (direct) | Imperative canvas API, requires react-chartjs-2 wrapper | Recharts (declarative React components) |
-| Tremor | Heavy bundle (~100KB+), less customization | Recharts (lighter, more flexible) |
-| Victory | Heavy bundle, complex API | Recharts (simpler, lighter) |
-| Redis Stack time-series | Requires Redis Stack installation; existing Redis Sets + MySQL already sufficient | Existing approach with `blog_daily_stats` table |
-| ClickHouse | Overkill for project scale; adds operational complexity | MySQL aggregation (existing) |
-| Any paid charting library | Unnecessary cost for basic analytics | Recharts (free, open-source) |
-
----
-
-## Architecture for Time-Series Charts
-
-### Data Flow
-
+**New endpoint: Get public profile**
 ```
-1. Frontend: User requests analytics dashboard
-   |
-2. GET /api/analytics/stats?blogId={id}&period=7d
-   |
-3. AnalyticsService.getBlogStats(blogId, period)
-   - Query blog_daily_stats for date range (MySQL)
-   - Already returns dailyStats list with date/pageViews/visitors
-   |
-4. Frontend transforms to chart format:
-   [{ date: "2026-03-15", pageViews: 42, visitors: 38 }, ...]
-   |
-5. Recharts <LineChart> renders trend line
+GET /api/user/profile/{username}
+Response: {
+  id, username, avatar, bio, socialLinks,
+  publishedSites: [{ id, title, coverImage, shareCode, publishTime }]
+}
 ```
+- No authentication required (public endpoint)
+- Returns only published blogs (status = published)
+- 404 if username not found
 
-### Data Flow for Referral Sources
+**Existing endpoint reuse for avatar upload:**
+```
+POST /api/image/upload
+```
+- Already exists in ImageController
+- Reuse for avatar images
+- Returns URL, store in User.avatar
 
+**Existing endpoint reuse for profile update:**
 ```
-1. Page view recorded via @Async AnalyticsService.recordPageView()
-   - Stores referer in page_views.referer
-   |
-2. GET /api/analytics/referrals?blogId={id}&period=7d
-   |
-3. AnalyticsService.getReferralStats(blogId, period)
-   - SELECT referer, COUNT(*) FROM page_views WHERE blog_id=? AND visited_at BETWEEN ? AND ?
-   - Group by categorized ReferralSource
-   - Calculate percentages
-   |
-4. Return List<ReferralStatsDTO>
-5. Frontend renders <BarChart> or <PieChart>
+PUT /api/user/profile (requires auth)
 ```
+- New endpoint to update bio, avatar, socialLinks
+- Protected like other authenticated endpoints
+
+### 3. Frontend Dependencies
+
+**No new dependencies required.**
+
+| Approach | Library | Why |
+|----------|---------|-----|
+| Icon library | None | Use inline SVGs for social icons (Twitter, GitHub, etc.) - zero bundle cost |
+| Avatar display | None | Standard `<img>` with fallback to initials |
+| Avatar upload | None | Reuse existing Upload component, send to `/api/image/upload` |
+| Grid layout | TailwindCSS | Existing grid utilities (grid, gap, etc.) |
+
+**Alternative considered: lucide-react**
+- `lucide-react@0.577.0` available (verified via npm)
+- Pros: Consistent icon style, easy to swap icons
+- Cons: Adds ~30KB to bundle for just 5-6 icons
+- Decision: Use inline SVGs to keep bundle small
 
 ---
 
 ## Backend Additions Summary
 
-**No new Maven dependencies.**
-
 | Addition | Type | Location | Purpose |
 |----------|------|----------|---------|
-| ReferralSource enum | New file | com.onepage.util.ReferralSource | Categorize referer URLs |
-| ReferralStatsDTO | New file | com.onepage.dto.ReferralStatsDTO | API response for referral breakdown |
-| AnalyticsService.getReferralStats() | Method addition | AnalyticsService.java | Query and aggregate referral data |
-| AnalyticsController endpoint | Method addition | AnalyticsController.java | Expose GET /api/analytics/referrals |
+| `bio` column | DB migration | users table | User biography text |
+| `social_links` column | DB migration | users table | JSON object with social URLs |
+| UserController.getProfile() | New method | UserController.java | GET /api/user/profile/{username} |
+| UserController.updateProfile() | New method | UserController.java | PUT /api/user/profile (auth) |
+| UserService.getPublicProfile() | New method | UserService.java | Fetch profile + published blogs |
+| UserService.updateProfile() | New method | UserService.java | Update bio, avatar, social links |
+| BlogMapper.getPublishedByUserId() | New query | BlogMapper.java | Get user's published blogs |
+
+**No new Maven dependencies.** MySQL 8 JSON handling is native.
 
 ---
 
@@ -154,10 +117,61 @@ public enum ReferralSource {
 
 | Addition | Type | Purpose |
 |----------|------|---------|
-| recharts | npm install | Line chart for time-series, bar/pie for referral breakdown |
-| TimeSeriesChart component | New | Recharts LineChart wrapper for page view trends |
-| ReferralChart component | New | Recharts BarChart or PieChart for referral sources |
-| AnalyticsDashboard updates | Modify | Add chart sections below stat cards |
+| ProfilePage | New route `/user/:username` | Public profile display |
+| ProfileEditSection | New component | Edit bio, avatar, social links |
+| useProfile hook | New hook | Fetch/update profile data |
+| SocialIcons | New component | Inline SVG icons for each platform |
+
+**Routing addition (App.tsx):**
+```tsx
+<Route path="/user/:username" element={<ProfilePage />} />
+```
+
+**Key integration points:**
+- Reuse existing `api.ts` service for HTTP calls
+- Reuse existing `AuthContext` for profile edit permissions
+- Use BlogContext or create ProfileContext for user data
+
+---
+
+## What NOT to Use
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Separate social_links table | Over-engineered for 5 platforms; adds JOIN complexity | JSON column in users table |
+| Avatar cropping library | Adds complexity; existing upload works fine | Direct upload to existing endpoint |
+| react-icons | Heavy bundle (~40KB) for few icons | Inline SVG components |
+| Profile caching in Redis | Low traffic feature; MySQL sufficient | No caching initially |
+| Separate Profile model | UserProfile 1:1 with User is unnecessary | Extend User model |
+
+---
+
+## Integration with Existing Stack
+
+### Avatar Upload Flow
+```
+1. User selects image in profile edit
+2. POST /api/image/upload with MultipartFile
+3. ImageService stores file, returns URL
+4. UserService updates User.avatar with URL
+```
+
+### Public Profile Data Flow
+```
+1. Visitor navigates to /user/johndoe
+2. GET /api/user/profile/johndoe (no auth)
+3. UserService queries User by username
+4. UserService queries BlogMapper.getPublishedByUserId(userId)
+5. Returns { user, publishedSites[] }
+```
+
+### Profile Edit Flow
+```
+1. Authenticated user navigates to settings
+2. PUT /api/user/profile with { bio, avatar, socialLinks }
+3. UserService validates and updates
+4. Frontend updates local state
+```
 
 ---
 
@@ -165,8 +179,8 @@ public enum ReferralSource {
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| recharts@^3.8.0 | React 18.x, React 17.x | Requires react-is peer dependency |
-| recharts@^2.15.0 | React 18.x, React 17.x | Alternative version, same API |
+| MySQL 8 JSON | Spring Boot 3.2, MyBatis-Plus 3.5.5 | Native JSON functions |
+| react-avatar-editor@15.1.0 | React 18.x | Available but not recommended |
 
 ---
 
@@ -174,12 +188,12 @@ public enum ReferralSource {
 
 | Technology | Source | Confidence |
 |-----------|--------|------------|
-| Recharts | [github.com/recharts/recharts](https://github.com/recharts/recharts) | HIGH — v3.8.0 release verified March 2026 |
-| Recharts React 18 | npm registry package info | HIGH — react-is peer dependency confirmed |
-| Chart.js | [chartjs.org](https://www.chartjs.org/) | MEDIUM — alternative comparison |
-| Redis time-series | [redis.io/docs/stack/timeseries](https://redis.io/docs/stack/timeseries/) | MEDIUM — for reference, not used |
+| MySQL 8 JSON column | [dev.mysql.com/doc/refman/8.0/en/json.html](https://dev.mysql.com/doc/refman/8.0/en/json.html) | HIGH - native feature |
+| react-avatar-editor | npm registry | MEDIUM - available but not needed |
+| lucide-react | npm registry @0.577.0 | MEDIUM - alternative not chosen |
+| MyBatis-Plus JSON | [baomidou.com/pages/24112f](https://baomidou.com/pages/24112f) | HIGH - TypeHandler docs |
 
 ---
 
-*Stack research for: v1.5 Enhanced Analytics (time-series + referral tracking)*
+*Stack research for: v1.7 Public Profile Pages*
 *Researched: 2026-03-22*

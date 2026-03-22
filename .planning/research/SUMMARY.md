@@ -1,154 +1,165 @@
 # Project Research Summary
 
-**Project:** Vibe Onepage - v1.5 Enhanced Analytics
-**Domain:** Website analytics with time-series visualization and referral source tracking
+**Project:** Vibe Onepage - v1.7 User Profiles
+**Domain:** Single-page website builder SaaS with public user profile pages
 **Researched:** 2026-03-22
-**Confidence:** MEDIUM
+**Confidence:** HIGH (Stack/Architecture), MEDIUM (Features/Pitfalls)
 
 ## Executive Summary
 
-The v1.5 Enhanced Analytics milestone adds two capabilities to the existing v1.2 analytics infrastructure: (1) time-series page view charts showing trends over 7/30/90 days, and (2) referral source breakdown categorizing traffic into Direct, Search Engine, Social, and Referral categories. The existing codebase already captures raw data (page_views table with referer field, blog_daily_stats aggregation), but lacks visualization and proper referer categorization.
+Vibe Onepage v1.7 adds public user profile pages at `/user/{username}` to showcase users and their published blog sites. Research confirms the existing Spring Boot + React + MySQL stack handles this well with minimal additions: two database columns (bio, social_links JSON), one new public endpoint, and standard frontend routing. The existing User entity, ImageController, and Blog model provide 80% of needed infrastructure.
 
-The recommended approach leverages existing infrastructure: AnalyticsService.recordPageView() already stores referer data, and dailyStats[] exists in AnalyticsDTO. The primary work involves adding a ReferralParser utility to categorize referer URLs, exposing the existing dailyStats data properly, and integrating a frontend charting library (Recharts). No new backend dependencies or database tables are strictly required for MVP, though a separate blog_daily_source_stats table enables better per-source trend analysis at scale.
+The recommended approach is incremental: extend the User model with profile fields, create a ProfileDTO to prevent exposing sensitive data, add public and authenticated profile endpoints, then build the frontend profile page. Architecture follows the established Controller-Service-Repository pattern. Critical risks center on security (IDOR on profile edits, XSS via bio field, SSRF via avatar URLs) and performance (N+1 queries, missing cache invalidation).
 
-Key risks include: performance issues from querying raw page_views on dashboard load (must use pre-aggregated daily stats), timezone handling bugs in time-series data, and potential referral data loss from HTTPS->HTTP transitions (browser privacy feature). The frontend must implement data downsampling to avoid chart rendering crashes with large datasets.
+Key pitfalls from prior milestones (AI generation, PDF export, WeChat Pay, analytics) are in past phases. The v1.7-specific pitfalls are manageable with standard patterns: always extract userId from SecurityContext, apply the same sanitization used in BlogService, validate avatar URLs strictly, and use batch queries for published blogs.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing v1.2 stack is validated and sufficient. No backend dependency changes are needed.
+**Stack remains unchanged from v1.6.** Existing infrastructure validated for profile pages.
 
 **Core technologies:**
-- **Recharts ^3.8.0** — Time-series line charts and pie/bar charts for referral breakdown; declarative React components, ~15KB core bundle, native time-series support
-- **ReferralParser (new utility)** — Backend enum-based parser to categorize referer URLs into Direct, Search Engine, Social, Referral, Other; no external library needed
-- **Existing: MySQL 8, Redis 6.x, Spring Boot 3.2.0, MyBatis-Plus 3.5.5** — All remain unchanged; page_views and blog_daily_stats tables already exist
+- **React 18.2.0 + Spring Boot 3.2.0**: No changes needed, existing patterns work
+- **MySQL 8 JSON column**: Native JSON handling for social_links without extra libraries
+- **MyBatis-Plus 3.5.5**: TypeHandler for JSON column deserialization — no new dependencies
+- **Redis 6.x**: Reuse existing caching pattern; profile caching optional for v1.7
+- **ImageController (existing)**: Reuse for avatar uploads
 
-**Avoid:** Chart.js (imperative canvas API requires wrapper overhead), Tremor (heavy ~100KB+ bundle), Victory (complex API), Redis Stack time-series (overkill for project scale), ClickHouse (operational complexity unjustified).
+**New additions for v1.7:**
+- Database: `bio` (VARCHAR 500), `social_links` (JSON) columns on users table
+- Backend: `UserProfileController`, `ProfileDTO`, `UpdateProfileRequest`, new UserService methods
+- Frontend: `Profile.tsx` page, `ProfileHeader.tsx`, `ProfileEditModal.tsx`, `BlogGrid.tsx`
 
 ### Expected Features
 
 **Must have (table stakes):**
-- Time-series line chart — Display daily page views as line chart with 7d/30d/90d toggle; existing dailyStats[] in AnalyticsDTO provides data
-- Referral source categorization — Parse referer into Direct/Search/Social/Referral categories; raw referer field exists but needs parsing
-- Referral pie/bar chart — Visual breakdown of traffic sources with percentages
+- Public profile endpoint `GET /api/user/profile/{username}` — core deliverable
+- Avatar display — existing field, needs upload UI integration
+- Bio field — new database column required
+- Social links (Twitter, GitHub, LinkedIn, website) — new JSON column required
+- Published sites grid — filter existing Blog model by status=1 (published)
+- VIP badge — existing vipStatus field, expose in ProfileDTO
+- Profile page UI at `/user/{username}` — new frontend route
+- Profile editing UI in account settings — authenticated flow
 
-**Should have (competitive):**
-- UTM parameter parsing — Track campaign sources from URL parameters (P2 complexity)
-- Traffic spike alerts — Email notification when traffic exceeds rolling average (P3, EmailService exists)
+**Should have (competitive differentiation):**
+- Featured site pinning — lets users highlight best work (needs is_featured column on Blog)
+- Total visitor count across all sites — aggregate from blog_daily_stats
+- Per-site visitor counts — join with analytics tables
 
 **Defer (v2+):**
-- Geographic breakdown — Requires IP geolocation service, privacy concerns, cost
-- Device/browser breakdown — Requires UA parsing library
-- Real-time analytics (live visitor count) — WebSocket infrastructure needed
-- Custom date range picker — 7/30/90d presets sufficient for v1.5
+- Site preview on hover — high complexity, performance concerns
+- Follow system — notification infrastructure, not aligned with one-page site product
+- Custom profile subdomain — requires DNS infrastructure
+- Custom profile theme/branding — brand colors for power users
 
 ### Architecture Approach
 
-The existing analytics pipeline is: SiteController.servePublishedSite() -> AnalyticsService.recordPageView() [@Async] -> Save to page_views table (referer stored) + Redis Set (visitor fingerprint). AnalyticsService.getBlogStats() queries blog_daily_stats and returns dailyStats[].
-
-**Target data flow for v1.5:**
-1. recordPageView() parses referer URL via RefererParser, stores source category
-2. Scheduled aggregation job (daily at 00:05) groups page_views by blog_id and referer_source, upserts into blog_daily_source_stats (or queries directly for MVP)
-3. getBlogStats() returns existing dailyStats[] plus new refererSources[] breakdown
-4. Frontend renders line chart (dailyStats) and pie chart (refererSources) via Recharts
+Public profile pages follow the established Controller-Service-Repository pattern with clear separation: UserProfileController handles profile API requests (GET public, PUT authenticated), UserService contains getPublicProfile() and updateProfile() business logic, BlogService provides getPublishedBlogsByUserId() for filtering published blogs by userId. The ProfileDTO explicitly excludes sensitive fields (password, email). Frontend follows existing routing conventions with App.tsx route `/user/:username`.
 
 **Major components:**
-1. **RefererParser** (util/) — Enum-based categorization of referer URLs into Source enum (DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER)
-2. **BlogDailySourceStats** (model/) — Entity for daily source breakdown; new table or JSON column in blog_daily_stats
-3. **AnalyticsAggregationJob** (job/) — @Scheduled job at 00:05 to aggregate previous day's page_views by source into blog_daily_source_stats
-4. **AnalyticsDTO.RefererSourceStat** (dto/) — New nested class for API response: {source, displayName, pageViews, percentage}
-5. **TimeSeriesChart + ReferralChart** (frontend) — Recharts LineChart and PieChart wrappers
+1. **UserProfileController**: Public profile endpoint + authenticated profile update; uses `@AuthenticationPrincipal JwtUserPrincipal` for ownership verification
+2. **UserService**: getPublicProfile() builds ProfileDTO and fetches published blogs; updateProfile() validates and persists changes
+3. **ProfileDTO**: Excludes sensitive fields; includes username, avatar, bio, socialLinks, and published blogs array
+4. **ProfilePage (frontend)**: Public profile display at `/user/:username`; fetches data, renders ProfileHeader and BlogGrid
+5. **ProfileEditModal (frontend)**: Authenticated-only editing of bio, avatar, and social links
 
 ### Critical Pitfalls
 
-1. **Referral data normalization missing** — Storing raw referer URLs causes useless noise (dozens of google.com variants). Prevention: Parse and normalize domains at insert time via RefererParser.
+1. **IDOR on Profile Editing** — Profile update must extract userId from SecurityContext, never accept userId in request body. Follow BlogController pattern at lines 79-85.
 
-2. **Per-page-view aggregation on dashboard load** — Querying raw page_views with GROUP BY causes 10+ second loads or timeouts at scale. Prevention: Pre-aggregate via scheduled job; serve from blog_daily_stats or blog_daily_source_stats.
+2. **XSS via Unsanitized Bio and Social Links** — Apply same `sanitizeContent()` and `sanitizeUrl()` from BlogService to profile fields. Bio accepts script tags by default — must sanitize before rendering.
 
-3. **Synchronous analytics recording blocks site serving** — recordPageView() in request thread adds 50-200ms latency. Prevention: Already @Async in existing code; verify dedicated thread pool exists.
+3. **N+1 Query on Profile Page** — Use single query with `WHERE user_id = ? AND status = 1` instead of looping. Cache profile data with separate key from blog cache.
 
-4. **Timezone handling bugs in time-series** — LocalDateTime.now() uses server timezone; aggregation by day is ambiguous. Prevention: Store timestamps in UTC; convert to user timezone at display time.
+4. **Route Collision with /host/{username}** — SiteController serves published sites at `/host/{username}`. New profile routes at `/user/{username}` must be registered before host routes to avoid conflicts.
 
-5. **Frontend chart rendering crashes** — Recharts renders all data points; 90 days of data = 2160 points, DOM cannot handle. Prevention: Downsample to daily for >30 points; disable animation for large datasets; lazy load historical data.
+5. **Username Changes Break Published Site URLs** — Store `publishedUsername` on Blog at publish time for og:url. Current implementation queries by username directly, so username changes break embedded URLs.
 
 ## Implications for Roadmap
 
-Based on research, the v1.5 Enhanced Analytics work splits into three phases:
+Based on research, v1.7 User Profiles milestone should proceed in three phases:
 
-### Phase 1: Backend Data Layer
-**Rationale:** Foundation must be solid before API and UI layers. Referer categorization requires database schema changes (add referer_source column to page_views).
+### Phase 1: Database & Backend Foundation
+**Rationale:** Schema changes must precede any API or frontend work. Profile endpoint cannot return meaningful data without bio and social_links columns.
 
-**Delivers:** PageView entity updated with refererSource field; RefererParser utility with categorization logic; AnalyticsService.recordPageView() stores categorized source; BlogDailySourceStats entity and mapper (if using separate table).
+**Delivers:**
+- Database migration: bio (VARCHAR 500), social_links (JSON) on users table
+- Updated User entity with new fields
+- ProfileDTO (excludes password, email, internal fields)
+- UpdateProfileRequest DTO with validation
+- UserService.getPublicProfile(username) — find user, build DTO, fetch published blogs
+- UserService.updateProfile(userId, request) — update fields with sanitization
+- BlogService.getPublishedBlogsByUserId(userId) — filter status=1 only
+- UserProfileController — GET /api/user/profile/{username} (public), PUT /api/user/profile (auth)
+- Profile cache invalidation on update
 
-**Implements:** STACK.md ReferralParser, ARCHITECTURE.md Phase A components.
+**Avoids:** N+1 queries, cache invalidation gaps, IDOR (extract userId from SecurityContext)
 
-### Phase 2: Backend API Layer
-**Rationale:** API must expose categorized data before frontend can visualize. Builds directly on Phase 1.
+### Phase 2: Frontend Profile Page
+**Rationale:** Frontend components depend on API contracts being stable. Build profile display page, then profile editing modal.
 
-**Delivers:** AnalyticsDTO.RefererSourceStat nested class; AnalyticsService.getBlogStats() returns refererSources[] breakdown; AnalyticsAggregationJob for daily source aggregation.
+**Delivers:**
+- ProfileApi service for fetchProfile/updateProfile
+- Profile.tsx page component at `/user/:username`
+- ProfileHeader.tsx — avatar, username, bio, social link icons (inline SVG, no bundle cost)
+- BlogGrid.tsx — published blogs as cards linking to /blog/:shareCode
+- ProfileEditModal.tsx — authenticated editing of bio, avatar, social links
+- App.tsx route addition
 
-**Implements:** ARCHITECTURE.md Phase B components, API changes from STACK.md.
+**Uses:** Existing api.ts service, AuthContext for permissions, TailwindCSS grid utilities
 
-### Phase 3: Frontend UI Layer
-**Rationale:** UI layer depends on API. Final integration of Recharts for visualization.
+### Phase 3: Integration & Polish
+**Rationale:** Connect profile to existing flows (post-login redirect, navigation links) and add v2 features if time permits.
 
-**Delivers:** Recharts installed; TimeSeriesChart component for daily page view trends; ReferralChart component (PieChart) for traffic source breakdown; Period toggle (7d/30d/90d); Updated AnalyticsDashboard.
+**Delivers:**
+- Add "View My Profile" link to navigation (authenticated users)
+- Auto-redirect to /user/{username} after login
+- Featured site pinning (if v1.7 scope allows)
+- Total visitor count display on profile (aggregate from blog_daily_stats)
 
-**Implements:** FEATURES.md P1 features (time-series chart, referral chart), STACK.md Recharts integration.
-
-### Phase Ordering Rationale
-
-- **Phase 1 before 2:** API cannot return source breakdown without data layer changes
-- **Phase 2 before 3:** Frontend needs API contract to render charts
-- **Grouping by layer:** Backend (data + API) separated from frontend to enable parallel work after Phase 1
-- **Avoids pitfalls:** Async recording already exists (Pitfall 15 mitigated), pre-aggregation design (Pitfall 14 mitigated), timezone handling in schema design (Pitfall 16 mitigation)
-
-### Research Flags
+**Research Flags:**
 
 Phases likely needing deeper research during planning:
-- **Phase 1:** RefererParser domain list completeness — need to verify coverage for Chinese platforms (Baidu, Sogou, Weibo) with actual traffic patterns
-- **Phase 2:** Aggregation job scaling — if blog has 100K+ daily page views, job execution time needs measurement
+- **Phase 2 (Frontend)**: BlogGrid pagination strategy — if users have many published sites, need pagination design (12 per page recommended per Architecture.md)
 
 Phases with standard patterns (skip research-phase):
-- **Phase 3:** Recharts is well-documented; LineChart/PieChart patterns are standard React charting approaches
+- **Phase 1 (Database & Backend)**: Well-documented MyBatis-Plus patterns, existing User entity extension is straightforward
+- **Phase 3 (Integration)**: Standard React routing and AuthContext patterns, no new integration patterns
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Existing v1.2 stack validated; Recharts v3.8.0 confirmed compatible with React 18 |
-| Features | MEDIUM | Based on existing codebase analysis + industry standard patterns (Umami, Plausible); competitor comparison available |
-| Architecture | HIGH | Integration points verified via codebase analysis; @Async, scheduled jobs, aggregation patterns standard |
-| Pitfalls | MEDIUM | Based on code analysis + common analytics pitfalls; some (referer normalization, timezone) require production validation |
+| Stack | HIGH | Verified against existing codebase; MySQL 8 JSON handling confirmed native |
+| Features | MEDIUM | Based on competitor analysis and codebase; user validation not performed |
+| Architecture | HIGH | Based on existing patterns (Controller-Service-Repository); clear component map |
+| Pitfalls | MEDIUM | Code analysis verified with limited external sources; web search had errors |
 
-**Overall confidence:** MEDIUM
+**Overall confidence:** MEDIUM-HIGH
 
 ### Gaps to Address
 
-- **ReferralParser domain coverage:** Chinese search engines (Sogou, 360so) and social platforms (Douyin, Xiaohongshu) may need inclusion; validate against actual traffic during implementation
-- **Timezone validation:** UTC storage and display-time conversion needs testing with users in different timezones
-- **Chart performance at scale:** 90-day view with high-traffic blogs needs load testing; downsampling thresholds may need tuning
-- **HTTPS referer loss:** Cannot be fully solved; need to validate acceptable "Unknown" percentage with real traffic
+- **Username change strategy**: Open question from FEATURES.md — should username be immutable after first site publish? Need PM decision before Phase 1 completes
+- **Default avatar**: What placeholder to show when user has no avatar uploaded? Need design decision
+- **Minimum blogs threshold**: Should empty profiles show placeholder with CTA? Or just display user info? Need UX decision
+- **Feature prioritization**: P2 features (featured site, visitor counts) may need reprioritization based on user feedback
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing project codebase analysis (AnalyticsService.java, AnalyticsDTO.java, PageView.java, BlogDailyStats.java, SiteController.java)
-- Recharts official documentation (recharts.org) — v3.8.0 release confirmed
-- MyBatis-Plus documentation (BaseMapper, LambdaQueryWrapper patterns)
-- Spring @Scheduled documentation (cron expressions)
+- Existing Vibe Onepage codebase analysis — User.java, Blog.java, UserController.java, BlogController.java, SecurityConfig.java
+- MySQL 8 documentation — JSON column native support
+- MyBatis-Plus documentation — TypeHandler for JSON deserialization
 
 ### Secondary (MEDIUM confidence)
-- Standard analytics patterns from training data (time-series visualization, referer categorization)
-- Competitor feature analysis: umami.is, plausible.io (simple analytics feature set)
-- Spring Async execution patterns
-- Redis HyperLogLog for approximate unique counting (reference, not implemented)
+- Competitor analysis (Linktree, Carrd, about.me, Wix) — feature comparison from FEATURES.md
+- Spring Boot REST best practices — API design patterns
+- Industry pattern training data — profile page security (IDOR, XSS, SSRF patterns)
 
 ### Tertiary (LOW confidence)
-- RefererParser domain lists — need production traffic validation
-- Aggregation job performance at 100K+ page views/day — needs load testing
-- Chinese platform categorization (Weibo, Douyin, Xiaohongshu) — need user base validation
+- WeChat Pay v3 patterns via WebFetch — not directly applicable to v1.7 profile pages
 
 ---
 *Research completed: 2026-03-22*

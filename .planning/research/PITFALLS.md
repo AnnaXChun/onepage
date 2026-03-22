@@ -591,6 +591,188 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 
 ---
 
+## Critical Pitfalls (v1.7 User Profiles)
+
+### Pitfall 19: IDOR on Profile Editing
+
+**What goes wrong:**
+An authenticated user can modify another user's profile data (bio, avatar, social links) by manipulating user ID parameters.
+
+**Why it happens:**
+The existing BlogController uses `getCurrentUserId()` to verify ownership before modifications (lines 79-85). A new ProfileController must follow the same pattern. Developers sometimes create "convenience" endpoints that accept userId as a parameter for "admin" access, introducing IDOR vulnerabilities.
+
+**How to avoid:**
+- Always extract userId from SecurityContext via `@AuthenticationPrincipal JwtUserPrincipal`
+- Never accept userId as a path or request body parameter for profile updates
+- Use `getCurrentUserId()` pattern consistent with BlogController
+
+**Warning signs:**
+- Profile update endpoint accepts `userId` in request body
+- No 403 Forbidden when modifying another user's profile
+- Successful PATCH to `/api/profile/123` when logged in as user 456
+
+**Phase to address:** v1.7 Profile API phase
+
+---
+
+### Pitfall 20: XSS via Unsanitized Bio and Social Links
+
+**What goes wrong:**
+Malicious JavaScript stored in bio or social link fields executes when viewing the public profile page.
+
+**Why it happens:**
+BlogService sanitizes content (removes script tags, iframes, event handlers) in `sanitizeContent()`. Profile fields must use the same sanitization, but developers often assume "text fields" don't need it.
+
+**How to avoid:**
+- Apply identical sanitization to bio that BlogService uses for blog content
+- Validate social link URLs with the same `sanitizeUrl()` logic (only http/https/relative/data)
+- Render profile data with context-aware escaping on frontend
+
+**Warning signs:**
+- Social link input accepts `javascript:` URLs
+- Bio field accepts `<script>` tags
+- No server-side validation on social link URL format
+
+**Phase to address:** v1.7 Profile API phase + Profile frontend rendering
+
+---
+
+### Pitfall 21: Route Collision with /host/{username}
+
+**What goes wrong:**
+The existing SiteController serves published sites at `/host/{username}` (SiteController.java line 44). A new `/user/{username}` profile endpoint creates routing conflicts or SEO cannibalization.
+
+**Why it happens:**
+Both routes use `{username}` as a path variable. Spring routes are matched by specificity and order. If profile routes are added after host routes, routing becomes unpredictable.
+
+**How to avoid:**
+- Use distinct prefixes: `/profile/{username}` for profiles vs `/host/{username}` for sites
+- Register profile routes before host routes
+- Test that `/host/existinguser` still serves published site, not profile page
+
+**Warning signs:**
+- Accessing `/user/someone` returns published site HTML instead of profile JSON
+- SEO: Google indexes profile pages instead of published sites
+- Route matching errors in logs
+
+**Phase to address:** v1.7 Profile routing phase
+
+---
+
+### Pitfall 22: Username Changes Break Published Site URLs
+
+**What goes wrong:**
+Published sites reference `/host/{username}` in their HTML content (og:url, sitemap links). If a user changes their username, existing published sites point to broken URLs.
+
+**Why it happens:**
+SiteService.getPublishedBlogByUsername() queries by username. The StaticSiteService embeds the username into generated HTML. Unlike shareCode which is immutable, username is user-editable.
+
+**How to avoid:**
+- Option A: Treat username as immutable after first site publish
+- Option B: Store `publishedUsername` on Blog at publish time, use that for og:url even if user changes username
+- Option C: Maintain username->userId mapping permanently, redirect old usernames to current
+
+**Warning signs:**
+- User changes username and their published site sitemap shows 404
+- og:url in published HTML differs from actual serving URL
+- Sitemap generator uses current username instead of blog's stored publishedUsername
+
+**Phase to address:** v1.7 Profile data model phase
+
+---
+
+### Pitfall 23: N+1 Query on Profile Page Load
+
+**What goes wrong:**
+Loading a profile page triggers 1 query for user + N queries for each published blog plus N queries for blog stats.
+
+**Why it happens:**
+Profile page needs user data (bio, avatar, social links) plus list of published blogs. Naive implementation queries user, then loops through blog IDs to fetch each separately.
+
+**How to avoid:**
+- Use `IN` clause: `SELECT * FROM blogs WHERE user_id = ? AND status = 1`
+- Join user data with blog list in one query
+- Apply same caching strategy as BlogService: cache profile data with 24h TTL
+- If showing blog stats, batch-fetch with `IN` clause
+
+**Warning signs:**
+- Profile page load time > 500ms for users with 10+ published sites
+- Query count shows > 10 queries for single profile page
+- Database CPU spikes on concurrent profile views
+
+**Phase to address:** v1.7 Profile API phase
+
+---
+
+### Pitfall 24: Missing Cache Invalidation on Profile Update
+
+**What goes wrong:**
+User updates their bio, but public profile page still shows old content for up to 24 hours.
+
+**Why it happens:**
+BlogService uses `BLOG_CACHE_PREFIX` with 24h TTL. If profile data uses same TTL, updates won't propagate.
+
+**How to avoid:**
+- Invalidate profile cache on any user profile field update
+- Use separate cache key: `profile:{userId}` or `profile:username:{username}`
+- Trigger cache invalidation in same transaction as profile update
+- Consider shorter TTL (1h) for profile cache than blog cache
+
+**Warning signs:**
+- Profile updates visible in database but not via API for > 1 hour
+- User reports "I updated my bio but it still shows old info"
+- Cache keys accumulate without invalidation
+
+**Phase to address:** v1.7 Profile API phase
+
+---
+
+### Pitfall 25: Username Enumeration via Profile API
+
+**What goes wrong:**
+Profile API returns different responses for existing vs. non-existing usernames, enabling username enumeration attacks.
+
+**Why it happens:**
+Public endpoints should return consistent responses. If `/api/profile/john` returns 404 and `/api/profile/admin` returns 200, attackers discover valid usernames.
+
+**How to avoid:**
+- Return consistent response structure: 200 with `null` or empty object for non-existent users
+- Or return 404 for all profile requests (breaks SEO for legitimate 404s)
+- Add rate limiting: max 60/min per IP
+- Consider requiring authentication for profile metadata (only public display data without email/ID)
+
+**Warning signs:**
+- Different HTTP status codes for existing vs. non-existing usernames
+- Response time differences (timing attack)
+- No rate limiting on profile endpoint
+
+**Phase to address:** v1.7 Profile API phase (security hardening)
+
+---
+
+### Pitfall 26: SSRF via Avatar URL Input
+
+**What goes wrong:**
+User provides a URL to an external image as avatar. Server fetches it, enabling Server-Side Request Forgery attacks.
+
+**Why it happens:**
+Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which only allows http/https/relative/data URLs, but if avatar is rendered server-side without validation, SSRF is possible.
+
+**How to avoid:**
+- Mirror BlogService's `sanitizeUrl()` for avatar URLs
+- If fetching remote avatar, validate URL before making request
+- Consider hosting avatars locally: upload to your storage, serve from your domain
+- Block private IP ranges (127.0.0.1, 10.x.x.x, 192.168.x.x) in URL validation
+
+**Warning signs:**
+- Avatar URL accepts `http://localhost` or `http://169.254.169.254` (AWS metadata)
+- Server makes outbound requests to arbitrary URLs
+- Avatar preview fails silently
+
+**Phase to address:** v1.7 Profile API phase
+
+---
+
 ## Technical Debt Patterns
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
@@ -605,6 +787,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | Query raw table on dashboard load | Simple code | O(n) scans, timeout at scale | Only for <1k total views |
 | Sync analytics recording | Simpler code | Blocked requests, slow sites | Never - use @Async |
 | Use line charts for everything | Familiar UX | Renders poorly with many points | Only for <30 data points |
+| Skip username uniqueness check | Faster registration | Username collisions break profile URLs | Never |
+| Copy-paste BlogService sanitization | Code reuse feels safe | Bugs duplicated in two places | Refactor to shared utility |
+| Use same cache TTL as blogs | Simpler cache config | Profile updates take 24h to propagate | Only if acceptable SLA |
+| Skip rate limiting on profile read | Fewer moving parts | Enumeration attacks possible | Only for truly public data |
+| Store avatar as external URL | No file upload complexity | SSRF risk, image can disappear | Only with strict URL validation |
 
 ---
 
@@ -626,6 +813,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | MySQL | Storing referer without size limit | Truncate to 500 chars, preserve domain |
 | SiteController | Forgetting analytics recording | Extract to interceptor/filter |
 | Timezone | Mixing server and UTC times | Always store UTC, convert on display |
+| Blog listing on profile | Querying all blogs then filtering by status in code | Database-level `WHERE user_id = ? AND status = 1` |
+| SiteController routing | Adding `/user` routes that conflict with `/host` | Distinct prefixes, test both work |
+| JWT auth | Not extracting userId from principal correctly | Use `@AuthenticationPrincipal JwtUserPrincipal` |
+| Redis caching | Forgetting to delete profile cache on update | Invalidate in same service method |
+| Frontend routing | Using same route for edit mode and public view | `/profile/edit` vs `/user/{username}` |
 
 ---
 
@@ -643,6 +835,10 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | Redis KEYS command for analytics | Redis CPU spike | Use SCAN or specific key patterns | >1k keys |
 | Synchronous chart data fetching | UI freeze | Fetch async, show loading state | Any dashboard load |
 | Loading all chart data at once | Browser crash | Pagination + downsampling | >90 day range |
+| N+1 blog queries | Slow profile page, query flood | Single `IN` query for all blogs | > 5 published blogs per user |
+| Uncached profile data | Database load spike | Redis cache with 1-24h TTL | > 100 concurrent profile views |
+| Large avatar images | Bandwidth bloat, slow page load | Resize/compress on upload, max 200x200 | Users with 5MB avatar uploads |
+| Expensive stats aggregation | Profile page timeout | Cache blog stats separately, lazy-load | Users with > 50 published blogs |
 
 ---
 
@@ -659,6 +855,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | No rate limiting on analytics endpoint | DoS - fan-out query overloads DB | Rate limit by user/blog |
 | Storing full User-Agent strings | GDPR concerns, storage bloat | Truncate to 500 chars, hash fingerprints |
 | Allowing analytics queries across all blogs | Data leakage - users probe others' traffic | Always filter by authenticated user's blog_id |
+| Profile edit without ownership check | Any user modifies another | Extract userId from SecurityContext only |
+| Unsanitized bio field | XSS attack via profile page | Same sanitization as blog content |
+| Avatar URL without validation | SSRF attack | URL allowlist + private IP block |
+| Username in SQL without escaping | SQL injection | Parameterized queries via MyBatis-Plus |
+| Rate limit missing on profile API | Username enumeration | 60 req/min per IP, return 429 |
 
 ---
 
@@ -676,6 +877,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | Tiny chart with no hover details | Unreadable - can't see exact numbers | Enlarge chart, add tooltip with values |
 | Loading spinner forever on error | Frustrating - user doesn't know what happened | Show error message with retry button |
 | Mixing unique visitors and page views in same chart | Confusing - different magnitudes | Use dual-axis or separate charts |
+| Empty profile without published sites | Confusing blank page | Show placeholder "No sites yet" with CTA |
+| Invalid social link URLs show broken icons | Looks unprofessional | Validate URL format before save, show error |
+| Long bio truncates without ellipsis | Information loss | Truncate at 280 chars with "read more" |
+| Profile page 404 vs. "user not found" | Inconsistent error handling | Consistent message |
+| Avatar upload fails silently | User doesn't know why | Show explicit error message |
 
 ---
 
@@ -697,6 +903,16 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 - [ ] **Unique Visitor Count:** Often wrong due to fingerprint hash collisions - verify against raw data
 - [ ] **Daily Aggregation:** Often has off-by-one timezone errors - compare with server log timestamps
 - [ ] **Async Recording:** Often still blocks due to shared thread pool - measure SiteController latency
+- [ ] **Profile endpoint:** Returns 200 even for non-existent username (enumeration check)
+- [ ] **Avatar validation:** Rejects `javascript:alert(1)` URLs
+- [ ] **Bio sanitization:** Accepts `<script>alert(1)</script>` but sanitizes on output
+- [ ] **Ownership:** Logged-in user cannot modify another user's profile via API
+- [ ] **Cache invalidation:** Profile update reflects immediately (check Redis)
+- [ ] **Route collision:** `/host/{username}` still serves published site, not profile
+- [ ] **Published site og:url:** Uses blog's stored `publishedUsername`, not current username
+- [ ] **Query count:** Profile page with 10 blogs makes < 5 queries total
+- [ ] **Rate limiting:** Profile API returns 429 after 60 requests/minute from same IP
+- [ ] **Username change:** Existing published sites still accessible at old URL
 
 ---
 
@@ -715,6 +931,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | Timezone shift in reports | MEDIUM | Migrate to UTC storage, recalculate aggregates with correct timezone |
 | Missing async annotation | LOW | Add @Async, restart service, no data migration needed |
 | Chart performance issues | LOW | Implement downsampling, no backend changes needed |
+| Username change breaks published URLs | HIGH | Implement username redirect middleware, migrate publishedUsername field |
+| Profile cache never invalidates | LOW | Flush `profile:*` keys manually or wait for TTL |
+| XSS via bio field | HIGH | Purge malicious content from database, audit all rendered fields |
+| SSRF via avatar URL | MEDIUM | Block external access, audit server for suspicious traffic |
+| IDOR on profile edit | HIGH | Audit access logs for unauthorized modifications |
 
 ---
 
@@ -738,6 +959,14 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 | Timezone handling | v1.5 Enhanced Analytics | Compare dashboard with server timestamps |
 | HTTPS referer loss | v1.5 Enhanced Analytics | Test with real Google search click |
 | Chart rendering performance | v1.5 Enhanced Analytics | Test on low-end mobile device |
+| IDOR on profile editing | v1.7 Profile API - auth middleware | Test editing profile for another user returns 403 |
+| XSS via bio/social links | v1.7 Profile API - input validation | POST `<script>` in bio, fetch profile, verify sanitized |
+| Route collision | v1.7 Profile routing | Verify `/host/{user}` and `/profile/{user}` both work |
+| Username changes break URLs | v1.7 Profile data model | Change username, verify published site URL still works |
+| N+1 query | v1.7 Profile API - query optimization | Enable SQL logging, profile with 10 blogs < 5 queries |
+| Cache invalidation missing | v1.7 Profile API - cache layer | Update profile, immediately fetch, verify update visible |
+| Username enumeration | v1.7 Profile API - rate limiting | Script 100 profile requests, verify 429 returned |
+| SSRF via avatar | v1.7 Profile API - URL validation | POST `http://localhost:6379` as avatar, verify rejected |
 
 ---
 
@@ -756,6 +985,11 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 - PdfController.java - no ownership check on download identified
 - WeChatPayService.java - v2 SDK usage and mock bypass identified
 - BlogService.publish() - no hosting infrastructure identified
+- UserController.java - existing patterns for user data handling
+- BlogController.java - ownership verification patterns (lines 79-85)
+- SiteController.java - route collision potential with /host/{username}
+- BlogService.java - sanitization and caching patterns
+- SecurityConfig.java - public endpoint configuration
 
 **Industry Patterns (Training Data):**
 - AI generation pipeline failure modes
@@ -764,6 +998,8 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 - WeChat Pay integration known issues
 - Time-series analytics common pitfalls (MySQL aggregation, timezone handling)
 - Referral tracking browser privacy limitations
+- Profile page security (IDOR, XSS, SSRF patterns)
+- Public API enumeration attacks
 
 **Note:** Web search API was unavailable during research. Confidence levels reflect this limitation.
 
@@ -773,3 +1009,5 @@ v1.5 Enhanced Analytics - frontend must implement data downsampling before chart
 *Researched: 2026-03-21*
 
 *Analytics enhancements added: 2026-03-22 for v1.5 Enhanced Analytics milestone*
+
+*Profile pages added: 2026-03-22 for v1.7 User Profiles milestone*
