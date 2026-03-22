@@ -50,9 +50,9 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.5 |
+| Label | 14px | 400 (regular) | 1.5 |
 | Heading | 20px | 600 (semibold) | 1.2 |
-| Display | clamp(2rem, 4vw, 3rem) | 700 (bold) | 1.1 |
+| Display | clamp(2rem, 4vw, 3rem) | 600 (semibold) | 1.1 |
 
 **Font source:** Plus Jakarta Sans (Google Fonts, imported in global.css line 1)
 
@@ -120,7 +120,7 @@ Exceptions: none
 
 **Visual spec:**
 - Container: `bg-surface rounded-2xl p-6 min-h-[120px]`
-- Number: `text-4xl font-bold text-accent`
+- Number: `text-4xl font-semibold text-accent`
 - Label: `text-sm text-text-secondary mt-1`
 - Trend indicator: `inline-flex items-center gap-1 text-xs` (green for up, red for down)
 
@@ -223,11 +223,11 @@ Exceptions: none
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (reduced to 2 weights: 400, 600)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-03-22
