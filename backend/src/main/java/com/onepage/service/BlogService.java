@@ -387,4 +387,42 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         log.info("Blog unpublished: id={}", blogId);
         return blog;
     }
+
+    /**
+     * Update SEO settings for a blog.
+     * SEO-01
+     */
+    public void updateSeo(Long blogId, Long userId, String metaTitle, String metaDescription) {
+        if (blogId == null) {
+            throw BusinessException.badRequest("Blog ID cannot be null");
+        }
+        if (userId == null) {
+            throw BusinessException.badRequest("User ID cannot be null");
+        }
+
+        Blog blog = this.getById(blogId);
+        if (blog == null) {
+            throw BusinessException.blogNotFound();
+        }
+        if (!blog.getUserId().equals(userId)) {
+            throw BusinessException.forbidden("No permission to modify this blog");
+        }
+
+        // Validate lengths
+        if (metaTitle != null && metaTitle.length() > 255) {
+            throw BusinessException.badRequest("Meta title cannot exceed 255 characters");
+        }
+        if (metaDescription != null && metaDescription.length() > 1000) {
+            throw BusinessException.badRequest("Meta description cannot exceed 1000 characters");
+        }
+
+        blog.setMetaTitle(metaTitle != null ? metaTitle.trim() : null);
+        blog.setMetaDescription(metaDescription != null ? metaDescription.trim() : null);
+        blog.setUpdateTime(LocalDateTime.now());
+        this.updateById(blog);
+
+        // Invalidate cache
+        redisTemplate.delete(BLOG_CACHE_PREFIX + blogId);
+        log.info("Blog SEO updated: id={}", blogId);
+    }
 }
