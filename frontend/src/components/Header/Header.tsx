@@ -8,9 +8,10 @@ import AuthButtons from './AuthButtons';
 interface HeaderProps {
   user: { username: string } | null;
   onUserChange: (user: null) => void;
+  onOpenAccountSettings?: () => void;
 }
 
-export default function Header({ user, onUserChange }: HeaderProps) {
+export default function Header({ user, onUserChange, onOpenAccountSettings }: HeaderProps) {
   const navigate = useNavigate();
   const { language, t, toggleLanguage } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function Header({ user, onUserChange }: HeaderProps) {
             {t('pricing')}
           </button>
 
-          <AuthButtons user={user} onLogout={handleLogout} />
+          <AuthButtons user={user} onLogout={handleLogout} onAccountSettings={onOpenAccountSettings} />
 
           {/* Language Switcher */}
           <button

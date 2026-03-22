@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import Features from './components/Features';
 import TemplatePreview from './components/TemplatePreview';
 import CTA from './components/CTA';
+import AccountSettings from '../../components/AccountSettings/AccountSettings';
 import { useTranslation } from '../../i18n';
 
 function Home() {
@@ -68,7 +69,7 @@ function Home() {
         <Blob className="w-[400px] h-[400px] bg-primary/50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" delay={3} />
       </div>
 
-      <Header user={user} onUserChange={handleUserChange} />
+      <Header user={user} onUserChange={handleUserChange} onOpenAccountSettings={() => setShowAccountSettings(true)} />
 
       {showEmailBanner && (
         <div className="relative z-10 bg-gradient-to-r from-primary/10 to-accent/10 border-b border-border">
@@ -118,6 +119,11 @@ function Home() {
           </div>
         </div>
       </footer>
+
+      <AccountSettings
+        isOpen={showAccountSettings}
+        onClose={() => setShowAccountSettings(false)}
+      />
     </div>
   );
 }
