@@ -1,10 +1,12 @@
 package com.onepage.controller;
 
 import com.onepage.config.JwtUserPrincipal;
+import com.onepage.dto.EmailRequest;
 import com.onepage.dto.LoginRequest;
 import com.onepage.dto.RefreshTokenRequest;
 import com.onepage.dto.RegisterRequest;
 import com.onepage.dto.Result;
+import com.onepage.dto.UpdateEmailRequest;
 import com.onepage.exception.BusinessException;
 import com.onepage.model.User;
 import com.onepage.service.UserCreditsService;
@@ -89,6 +91,40 @@ public class UserController {
 
         String robotsTxt = request.get("robotsTxt");
         userService.updateRobotsTxt(principal.getUserId(), robotsTxt);
+        return Result.success();
+    }
+
+    /**
+     * Verify email with token.
+     * POST /api/user/verify-email?token=xxx
+     */
+    @PostMapping("/verify-email")
+    public Result<Void> verifyEmail(@RequestParam String token) {
+        userService.verifyEmail(token);
+        return Result.success();
+    }
+
+    /**
+     * Resend verification email.
+     * POST /api/user/resend-verification
+     */
+    @PostMapping("/resend-verification")
+    public Result<Void> resendVerification(@Valid @RequestBody EmailRequest request) {
+        userService.resendVerificationEmail(request.getEmail());
+        return Result.success();
+    }
+
+    /**
+     * Update user email address.
+     * PUT /api/user/email
+     */
+    @PutMapping("/email")
+    public Result<Void> updateEmail(@Valid @RequestBody UpdateEmailRequest request) {
+        JwtUserPrincipal principal = getCurrentUser();
+        if (principal == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+        userService.updateEmail(principal.getUserId(), request.getEmail());
         return Result.success();
     }
 

@@ -15,7 +15,8 @@ public enum ErrorCode {
     // User errors (2xxx)
     USER_NOT_FOUND(2001, "User not found"),
     EMAIL_ALREADY_EXISTS(2002, "Email already registered"),
-    USERNAME_ALREADY_EXISTS(2003, "Username already taken"),
+    EMAIL_NOT_VERIFIED(2003, "Please verify your email first"),
+    USERNAME_ALREADY_EXISTS(2004, "Username already taken"),
 
     // Blog errors (3xxx)
     BLOG_NOT_FOUND(3001, "Blog not found"),
