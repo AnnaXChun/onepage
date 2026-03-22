@@ -10,22 +10,21 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.2
+## Current Milestone: v1.3
 
-**Goal:** Add analytics dashboard — visitor counts and page views so users can see their site traffic.
+**Goal:** SEO Tools — help users' sites get found via search engines.
 
 **Target features:**
-- Analytics dashboard with visitor counts and page views
-- Track page views per published site
-- Display traffic metrics in user dashboard
+- Custom meta tags per page (title, description, keywords)
+- Auto-generated sitemap.xml
+- robots.txt configuration
+- Open Graph and Twitter Card meta tags
 
 ## Requirements
 
-### Validated (v1.0 + v1.1)
+### Validated (v1.0 + v1.1 + v1.2)
 
-<!-- All requirements from v1.0 and v1.1 milestones -->
-
-<!-- v1.0 shipped — these requirements are complete and tested -->
+<!-- All requirements from v1.0, v1.1, and v1.2 milestones -->
 
 - ✓ User registration and login with JWT authentication — existing (pre-v1.0)
 - ✓ Blog creation with unique shareable link — existing (pre-v1.0)
@@ -52,12 +51,14 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Credit System — user_credits table, Redis atomic deduction, WeChat Pay top-up flow — v1.1 (Phase 7)
 - ✓ PDF Export Full — Free preview (1h), paid export (0.3 credits), 24h expiring links — v1.1 (Phase 8)
 - ✓ VIP & Payments Full — FulfillmentService dispatch, WeChat Pay callback fulfillment, VIP activation, template purchase — v1.1 (Phase 10)
+- ✓ Analytics Dashboard — visitor counts and page views per published site — v1.2 (Phase 11)
 
 ### Active
 
-- [ ] **ANAL-01**: User can view visitor counts for published site
-- [ ] **ANAL-02**: User can view page views per published site
-- [ ] **ANAL-03**: Analytics data displays in user dashboard
+- [ ] **SEO-01**: User can set custom meta title and description per page
+- [ ] **SEO-02**: Published sites include auto-generated sitemap.xml
+- [ ] **SEO-03**: User can configure robots.txt (allow/block specific paths)
+- [ ] **SEO-04**: Published sites include Open Graph and Twitter Card meta tags
 
 ### Out of Scope
 
@@ -116,5 +117,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-21 after v1.1 milestone started*
+*Last updated: 2026-03-22 after v1.2 milestone complete*
 
