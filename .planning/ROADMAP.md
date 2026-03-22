@@ -96,8 +96,8 @@
   3. Generated PDF is downloadable via link that expires 24 hours after generation
 
 **Plans**: 2 plans
-- [x] 08-01-PLAN.md - PDF Preview (PDF-01)
-- [x] 08-02-PLAN.md - PDF Export with Credit (PDF-02, PDF-03)
+- [x] 08-01-PLAN.md - PDF Preview (Pdf-01)
+- [x] 08-02-PLAN.md - PDF Export with Credit (Pdf-02, Pdf-03)
 
 ### Phase 9: Platform Hosting
 
@@ -173,6 +173,24 @@
 |-------|-------|--------|-----------|
 | 12. SEO Meta Tags and Open Graph | 4/4 | Complete | 2026-03-22 |
 
+## v1.4 Progress (Planning)
+
+| Phase | Plans | Status |
+|-------|-------|--------|
+| 13. Email Collection | 3 | Planning complete |
+
+### Phase 13: Email Collection
+
+**Goal:** Collect user email during registration (with verification) and allow users to update their email in account settings
+**Requirements**: EML-01, EML-02
+**Depends on:** Phase 12
+**Plans:** 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Backend Email Infrastructure + Registration Enforcement
+- [ ] 13-02-PLAN.md — Frontend Registration + Login Updates
+- [ ] 13-03-PLAN.md — Frontend Account Settings Modal
+
 ---
 
-*Last updated: 2026-03-22 after v1.3 milestone complete*
+*Last updated: 2026-03-22 after Phase 13 planning*
