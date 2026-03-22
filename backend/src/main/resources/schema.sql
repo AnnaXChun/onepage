@@ -13,7 +13,15 @@ CREATE TABLE IF NOT EXISTS `users` (
     `avatar` VARCHAR(255),
     `status` TINYINT DEFAULT 1 COMMENT '1:正常 0:禁用',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `vip_status` TINYINT DEFAULT 0 COMMENT '1:VIP active 0:inactive',
+    `vip_expire_time` DATETIME DEFAULT NULL COMMENT 'VIP subscription expiration',
+    `robots_txt` TEXT DEFAULT NULL COMMENT 'Custom robots.txt content',
+    `email_verified` TINYINT DEFAULT 0 COMMENT '1:verified 0:unverified',
+    `verification_token` VARCHAR(64) DEFAULT NULL COMMENT 'UUID token for email verification',
+    `verification_expires_at` DATETIME DEFAULT NULL COMMENT 'Token expiry time',
+    `verification_resend_count` INT DEFAULT 0 COMMENT 'Resend count (max 3 per 24hrs)',
+    `verification_resend_reset_at` DATETIME DEFAULT NULL COMMENT 'When resend count resets'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Blogs table
@@ -127,9 +135,6 @@ CREATE TABLE IF NOT EXISTS `blog_daily_stats` (
 -- SEO fields for blogs table
 ALTER TABLE `blogs` ADD COLUMN `meta_title` VARCHAR(255) DEFAULT NULL COMMENT 'Custom SEO title' AFTER `content`;
 ALTER TABLE `blogs` ADD COLUMN `meta_description` TEXT DEFAULT NULL COMMENT 'Custom SEO description' AFTER `meta_title`;
-
--- robots.txt for users table
-ALTER TABLE `users` ADD COLUMN `robots_txt` TEXT DEFAULT NULL COMMENT 'Custom robots.txt content' AFTER `vip_expire_time`;
 
 -- Add referer_source column to page_views for source categorization
 ALTER TABLE `page_views`
