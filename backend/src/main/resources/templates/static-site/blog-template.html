@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">Blog Title</title>
+
+    <!-- SEO Meta Tags -->
+    <title th:text="${metaTitle}">Blog Title</title>
+    <meta name="description" th:content="${metaDescription}" content="">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" th:content="${metaTitle}" content="Default Title">
+    <meta property="og:description" th:content="${metaDescription}" content="">
+    <meta property="og:image" th:if="${ogImage != null and ogImage != ''}" th:content="${ogImage}" content="">
+    <meta property="og:url" th:content="${siteUrl} + '/host/' + ${username}" content="http://localhost:8080">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${metaTitle}" content="Default Title">
+    <meta name="twitter:description" th:content="${metaDescription}" content="">
+    <meta name="twitter:image" th:if="${ogImage != null and ogImage != ''}" th:content="${ogImage}" content="">
+
     <style>
         * {
             margin: 0;
