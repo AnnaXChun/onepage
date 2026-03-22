@@ -131,6 +131,28 @@ ALTER TABLE `blogs` ADD COLUMN `meta_description` TEXT DEFAULT NULL COMMENT 'Cus
 -- robots.txt for users table
 ALTER TABLE `users` ADD COLUMN `robots_txt` TEXT DEFAULT NULL COMMENT 'Custom robots.txt content' AFTER `vip_expire_time`;
 
+-- Add referer_source column to page_views for source categorization
+ALTER TABLE `page_views`
+ADD COLUMN `referer_source` VARCHAR(20) DEFAULT NULL
+COMMENT 'DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER'
+AFTER `referer`;
+
+-- Add index for aggregation queries on source
+CREATE INDEX `idx_blog_visited_source` ON `page_views` (`blog_id`, `visited_at`, `referer_source`);
+
+-- Daily source aggregation table for pre-computed source stats
+CREATE TABLE IF NOT EXISTS `blog_daily_source_stats` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `blog_id` BIGINT NOT NULL,
+    `stat_date` DATE NOT NULL,
+    `source` VARCHAR(20) NOT NULL COMMENT 'DIRECT, SEARCH_ENGINE, SOCIAL, REFERRAL, OTHER',
+    `page_views` INT DEFAULT 0,
+    `unique_visitors` INT DEFAULT 0,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_blog_date_source` (`blog_id`, `stat_date`, `source`),
+    INDEX `idx_blog_id` (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert default templates
 INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) VALUES
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
