@@ -102,7 +102,7 @@ function TemplatesPage() {
           <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
             <button
               onClick={handleClosePreview}
-              className="flex items-center gap-2 text-secondary hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-secondary hover:text-primary btn-hover transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -201,14 +201,14 @@ function TemplatesPage() {
               <button
                 onClick={handleUseTemplate}
                 disabled={!uploadedImage}
-                className="w-full mt-6 py-3 bg-primary text-text-primary-btn font-medium rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full mt-6 py-3 bg-primary hover:bg-primary-hover text-text-primary-btn font-medium rounded-xl overflow-hidden transition-all duration-300 btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {previewTemplate.price > 0 ? `${t('buyFor')} $${previewTemplate.price}` : t('useThisTemplate')}
               </button>
 
               <button
                 onClick={handleClosePreview}
-                className="w-full mt-3 py-2 text-sm text-muted hover:text-primary transition-colors"
+                className="w-full mt-3 py-2 text-sm text-muted hover:text-primary btn-hover transition-colors"
               >
                 {t('chooseAnotherTemplate')}
               </button>
@@ -225,7 +225,7 @@ function TemplatesPage() {
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight transition-all"
+            className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-secondary hover:text-primary hover:border-borderLight btn-hover transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
