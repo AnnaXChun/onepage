@@ -99,6 +99,31 @@ CREATE TABLE IF NOT EXISTS `pdf_jobs` (
     INDEX `idx_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Page views raw data
+CREATE TABLE IF NOT EXISTS `page_views` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `blog_id` BIGINT NOT NULL,
+    `visitor_fingerprint` VARCHAR(64) NOT NULL COMMENT 'SHA-256 hash of IP + User-Agent',
+    `visited_at` DATETIME NOT NULL,
+    `referer` VARCHAR(500),
+    `user_agent` VARCHAR(500),
+    PRIMARY KEY (`id`),
+    INDEX `idx_blog_visited` (`blog_id`, `visited_at`),
+    INDEX `idx_visitor_fingerprint` (`visitor_fingerprint`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Daily aggregation table
+CREATE TABLE IF NOT EXISTS `blog_daily_stats` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `blog_id` BIGINT NOT NULL,
+    `stat_date` DATE NOT NULL,
+    `page_views` INT DEFAULT 0,
+    `unique_visitors` INT DEFAULT 0,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_blog_date` (`blog_id`, `stat_date`),
+    INDEX `idx_blog_id` (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert default templates
 INSERT INTO `templates` (`name`, `description`, `category`, `status`, `price`) VALUES
 ('简约博客', '简洁大方的个人博客模板', 1, 1, 9.90),
