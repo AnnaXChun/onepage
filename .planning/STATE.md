@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Completion
-status: unknown
-last_updated: "2026-03-22T06:15:54.904Z"
+milestone: v1.4
+milestone_name: Email & Notifications
+status: planning
+last_updated: "2026-03-22T14:30:00.000Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Vibe Onepage - Project State
@@ -21,12 +21,16 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.3 — SEO Tools (planning)
+**Current Milestone:** v1.4 — Email & Notifications (planning)
 
 ## Current Position
 
-Phase: 12
-Plan: Not started
+Phase: Not started (defining requirements)
+Plan: —
+
+## Roadmap Evolution
+
+- Phase 12 added: SEO meta tags and Open Graph
 
 ### Decisions Made (v1.3)
 

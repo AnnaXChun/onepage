@@ -12,6 +12,7 @@
 - [x] **v1.1 Completion** — Phases 6-10 (shipped 2026-03-21)
 - [x] **v1.2 Analytics** — Phase 11 (COMPLETED 2026-03-22)
 - [x] **v1.3 SEO Tools** — Phase 12 (SHIPPED 2026-03-22)
+- [ ] **v1.4 Email & Notifications** — TBD (planning)
 
 ---
 

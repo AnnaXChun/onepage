@@ -10,15 +10,14 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.3
+## Current Milestone: v1.4
 
-**Goal:** SEO Tools — help users' sites get found via search engines.
+**Goal:** Email & Notifications — collect user email, notify on site completion, deliver PDF via email.
 
 **Target features:**
-- Custom meta tags per page (title, description, keywords)
-- Auto-generated sitemap.xml
-- robots.txt configuration
-- Open Graph and Twitter Card meta tags
+- User email collection (registration/profile)
+- Completion notification email (AI generation done)
+- PDF delivery via email
 
 ## Requirements
 
