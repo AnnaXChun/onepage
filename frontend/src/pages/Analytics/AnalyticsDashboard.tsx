@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../../i18n';
 import { getUserAnalytics, AnalyticsData } from '../../services/api';
+import ChartCard from '@/components/charts/ChartCard';
+import ChartLine from '@/components/charts/LineChart';
+import PieChartComponent from '@/components/charts/PieChart';
 
 type Period = '7d' | '30d' | '90d';
 
@@ -59,6 +62,39 @@ export default function AnalyticsDashboard() {
   const totalVisitors = analytics.reduce((sum, a) => sum + a.totalUniqueVisitors, 0);
   const totalPageViews = analytics.reduce((sum, a) => sum + a.totalPageViews, 0);
 
+  // Aggregate dailyStats across all blogs
+  const aggregatedDailyStats = analytics
+    .flatMap((a) => a.dailyStats)
+    .reduce((acc, stat) => {
+      const existing = acc.find((s) => s.date === stat.date);
+      if (existing) {
+        existing.pageViews += stat.pageViews;
+        existing.uniqueVisitors += stat.uniqueVisitors;
+      } else {
+        acc.push({ ...stat });
+      }
+      return acc;
+    }, [] as Array<{ date: string; pageViews: number; uniqueVisitors: number }>)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Aggregate refererSources across all blogs
+  const sourceMap = new Map<string, { source: string; displayName: string; pageViews: number; percentage: number }>();
+  analytics.forEach((a) => {
+    a.refererSources?.forEach((rs) => {
+      const existing = sourceMap.get(rs.source);
+      if (existing) {
+        existing.pageViews += rs.pageViews;
+      } else {
+        sourceMap.set(rs.source, { ...rs });
+      }
+    });
+  });
+  const allPageViews = Array.from(sourceMap.values()).reduce((sum, s) => sum + s.pageViews, 0);
+  const aggregatedRefererSources = Array.from(sourceMap.values()).map((s) => ({
+    ...s,
+    percentage: allPageViews > 0 ? (s.pageViews * 100) / allPageViews : 0,
+  }));
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto p-6">
@@ -66,6 +102,10 @@ export default function AnalyticsDashboard() {
         <div className="flex gap-4 mb-8">
           <div className="flex-1 h-32 bg-surface rounded-2xl animate-pulse" />
           <div className="flex-1 h-32 bg-surface rounded-2xl animate-pulse" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-[300px] bg-surface rounded-2xl animate-pulse" />
+          <div className="h-[300px] bg-surface rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -124,6 +164,20 @@ export default function AnalyticsDashboard() {
       <div className="grid grid-cols-2 gap-4 mb-8">
         <StatCard label="Visitors" value={totalVisitors} />
         <StatCard label="Page Views" value={totalPageViews} />
+      </div>
+
+      {/* Page Views Over Time */}
+      <div className="mb-4">
+        <ChartCard title="Page Views Over Time">
+          <ChartLine dailyStats={aggregatedDailyStats} />
+        </ChartCard>
+      </div>
+
+      {/* Traffic Sources */}
+      <div className="mb-4">
+        <ChartCard title="Traffic Sources">
+          <PieChartComponent refererSources={aggregatedRefererSources} />
+        </ChartCard>
       </div>
 
       <div className="bg-surface rounded-2xl overflow-hidden">
