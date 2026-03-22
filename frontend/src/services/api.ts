@@ -167,6 +167,28 @@ export const register = async (data: RegisterRequest): Promise<ApiResponse> => {
 // Get user info
 export const getUserInfo = async (): Promise<ApiResponse<{ user: import('@/types/models').User }>> => {
   const response = await api.get('/user/info');
+  // Update localStorage with full user data
+  if (response.data.code === 200) {
+    localStorage.setItem('user', JSON.stringify(response.data.data));
+  }
+  return response.data;
+};
+
+// Resend verification email
+export const resendVerification = async (emailOrUsername: string): Promise<ApiResponse> => {
+  const response = await api.post('/user/resend-verification', { email: emailOrUsername });
+  return response.data;
+};
+
+// Verify email with token
+export const verifyEmail = async (token: string): Promise<ApiResponse> => {
+  const response = await api.post('/user/verify-email', null, { params: { token } });
+  return response.data;
+};
+
+// Update user email
+export const updateEmail = async (email: string): Promise<ApiResponse> => {
+  const response = await api.put('/user/email', { email });
   return response.data;
 };
 
