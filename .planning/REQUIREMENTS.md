@@ -23,12 +23,12 @@ Requirements for user profile pages. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **PROF-09**: "View My Profile" link in header navigation (authenticated users)
+- [x] **PROF-09**: "View My Profile" link in header navigation (authenticated users)
 - [x] **PROF-10**: Profile accessible without login (public page)
 
 ### Differentiators
 
-- [ ] **PROF-11**: Total visitor count across all user's published sites
+- [x] **PROF-11**: Total visitor count across all user's published sites
 - [x] **PROF-12**: Featured site — user can pin one blog to appear first on profile
 
 ## Out of Scope
@@ -51,9 +51,9 @@ Requirements for user profile pages. Each maps to roadmap phases.
 | PROF-06 | Phase 21 | Complete |
 | PROF-07 | Phase 21 | Complete |
 | PROF-08 | Phase 21 | Complete |
-| PROF-09 | Phase 22 | Pending |
+| PROF-09 | Phase 22 | Complete |
 | PROF-10 | Phase 20 | Complete |
-| PROF-11 | Phase 22 | Pending |
+| PROF-11 | Phase 22 | Complete |
 | PROF-12 | Phase 22 | Complete |
 
 **Coverage:**

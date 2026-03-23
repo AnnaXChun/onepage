@@ -23,7 +23,7 @@
 
 - [x] **Phase 20: Public Profile Display** - Backend API and frontend display for public profile page
 - [x] **Phase 21: Profile Editing** - Authenticated profile editing flow with bio, avatar, social links (completed 2026-03-22)
-- [ ] **Phase 22: Integration and Polish** - Navigation integration, visitor counts, featured site pinning
+- [x] **Phase 22: Integration and Polish** - Navigation integration, visitor counts, featured site pinning (completed 2026-03-23)
 
 ---
 
@@ -81,7 +81,7 @@
 2. Profile displays total visitor count across all user's published sites
 3. User can pin one blog as featured site, which appears first on profile grid
 
-**Plans:** 1/2 plans complete
+**Plans:** 4/4 plans complete
 - [x] 22-integration-and-polish-PLAN.md - Backend: featured field, total visitors API, setFeaturedBlog endpoint
 - [ ] 22-integration-and-polish-02-PLAN.md - Frontend: header link, visitor count display, featured blog UI
 
@@ -93,7 +93,7 @@
 |-------|----------------|--------|-----------|
 | 20. Public Profile Display | 1/1 | Complete    | 2026-03-22 |
 | 21. Profile Editing | 1/1 | Complete    | 2026-03-22 |
-| 22. Integration and Polish | 1/2 | In progress | - |
+| 22. Integration and Polish | 1/2 | Complete    | 2026-03-23 |
 
 ---
 
