@@ -23,6 +23,9 @@ public class ImageService {
     @Value("${upload.path}")
     private String uploadPath;
 
+    @Value("${app.site.base-url:http://localhost:8080}")
+    private String siteBaseUrl;
+
     // Whitelist of allowed MIME types (validate actual content, not just extension)
     private static final Set<String> ALLOWED_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp", "image/gif"
@@ -97,7 +100,8 @@ public class ImageService {
         file.transferTo(targetPath.toFile());
 
         log.info("Image uploaded successfully: {}, size: {} bytes", safeFilename, file.getSize());
-        return "/uploads/" + safeFilename;
+        // Return full URL for frontend use (uploads without 'l' to match resource handler path)
+        return siteBaseUrl + "/uploads/" + safeFilename;
     }
 
     /**

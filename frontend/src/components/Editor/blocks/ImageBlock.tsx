@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { BlockDefinition } from '../../../types/block';
+import { uploadImage } from '../../../services/api';
 
 interface ImageBlockProps {
   block: BlockDefinition;
@@ -17,6 +18,7 @@ export default function ImageBlock({
   onSelect,
 }: ImageBlockProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -25,17 +27,29 @@ export default function ImageBlock({
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    fileInputRef.current?.click();
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        onContentChange(ev.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // Upload to server first
+      const response = await uploadImage(file);
+      if (response.code === 200 && response.data?.url) {
+        // Use server URL instead of base64
+        onContentChange(response.data.url);
+      } else {
+        console.error('Upload failed:', response.message);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -88,20 +102,29 @@ export default function ImageBlock({
             "
             onClick={handleImageClick}
           >
-            <svg
-              className="w-12 h-12 mb-2 opacity-50"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="text-sm">{block.placeholder || 'Click to upload image'}</span>
+            {isUploading ? (
+              <>
+                <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-2" />
+                <span className="text-sm">Uploading...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-12 h-12 mb-2 opacity-50"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-sm">{block.placeholder || 'Click to upload image'}</span>
+              </>
+            )}
           </div>
         )}
         <input
@@ -129,7 +152,9 @@ export default function ImageBlock({
               className="relative overflow-hidden rounded-lg"
               onClick={(e) => {
                 e.stopPropagation();
-                fileInputRef.current?.click();
+                if (!isUploading) {
+                  fileInputRef.current?.click();
+                }
               }}
             >
               <img
@@ -150,23 +175,34 @@ export default function ImageBlock({
           style={{ aspectRatio }}
           onClick={(e) => {
             e.stopPropagation();
-            fileInputRef.current?.click();
+            if (!isUploading) {
+              fileInputRef.current?.click();
+            }
           }}
         >
-          <svg
-            className="w-12 h-12 mb-2 opacity-50"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <span className="text-sm">{block.placeholder || 'Click to add images'}</span>
+          {isUploading ? (
+            <>
+              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-2" />
+              <span className="text-sm">Uploading...</span>
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-12 h-12 mb-2 opacity-50"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="text-sm">{block.placeholder || 'Click to add images'}</span>
+            </>
+          )}
         </div>
       )}
       <input
