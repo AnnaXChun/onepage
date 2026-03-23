@@ -1,59 +1,52 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.7
-milestone_name: Progress
-status: unknown
-last_updated: "2026-03-23T04:21:46.458Z"
+milestone: v1.8
+milestone_name: Editor Fixes
+status: planning
+last_updated: "2026-03-23T12:35:00Z"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 1
+  completed_plans: 0
 ---
 
 # Vibe Onepage - Project State
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-23
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-22)
+See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-**Current Milestone:** v1.7 User Profiles — Roadmap defined
+**Current Milestone:** v1.8 Editor Fixes — Planning
 
-## v1.7 Goal
+## v1.8 Goal
 
-Public profile page at `/user/{username}` with editable bio, avatar, social links, and grid of published sites.
+Fix critical editor bugs and add drafts functionality:
+- Editor text input works
+- Template images reset on new session
+- Done button saves user's actual edits
+- Draft box on profile page
+- Draft auto-save
 
 ## Current Position
 
-Phase: 22
+Phase: 23
 Plan: Not started
 
-## v1.7 Phase Structure
+## v1.8 Requirements
 
-| Phase | Goal | Requirements |
-|-------|------|--------------|
-| 20 - Public Profile Display | Public profile page with avatar, bio, social links, sites grid | PROF-01, PROF-02, PROF-03, PROF-04, PROF-10 |
-| 21 - Profile Editing | Authenticated profile editing (bio, avatar, social links) | PROF-05, PROF-06, PROF-07, PROF-08 |
-| 22 - Integration and Polish | Navigation link, visitor counts, featured site | PROF-09, PROF-11, PROF-12 |
-
-## Coverage
-
-- v1.7 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0
-
-## Performance Metrics
-
-| Metric | Value |
-|--------|-------|
-| v1.7 Requirements | 12 |
-| Phases | 3 |
-| Plans | 1 |
-| Tasks | 2 |
+| ID | Requirement |
+|----|-------------|
+| EDIT-01 | Editor text input works |
+| EDIT-02 | Template images reset on new session |
+| EDIT-03 | Done button saves user's actual edits |
+| DRAFT-01 | View draft sites from profile |
+| DRAFT-02 | Resume editing a draft |
+| DRAFT-03 | Draft auto-save |
 
 ## Accumulated Context
 
@@ -61,24 +54,11 @@ Plan: Not started
 
 | Decision | Rationale |
 |----------|-----------|
-| 3 phases for v1.7 | Natural grouping: Display (20) -> Edit (21) -> Integrate (22) |
-| Social links as inline SVG | No bundle cost, matches existing icon patterns |
-| Use COALESCE in SQL for total visitors | Handle NULL sum as 0 when no stats exist |
-| Clear all featured flags before setting new | Only one blog can be featured per user at a time |
+| 1 phase for v1.8 | Bug fixes focused on editor |
 
 ### Blockers
 
 None yet.
-
-### Research Notes
-
-- Username changes break published site URLs (store publishedUsername at publish time)
-- Default avatar placeholder needed (design decision pending)
-- XSS sanitization required for bio and social links
-
-## Session Continuity
-
-v1.7 User Profiles milestone COMPLETE. All 3 phases (20, 21, 22) finished.
 
 ---
 *See .planning/PROJECT.md for full project context*

@@ -10,16 +10,16 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.8 (Planned)
+## Current Milestone: v1.8 Editor Fixes
 
-**Status:** v1.7 User Profiles shipped. Next milestone not yet defined.
+**Goal:** Fix critical editor bugs and add drafts functionality.
 
-**v1.7 Shipped Features:**
-- Public profile page at `/user/{username}` with avatar, bio, social links, VIP badge
-- Profile editing in Account Settings (bio, avatar, social links)
-- Featured site pinning (pin one blog to appear first)
-- Total visitor count across all published sites
-- View My Profile link in header navigation
+**Target features:**
+- Editor text input works
+- Template images reset on new session
+- Done button saves user's actual edits
+- Draft box on profile page
+- Draft auto-save
 
 ## Previous Milestone: v1.6 UI Polish (COMPLETE)
 
