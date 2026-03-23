@@ -10,9 +10,17 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.6 UI Polish (COMPLETE)
+## Current Milestone: v1.7 User Profiles
 
-**Goal:** Clean white theme across all pages, blue-black components for premium feel, enhanced editor UX, consistent hover animations on all buttons.
+**Goal:** Public profile page at `/user/{username}` with editable bio, avatar, social links, and grid of published sites.
+
+**Target features:**
+- Public profile page showing user info and their published sites
+- Editable profile: bio, avatar, social links (Twitter, GitHub, etc.)
+- Profile URL at `/user/{username}`
+- Auto-redirect to profile after login
+
+## Previous Milestone: v1.6 UI Polish (COMPLETE)
 
 **Shipped features:**
 - White/light theme for all pages (Home, Editor, Templates, Analytics, etc.)
