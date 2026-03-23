@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from '../common/Modal';
-import { getUserInfo, updateEmail, uploadImage, updateProfile } from '../../services/api';
+import { getUserInfo, updateEmail, uploadImage, updateProfile, setFeaturedBlog } from '../../services/api';
+import { fetchMyBlogs } from '../../services/profileApi';
 import { useTranslation } from '../../i18n';
 
 interface AccountSettingsProps {
@@ -31,6 +32,10 @@ export default function AccountSettings({ isOpen, onClose }: AccountSettingsProp
   const [profileSuccess, setProfileSuccess] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  // Featured blog state
+  const [userBlogs, setUserBlogs] = useState<any[]>([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Active section: 'email' | 'profile'
@@ -41,6 +46,32 @@ export default function AccountSettings({ isOpen, onClose }: AccountSettingsProp
       loadCurrentData();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingBlogs(true);
+      fetchMyBlogs()
+        .then(res => {
+          if (res.code === 200 && res.data) {
+            setUserBlogs(res.data.filter((b: any) => b.status === 1));
+          }
+        })
+        .catch(err => console.error('Failed to load blogs:', err))
+        .finally(() => setLoadingBlogs(false));
+    }
+  }, [isOpen]);
+
+  const handleToggleFeatured = async (blogId: number, currentFeatured: boolean) => {
+    try {
+      await setFeaturedBlog(blogId, !currentFeatured);
+      const res = await fetchMyBlogs();
+      if (res.code === 200 && res.data) {
+        setUserBlogs(res.data.filter((b: any) => b.status === 1));
+      }
+    } catch (err) {
+      console.error('Failed to toggle featured:', err);
+    }
+  };
 
   const loadCurrentData = async () => {
     try {
@@ -407,6 +438,60 @@ export default function AccountSettings({ isOpen, onClose }: AccountSettingsProp
             </div>
           </div>
         )}
+
+        {/* Featured Blog Section */}
+        <div className="border-t border-border pt-6 mt-6">
+          <h3 className="text-lg font-semibold text-primary mb-4">
+            {t('featuredBlog') || 'Featured Blog'}
+          </h3>
+          <p className="text-sm text-secondary mb-4">
+            {t('featuredBlogDesc') || 'Pin one of your blogs to appear first on your public profile.'}
+          </p>
+
+          {loadingBlogs ? (
+            <div className="text-secondary">{t('loading') || 'Loading...'}</div>
+          ) : userBlogs.length === 0 ? (
+            <div className="text-secondary">{t('noPublishedBlogs') || 'No published blogs yet.'}</div>
+          ) : (
+            <div className="space-y-3">
+              {userBlogs.map((blog) => (
+                <div
+                  key={blog.id}
+                  className={`flex items-center justify-between p-4 rounded-xl border ${
+                    blog.featured
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-surface hover:border-borderLight'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {blog.coverImage && (
+                      <img src={blog.coverImage} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                    )}
+                    <div>
+                      <p className="font-medium text-primary">{blog.title}</p>
+                      <p className="text-sm text-secondary">
+                        {new Date(blog.publishTime).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleToggleFeatured(blog.id, blog.featured)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      blog.featured
+                        ? 'bg-primary text-white'
+                        : 'bg-surface hover:bg-background text-muted'
+                    }`}
+                    title={blog.featured ? 'Unpin from profile' : 'Pin to profile'}
+                  >
+                    <svg className="w-5 h-5" fill={blog.featured ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Email Section */}
         {activeSection === 'email' && (

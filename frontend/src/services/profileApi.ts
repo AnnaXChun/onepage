@@ -28,3 +28,8 @@ export const fetchProfile = async (username: string): Promise<ApiResponse<Profil
   const response = await api.get(`/user/profile/${encodeURIComponent(username)}`);
   return response.data;
 };
+
+export const fetchMyBlogs = async (): Promise<ApiResponse<BlogSummary[]>> => {
+  const response = await api.get('/blog/list');
+  return response.data;
+};
