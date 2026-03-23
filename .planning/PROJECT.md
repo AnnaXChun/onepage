@@ -10,15 +10,16 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.7 User Profiles
+## Current Milestone: v1.8 (Planned)
 
-**Goal:** Public profile page at `/user/{username}` with editable bio, avatar, social links, and grid of published sites.
+**Status:** v1.7 User Profiles shipped. Next milestone not yet defined.
 
-**Target features:**
-- Public profile page showing user info and their published sites
-- Editable profile: bio, avatar, social links (Twitter, GitHub, etc.)
-- Profile URL at `/user/{username}`
-- Auto-redirect to profile after login
+**v1.7 Shipped Features:**
+- Public profile page at `/user/{username}` with avatar, bio, social links, VIP badge
+- Profile editing in Account Settings (bio, avatar, social links)
+- Featured site pinning (pin one blog to appear first)
+- Total visitor count across all published sites
+- View My Profile link in header navigation
 
 ## Previous Milestone: v1.6 UI Polish (COMPLETE)
 
@@ -68,6 +69,9 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Analytics UI Layer — LineChart for page views, PieChart for referral sources, Recharts ^3.8.0, data downsampling — v1.5 (Phase 17)
 - ✓ UI Foundation — White theme, CSS variables, button hover animations, template gallery polish — v1.6 (Phase 18)
 - ✓ Editor Polish — Block handles, config panel, drag animations, blue-black analytics charts — v1.6 (Phase 19)
+- ✓ Public Profile Display — /user/{username} page with avatar, bio, social links, VIP badge, published sites grid — v1.7 (Phase 20)
+- ✓ Profile Editing — Edit bio, avatar, social links in Account Settings — v1.7 (Phase 21)
+- ✓ Profile Integration — View My Profile link, visitor counts, featured site pinning — v1.7 (Phase 22)
 
 ### Out of Scope
 
@@ -126,5 +130,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-22 after v1.5 milestone shipped*
+*Last updated: 2026-03-23 after v1.7 milestone shipped*
 
