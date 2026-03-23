@@ -29,7 +29,7 @@ Requirements for user profile pages. Each maps to roadmap phases.
 ### Differentiators
 
 - [ ] **PROF-11**: Total visitor count across all user's published sites
-- [ ] **PROF-12**: Featured site — user can pin one blog to appear first on profile
+- [x] **PROF-12**: Featured site — user can pin one blog to appear first on profile
 
 ## Out of Scope
 
@@ -54,7 +54,7 @@ Requirements for user profile pages. Each maps to roadmap phases.
 | PROF-09 | Phase 22 | Pending |
 | PROF-10 | Phase 20 | Complete |
 | PROF-11 | Phase 22 | Pending |
-| PROF-12 | Phase 22 | Pending |
+| PROF-12 | Phase 22 | Complete |
 
 **Coverage:**
 - v1.7 requirements: 12 total
