@@ -32,8 +32,13 @@
 4. Profile shows drafts section with saved drafts
 5. User can resume editing a draft
 
-**Plans:** 1 plan (pending)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 23-01-PLAN.md - Backend draft status infrastructure
+- [ ] 23-02-PLAN.md - Frontend EditorPage loads saved blocks + Done button waits for save
+- [ ] 23-03-PLAN.md - Frontend Profile drafts section
 
 ---
 
-*Last updated: 2026-03-23 after v1.7 milestone completion*
+*Last updated: 2026-03-23 after Phase 23 planning*
