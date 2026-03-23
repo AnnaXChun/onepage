@@ -1,31 +1,33 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-22T08:54:27.757Z",
-  "phase": "16",
-  "phase_name": "analytics-api-layer",
-  "phase_dir": "16-analytics-api-layer",
-  "plan": "01",
-  "task": 0,
-  "total_tasks": 6,
-  "status": "paused",
-  "completed_tasks": [],
-  "remaining_tasks": [
-    {"id": 1, "name": "Add @EnableScheduling to OnePageApplication", "status": "not_started"},
-    {"id": 2, "name": "Add RefererSourceStat nested class to AnalyticsDTO", "status": "not_started"},
-    {"id": 3, "name": "Modify AnalyticsService to inject BlogDailySourceStatsMapper and add getRefererSources method", "status": "not_started"},
-    {"id": 4, "name": "Create AnalyticsAggregationJob scheduled job", "status": "not_started"},
-    {"id": 5, "name": "Create AnalyticsServiceTest unit tests", "status": "not_started"},
-    {"id": 6, "name": "Create AnalyticsAggregationJobTest unit tests", "status": "not_started"}
+  "timestamp": "2026-03-23T11:48:22.162Z",
+  "phase": "23",
+  "phase_name": "Editor Fixes & Drafts",
+  "phase_dir": ".planning/phases/23-editor-fixes-drafts",
+  "milestone": "v1.8",
+  "plan": 3,
+  "task": 3,
+  "total_tasks": 3,
+  "status": "complete",
+  "completed_tasks": [
+    {"id": 1, "name": "Backend draft status infrastructure", "status": "done", "commit": "be6c6d9"},
+    {"id": 2, "name": "Frontend EditorPage loads saved blocks + Done button waits", "status": "done", "commit": "6143176"},
+    {"id": 3, "name": "Frontend Profile drafts section", "status": "done", "commit": "32a7c3b"}
   ],
+  "remaining_tasks": [],
   "blockers": [],
-  "human_actions_pending": [],
+  "human_actions_pending": [
+    {"action": "Test editor: edit text, click Done, verify edits appear", "context": "Human verification for EDIT-01, EDIT-02, EDIT-03", "blocking": false},
+    {"action": "Test drafts: verify My Drafts section and resume editing", "context": "Human verification for DRAFT-01, DRAFT-02", "blocking": false}
+  ],
   "decisions": [
-    {"decision": "@EnableScheduling annotation missing from OnePageApplication.java - must add for scheduled job to run", "rationale": "Phase 16 research identified @EnableScheduling is not present in the codebase", "phase": "16"},
-    {"decision": "AnalyticsDTO.RefererSourceStat nested class with source, displayName, pageViews, percentage fields", "rationale": "Pre-aggregated BlogDailySourceStats table queried for source breakdown - percentages calculated from totals", "phase": "16"},
-    {"decision": "AnalyticsAggregationJob runs daily at 00:05 via cron '0 5 0 * * ?'", "rationale": "Runs after midnight to aggregate previous day's page views; 5-minute buffer ensures all writes complete", "phase": "16"},
-    {"decision": "getRefererSources() uses BlogDailySourceStats pre-aggregated data (not raw page_views)", "rationale": "Phase 15-01-D03: pre-aggregation avoids per-page-view dashboard queries for performance", "phase": "16"}
+    {"decision": "Resume saved edits on existing blog", "rationale": "D-01"},
+    {"decision": "STATUS_DRAFT=0, STATUS_PUBLISHED=1 on blogs table", "rationale": "D-02"},
+    {"decision": "Separate Drafts section on profile", "rationale": "D-03"},
+    {"decision": "Continuous auto-save 500ms debounce", "rationale": "D-04"},
+    {"decision": "Done button awaits saveBlocksToBackend", "rationale": "D-05"}
   ],
   "uncommitted_files": [],
-  "next_action": "Execute Phase 16 with /gsd:execute-phase 16 - Task 1: Add @EnableScheduling to OnePageApplication.java",
-  "context_notes": "Phase 16 plan (16-01-PLAN.md) is complete with 6 tasks. Phase 15 (Analytics Data Layer) completed successfully. Phase 17 (Analytics UI Layer) not yet planned. No execution started yet - was in middle of pause-work workflow when context exhausted."
+  "next_action": "Run /gsd:complete-milestone 1.8",
+  "context_notes": "v1.8 implementation complete. All 3 plans done. Human verification pending."
 }
