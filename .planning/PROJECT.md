@@ -10,18 +10,21 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.8 Editor Fixes
+## Current State
 
-**Goal:** Fix critical editor bugs and add drafts functionality.
+**Last Milestone Shipped:** v1.8 Editor Fixes & Drafts (2026-03-23)
 
-**Target features:**
-- Editor text input works
-- Template images reset on new session
-- Done button saves user's actual edits
-- Draft box on profile page
-- Draft auto-save
+**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, and editor fixes.
 
-## Previous Milestone: v1.6 UI Polish (COMPLETE)
+**Next:** Run `/gsd:new-milestone` to start v1.9 planning.
+
+## Previous Milestone: v1.8 Editor Fixes (COMPLETE)
+
+**Shipped features:**
+- Editor loads saved blocks from backend (not template defaults)
+- Done button awaits saveBlocksToBackend before navigation
+- Draft status infrastructure (STATUS_DRAFT, GET /blog/drafts)
+- My Drafts section on profile page with resume editing
 
 **Shipped features:**
 - White/light theme for all pages (Home, Editor, Templates, Analytics, etc.)
@@ -72,6 +75,8 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Public Profile Display — /user/{username} page with avatar, bio, social links, VIP badge, published sites grid — v1.7 (Phase 20)
 - ✓ Profile Editing — Edit bio, avatar, social links in Account Settings — v1.7 (Phase 21)
 - ✓ Profile Integration — View My Profile link, visitor counts, featured site pinning — v1.7 (Phase 22)
+- ✓ Editor Fixes — Editor loads saved blocks, Done button awaits save, template image reset on new session — v1.8 (Phase 23)
+- ✓ Drafts Infrastructure — Status field on blogs, GET /blog/drafts endpoint, My Drafts section on profile — v1.8 (Phase 23)
 
 ### Out of Scope
 
@@ -130,5 +135,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-23 after v1.7 milestone shipped*
+*Last updated: 2026-03-23 after v1.8 milestone shipped*
 

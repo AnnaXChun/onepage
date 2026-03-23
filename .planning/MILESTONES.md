@@ -1,5 +1,19 @@
 # Milestones
 
+## v1.8 Editor Fixes & Drafts (Shipped: 2026-03-23)
+
+**Phases completed:** 1 phase, 3 plans
+**Git tag:** v1.8
+
+**Key accomplishments:**
+
+1. **Draft status infrastructure** — STATUS_DRAFT/PUBLISHED constants, createBlog() sets draft by default, GET /blog/drafts endpoint
+2. **Editor loads saved blocks** — Fixed EditorPage to load blog's saved blocks from backend when editing existing blog
+3. **Done button awaits save** — handleDone now async and awaits saveBlocksToBackend before navigation
+4. **My Drafts section** — Added draft display on Profile page with resume editing navigation
+
+---
+
 ## v1.6 UI Polish (Shipped: 2026-03-22)
 
 **Phases completed:** 2 phases, 2 plans, 2 tasks
