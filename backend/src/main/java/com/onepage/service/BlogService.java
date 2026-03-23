@@ -34,6 +34,11 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
 
     private static final String BLOG_CACHE_PREFIX = "blog:";
     private static final long CACHE_EXPIRE_HOURS = 24;
+
+    // Blog status constants
+    public static final int STATUS_DRAFT = 0;
+    public static final int STATUS_PUBLISHED = 1;
+    public static final int STATUS_UNPUBLISHED = 2;
     private static final int MAX_TITLE_LENGTH = 200;
     private static final int MAX_CONTENT_LENGTH = 50000;
     private static final int MAX_COVER_IMAGE_LENGTH = 5000000;
@@ -90,7 +95,7 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
         blog.setCoverImage(sanitizedCoverImage);
         blog.setTemplateId(templateId);
         blog.setShareCode(generateShareCode());
-        blog.setStatus(1);
+        blog.setStatus(STATUS_DRAFT);
         blog.setCreateTime(LocalDateTime.now());
         blog.setUpdateTime(LocalDateTime.now());
         this.save(blog);
@@ -441,6 +446,22 @@ public class BlogService extends ServiceImpl<BlogMapper, Blog> {
                 .eq(Blog::getUserId, userId)
                 .eq(Blog::getStatus, 1)
                 .orderByDesc(Blog::getPublishTime)
+                .list();
+    }
+
+    /**
+     * Get all draft blogs for a user.
+     * Used by profile page drafts section.
+     * DRAFT-01
+     */
+    public List<Blog> getDraftBlogsByUserId(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return this.lambdaQuery()
+                .eq(Blog::getUserId, userId)
+                .eq(Blog::getStatus, STATUS_DRAFT)
+                .orderByDesc(Blog::getUpdateTime)
                 .list();
     }
 

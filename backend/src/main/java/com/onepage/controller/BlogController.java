@@ -185,6 +185,21 @@ public class BlogController {
         return Result.success(blogs);
     }
 
+    /**
+     * Get draft blogs for the authenticated user.
+     * GET /blog/drafts
+     * DRAFT-01
+     */
+    @GetMapping("/drafts")
+    public Result<List<Blog>> listMyDrafts() {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            throw BusinessException.unauthorized("Please login first");
+        }
+        List<Blog> drafts = blogService.getDraftBlogsByUserId(userId);
+        return Result.success(drafts);
+    }
+
     @DeleteMapping("/{id}")
     public Result<Void> deleteBlog(@PathVariable Long id) {
         Long userId = getCurrentUserId();
