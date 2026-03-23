@@ -19,17 +19,29 @@ export default function Editor({ blogId, initialBlocks, coverImage }: EditorProp
   const [isSeoPanelOpen, setIsSeoPanelOpen] = useState(false);
 
   // Initialize blocks from initialBlocks (loaded from blocks.json or saved blocks)
+  // If coverImage is provided, inject it into image blocks
   useEffect(() => {
     if (initialBlocks?.blocks && blocks.length === 0) {
-      const initialBlockStates = initialBlocks.blocks.map((block) => ({
-        id: block.id,
-        type: block.type,
-        content: block.defaultContent,
-        config: block.config || {},
-      }));
+      const initialBlockStates = initialBlocks.blocks.map((block) => {
+        // If this is an image block and we have a coverImage, use it
+        if ((block.type === 'image' || block.type === 'image-gallery') && coverImage) {
+          return {
+            id: block.id,
+            type: block.type,
+            content: coverImage,  // Use uploaded image, not template default
+            config: block.config || {},
+          };
+        }
+        return {
+          id: block.id,
+          type: block.type,
+          content: block.defaultContent,
+          config: block.config || {},
+        };
+      });
       setBlocks(initialBlockStates);
     }
-  }, [initialBlocks, setBlocks, blocks.length]);
+  }, [initialBlocks, setBlocks, blocks.length, coverImage]);
 
   // Auto-save hook
   useAutoSave(blogId);
@@ -58,17 +70,6 @@ export default function Editor({ blogId, initialBlocks, coverImage }: EditorProp
   return (
     <div className="flex flex-col h-screen bg-background">
       <EditorToolbar onSeoClick={() => setIsSeoPanelOpen(true)} />
-
-      {/* Cover Image */}
-      {coverImage && (
-        <div className="w-full h-48 relative overflow-hidden bg-neutral-900">
-          <img
-            src={coverImage}
-            alt="Cover"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main editor area */}
