@@ -3,6 +3,8 @@ import { useState, useEffect, ReactNode } from 'react'
 import { LanguageProvider } from './i18n'
 import { BlogProvider, useBlog } from './context/BlogContext'
 import { getBlogById } from './services/api'
+import { saveBlocksToBackend } from './components/Editor/useAutoSave'
+import { useEditorStore } from './stores/editorStore'
 import Home from './pages/Home/Home'
 import Profile from './pages/Profile/Profile'
 import AnalyticsDashboard from './pages/Analytics/AnalyticsDashboard'
@@ -262,6 +264,7 @@ function EditorPage() {
   const location = useLocation()
   const { blogId } = useParams<{ blogId?: string }>()
   const { currentBlog } = useBlog()
+  const blocks = useEditorStore((state) => state.blocks)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null)
   const [blocksJson, setBlocksJson] = useState<any>(null)
@@ -290,7 +293,35 @@ function EditorPage() {
     loadBlocksJson()
   }, [selectedTemplate, blocksJson])
 
-  const handleDone = () => {
+  // Load saved blocks from backend when editing existing blog (D-01)
+  useEffect(() => {
+    const loadSavedBlocks = async () => {
+      if (blogId) {
+        try {
+          const response = await getBlogById(blogId);
+          if (response.code === 200 && response.data?.blocks) {
+            // Use saved blocks from backend, not template defaults
+            const savedBlocks = JSON.parse(response.data.blocks);
+            setBlocksJson({ blocks: savedBlocks });
+          }
+        } catch (err) {
+          console.error('Failed to load saved blocks:', err);
+        }
+      }
+    };
+    loadSavedBlocks();
+  }, [blogId]);
+
+  const handleDone = async () => {
+    // Trigger immediate save and wait for completion (D-05)
+    // Note: Must call saveBlocksToBackend directly, NOT the debounced save() function
+    // because save() from useDebouncedCallback returns void, not a Promise
+    if (blogId || currentBlog?.id) {
+      const targetBlogId = blogId || currentBlog?.id?.toString();
+      if (targetBlogId) {
+        await saveBlocksToBackend(targetBlogId, blocks);
+      }
+    }
     // Navigate to preview/payment flow
     if (currentBlog?.id) {
       navigate(`/preview/${currentBlog.id}`, {

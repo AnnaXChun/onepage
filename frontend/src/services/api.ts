@@ -152,6 +152,12 @@ export const getBlogById = async (blogId: number | string): Promise<ApiResponse<
   return response.data;
 };
 
+// Get draft blogs for current user
+export const getDrafts = async (): Promise<ApiResponse<Blog[]>> => {
+  const response = await api.get('/blog/drafts');
+  return response.data;
+};
+
 // Login
 export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
   const response = await api.post('/user/login', data);
