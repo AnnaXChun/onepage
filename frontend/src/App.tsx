@@ -155,22 +155,24 @@ function PreviewPage() {
   const location = useLocation()
   const { blogId } = useParams<{ blogId?: string }>()
   const { currentBlog, setCurrentBlog } = useBlog()
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null)
+
+  // Initialize from location.state directly - this takes priority
+  const initialState = (location.state as LocationState | null)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(initialState?.uploadedImage || null)
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(initialState?.selectedTemplate || null)
   const [isLoading, setIsLoading] = useState(false)
 
   console.log('[PreviewPage] Render:', { blogId, currentBlog, uploadedImage, selectedTemplate, locationState: location.state });
 
-  // Load existing blog if blogId is in URL
+  // Load existing blog if blogId is in URL and we don't have uploadedImage from state
   useEffect(() => {
     const loadBlog = async () => {
-      if (blogId) {
+      if (blogId && !uploadedImage) {
         setIsLoading(true)
         try {
           // If we have currentBlog with matching ID, use it
           if (currentBlog && currentBlog.id === Number(blogId)) {
             setUploadedImage(currentBlog.coverImage ?? null)
-            // Template would need to be fetched separately or stored
           } else {
             // Fetch from API
             const response = await getBlogById(blogId)
@@ -188,24 +190,15 @@ function PreviewPage() {
     }
 
     loadBlog()
-  }, [blogId])
+  }, [blogId, uploadedImage])
 
+  // Update selectedTemplate from location.state if not already set
   useEffect(() => {
     const state = location.state as LocationState | null
-    if (state?.uploadedImage) {
-      setUploadedImage(state.uploadedImage)
-    }
-    if (state?.selectedTemplate) {
+    if (state?.selectedTemplate && !selectedTemplate) {
       setSelectedTemplate(state.selectedTemplate)
     }
-  }, [location.state])
-
-  // Sync uploadedImage from currentBlog when it changes
-  useEffect(() => {
-    if (currentBlog?.coverImage && !uploadedImage) {
-      setUploadedImage(currentBlog.coverImage)
-    }
-  }, [currentBlog, uploadedImage])
+  }, [location.state, selectedTemplate])
 
   // Handle successful blog creation
   const handleGenerated = (blog: { id: number }) => {
