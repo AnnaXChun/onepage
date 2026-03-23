@@ -335,6 +335,7 @@ function EditorPage() {
         <Editor
           blogId={blogId || currentBlog?.id?.toString() || ''}
           initialBlocks={blocksJson}
+          coverImage={uploadedImage || currentBlog?.coverImage}
         />
         <div className="absolute top-4 right-4 flex gap-2 z-50">
           <button

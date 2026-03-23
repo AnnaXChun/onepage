@@ -11,13 +11,14 @@ import { BlockManifest } from '../../types/block';
 interface EditorProps {
   blogId: string;
   initialBlocks?: BlockManifest;
+  coverImage?: string;
 }
 
-export default function Editor({ blogId, initialBlocks }: EditorProps) {
+export default function Editor({ blogId, initialBlocks, coverImage }: EditorProps) {
   const { setBlocks, blocks, selectBlock } = useEditorStore();
   const [isSeoPanelOpen, setIsSeoPanelOpen] = useState(false);
 
-  // Initialize blocks from initialBlocks (loaded from blocks.json)
+  // Initialize blocks from initialBlocks (loaded from blocks.json or saved blocks)
   useEffect(() => {
     if (initialBlocks?.blocks && blocks.length === 0) {
       const initialBlockStates = initialBlocks.blocks.map((block) => ({
@@ -57,6 +58,17 @@ export default function Editor({ blogId, initialBlocks }: EditorProps) {
   return (
     <div className="flex flex-col h-screen bg-background">
       <EditorToolbar onSeoClick={() => setIsSeoPanelOpen(true)} />
+
+      {/* Cover Image */}
+      {coverImage && (
+        <div className="w-full h-48 relative overflow-hidden bg-neutral-900">
+          <img
+            src={coverImage}
+            alt="Cover"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main editor area */}
