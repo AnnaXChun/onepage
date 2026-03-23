@@ -9,15 +9,15 @@ Editor bug fixes and drafts functionality.
 
 ### Editor Bugs
 
-- [ ] **EDIT-01**: Editor text input works - user can type in text blocks
-- [ ] **EDIT-02**: Template images reset on new session - each new editor session starts fresh unless draft saved
+- [x] **EDIT-01**: Editor text input works - user can type in text blocks
+- [x] **EDIT-02**: Template images reset on new session - each new editor session starts fresh unless draft saved
 - [ ] **EDIT-03**: Done button saves user's actual edits - clicking Done shows the user's edited page, not the original template
 
 ### Drafts
 
-- [ ] **DRAFT-01**: User can view draft sites from their profile page
-- [ ] **DRAFT-02**: User can resume editing a draft
-- [ ] **DRAFT-03**: Draft auto-saves while editing
+- [x] **DRAFT-01**: User can view draft sites from their profile page
+- [x] **DRAFT-02**: User can resume editing a draft
+- [x] **DRAFT-03**: Draft auto-saves while editing
 
 ## Out of Scope
 
@@ -30,12 +30,12 @@ Editor bug fixes and drafts functionality.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EDIT-01 | Phase 23 | Pending |
-| EDIT-02 | Phase 23 | Pending |
+| EDIT-01 | Phase 23 | Complete |
+| EDIT-02 | Phase 23 | Complete |
 | EDIT-03 | Phase 23 | Pending |
-| DRAFT-01 | Phase 23 | Pending |
-| DRAFT-02 | Phase 23 | Pending |
-| DRAFT-03 | Phase 23 | Pending |
+| DRAFT-01 | Phase 23 | Complete |
+| DRAFT-02 | Phase 23 | Complete |
+| DRAFT-03 | Phase 23 | Complete |
 
 ---
 *Requirements defined: 2026-03-23*
