@@ -10,7 +10,7 @@ interface SaveResult {
   error?: string;
 }
 
-async function saveBlocksToBackend(blogId: string, blocks: BlockState[]): Promise<SaveResult> {
+export async function saveBlocksToBackend(blogId: string, blocks: BlockState[]): Promise<SaveResult> {
   try {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE}/blogs/${blogId}/blocks`, {
