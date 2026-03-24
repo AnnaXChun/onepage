@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BlockDefinition } from '../../../types/block';
+import { useEditorStore } from '../../../stores/editorStore';
 
 interface SocialLink {
   platform: string;
@@ -32,8 +33,8 @@ export default function SocialLinksBlock({
 }: SocialLinksBlockProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [links, setLinks] = useState<SocialLink[]>([]);
+  const { updateBlock } = useEditorStore();
 
-  // Parse content on mount/update
   const parseContent = () => {
     if (content) {
       try {
@@ -46,7 +47,6 @@ export default function SocialLinksBlock({
     }
   };
 
-  // Initialize links from content
   useEffect(() => {
     parseContent();
   }, [content]);

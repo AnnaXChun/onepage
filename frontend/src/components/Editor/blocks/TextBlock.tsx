@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useEditorStore } from '../../../stores/editorStore';
 import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
 
@@ -31,8 +32,8 @@ export default function TextBlock({
   const [localValue, setLocalValue] = useState(content || block.defaultContent);
   const containerRef = useRef<HTMLDivElement>(null);
   const isEditingRef = useRef(false);
+  const { updateBlock } = useEditorStore();
 
-  // Keep ref in sync with state
   useEffect(() => {
     isEditingRef.current = isEditing;
   }, [isEditing]);
@@ -41,31 +42,11 @@ export default function TextBlock({
     setLocalValue(content || block.defaultContent);
   }, [content, block.defaultContent]);
 
-  // Focus the editable element when editing starts
-  const focusEditable = useCallback(() => {
-    if (!containerRef.current) return;
-
-    // Find the contentEditable element within the container
-    const editable = containerRef.current.querySelector('[contenteditable="true"]') as HTMLElement;
-    if (editable) {
-      editable.focus();
-      // Move cursor to end
-      const range = document.createRange();
-      range.selectNodeContents(editable);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
-  }, []);
-
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect();
-    // Single click on selected block enters edit mode
     if (!isEditingRef.current) {
       setIsEditing(true);
-      setTimeout(focusEditable, 0);
     }
   };
 
@@ -73,16 +54,15 @@ export default function TextBlock({
     e.stopPropagation();
     onSelect();
     setIsEditing(true);
-    setTimeout(focusEditable, 0);
   };
 
   const handleBlur = () => {
-    // Small delay to allow click events to process
     setTimeout(() => {
       if (isEditingRef.current) {
         setIsEditing(false);
         if (localValue !== content) {
           onContentChange(localValue);
+          updateBlock(block.id, { content: localValue });
         }
       }
     }, 100);
@@ -95,7 +75,6 @@ export default function TextBlock({
       setIsEditing(false);
       containerRef.current?.blur();
     }
-    // For headings, Enter key should exit editing
     if (e.key === 'Enter' && (block.type === 'text-h1' || block.type === 'text-h2')) {
       e.preventDefault();
       handleBlur();
@@ -117,15 +96,6 @@ export default function TextBlock({
   const isHeading = block.type === 'text-h1' || block.type === 'text-h2';
   const isList = block.type === 'text-list';
   const isLowConfidence = confidence !== undefined && confidence < 0.7;
-
-  const baseClasses = `
-    cursor-text outline-none transition-all duration-200
-    ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'hover:bg-primary/5'}
-    ${!localValue && !isEditing ? 'text-text-muted' : 'text-text-primary'}
-  `.trim().replace(/\s+/g, ' ');
-
-  const headingClasses = isHeading ? 'font-bold tracking-tight' : '';
-  const listClasses = isList ? 'list-disc list-inside space-y-1' : '';
 
   const alignmentClass = {
     'left': 'text-left',
@@ -151,7 +121,7 @@ export default function TextBlock({
       return <p className="text-text-muted italic">{block.placeholder}</p>;
     }
     return (
-      <ul className={`${headingClasses} ${listClasses} text-text-primary`}>
+      <ul className="list-disc list-inside space-y-1 text-text-primary">
         {items.map((item, i) => (
           <li key={i}>{item}</li>
         ))}
@@ -165,7 +135,7 @@ export default function TextBlock({
     }
 
     if (!localValue && !isEditing) {
-      return <p className={`${headingClasses} text-text-muted italic`}>{block.placeholder}</p>;
+      return <p className="text-text-muted italic">{block.placeholder}</p>;
     }
 
     return (
@@ -176,7 +146,12 @@ export default function TextBlock({
         onKeyDown={handleKeyDown}
         onInput={handleInput}
         onPaste={handlePaste}
-        className={`${headingClasses} ${baseClasses}`}
+        className={`
+          ${isHeading ? 'font-bold tracking-tight' : ''}
+          cursor-text outline-none transition-all duration-200
+          ${isSelected ? '' : 'hover:bg-primary/5'}
+          ${!localValue && !isEditing ? 'text-text-muted' : 'text-text-primary'}
+        `.trim().replace(/\s+/g, ' ')}
       >
         {localValue}
       </Tag>
@@ -216,6 +191,7 @@ export default function TextBlock({
         onApply={(newText) => {
           setLocalValue(newText);
           onContentChange(newText);
+          updateBlock(block.id, { content: newText });
         }}
       />
     </>

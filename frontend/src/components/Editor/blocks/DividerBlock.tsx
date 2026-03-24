@@ -10,7 +10,6 @@ interface DividerBlockProps {
 
 export default function DividerBlock({
   block,
-  content,
   isSelected,
   onSelect,
 }: DividerBlockProps) {
@@ -18,6 +17,14 @@ export default function DividerBlock({
     e.stopPropagation();
     onSelect();
   };
+
+  const style = block.config?.style || 'solid';
+
+  const borderStyleClass = {
+    solid: 'border-solid',
+    dashed: 'border-dashed',
+    dotted: 'border-dotted',
+  }[style];
 
   const containerClasses = `
     relative py-4 transition-all duration-200
@@ -30,10 +37,11 @@ export default function DividerBlock({
       onClick={handleClick}
     >
       <hr
-        className="
-          border-0 h-px bg-gradient-to-r
-          from-transparent via-border to-transparent
-        "
+        className={`
+          border-0 h-px
+          ${borderStyleClass}
+          border-neutral-300 dark:border-neutral-600
+        `.trim().replace(/\s+/g, ' ')}
       />
       {isSelected && (
         <div className="absolute inset-0 flex items-center justify-center">

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useEditorStore } from '../../stores/editorStore';
 import api from '../../services/api';
 
@@ -13,7 +14,9 @@ export default function BlockConfigPanel({ blogId }: BlockConfigPanelProps) {
     selectBlock(null);
   };
 
-  const handleConfigChange = async (key: string, value: unknown) => {
+  const handleConfigChange = useCallback(async (key: string, value: unknown) => {
+    if (!selectedBlock) return;
+
     const newConfig = { ...selectedBlock.config, [key]: value };
     updateBlock(selectedBlock.id, {
       config: newConfig,
@@ -29,7 +32,7 @@ export default function BlockConfigPanel({ blogId }: BlockConfigPanelProps) {
         console.error('Failed to persist config:', error);
       }
     }
-  };
+  }, [selectedBlock, updateBlock, blogId]);
 
   if (!selectedBlock) {
     return (
@@ -192,15 +195,6 @@ export default function BlockConfigPanel({ blogId }: BlockConfigPanelProps) {
           </label>
         </div>
       </div>
-
-      {/* Text container settings */}
-      {selectedBlock.type === 'text-container' && (
-        <div className="space-y-4 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <p className="text-sm text-text-muted">
-            Text container holds nested text blocks. Add blocks from the library below.
-          </p>
-        </div>
-      )}
 
       {/* Divider style */}
       {selectedBlock.type === 'divider' && (

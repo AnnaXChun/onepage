@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BlockDefinition } from '../../../types/block';
+import { useEditorStore } from '../../../stores/editorStore';
 
 interface ContactFormBlockProps {
   block: BlockDefinition;
@@ -17,15 +18,15 @@ interface FormSettings {
 export default function ContactFormBlock({
   block,
   content,
-  onContentChange,
   isSelected,
   onSelect,
 }: ContactFormBlockProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [settings, setSettings] = useState<FormSettings>({
+  const [settings] = useState<FormSettings>({
     submitText: 'Send Message',
     successMessage: 'Thank you for your message!',
   });
+  const { updateBlock } = useEditorStore();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,7 +36,6 @@ export default function ContactFormBlock({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Display-only in editor - no actual submission
     alert('Form submission is disabled in the editor. This will be connected to a backend in a future phase.');
   };
 

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { BlockDefinition } from '../../../types/block';
 import { uploadImage } from '../../../services/api';
+import { useEditorStore } from '../../../stores/editorStore';
 
 interface ImageBlockProps {
   block: BlockDefinition;
@@ -19,6 +20,7 @@ export default function ImageBlock({
 }: ImageBlockProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { updateBlock } = useEditorStore();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -38,11 +40,10 @@ export default function ImageBlock({
 
     setIsUploading(true);
     try {
-      // Upload to server first
       const response = await uploadImage(file);
       if (response.code === 200 && response.data?.url) {
-        // Use server URL instead of base64
         onContentChange(response.data.url);
+        updateBlock(block.id, { content: response.data.url });
       } else {
         console.error('Upload failed:', response.message);
       }
@@ -57,7 +58,6 @@ export default function ImageBlock({
   const isRounded = block.config?.rounded ?? false;
   const isGallery = block.type === 'image-gallery';
 
-  // Parse gallery content - expecting JSON array of URLs
   let galleryImages: string[] = [];
   if (isGallery && content) {
     try {
@@ -78,7 +78,6 @@ export default function ImageBlock({
     group-hover:scale-[1.02]
   `.trim().replace(/\s+/g, ' ');
 
-  // Single image view
   if (!isGallery) {
     return (
       <div
@@ -138,7 +137,6 @@ export default function ImageBlock({
     );
   }
 
-  // Gallery view
   return (
     <div className={containerClasses} onClick={handleClick}>
       {galleryImages.length > 0 ? (
