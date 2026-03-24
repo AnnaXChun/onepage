@@ -4,6 +4,8 @@ import { createBlog, createOrder, getPaymentQRCode, queryPaymentStatus } from '.
 import { useTranslation } from '../../i18n';
 import { PREVIEW_URL } from '../../config/env';
 import type { TemplateConfig } from '../../config/templates';
+import type { BlockState } from '../../stores/editorStore';
+import BlogPreviewRenderer from '../BlogPreview/BlogPreviewRenderer';
 
 interface Blog {
   id: number;
@@ -18,13 +20,14 @@ interface PreviewProps {
   blog?: Blog | null;
   image?: string | null;
   template?: TemplateConfig | null;
+  blocks?: BlockState[];
   onGenerated?: (blog: Blog) => void;
   onBack?: () => void;
   onSuccess?: (blog: Blog) => void;
   onEdit?: (blog: Blog) => void;
 }
 
-function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onBack, onSuccess, onEdit }: PreviewProps) {
+function Preview({ blogId, blog: existingBlog, image, template, blocks, onGenerated, onBack, onSuccess, onEdit }: PreviewProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,10 +48,9 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
 
   const defaultContent = 'Welcome to my personal blog! This is a blog generated from your image.\n\nWith advanced AI technology, we extract colors, style, and atmosphere from your photo to create a unique personal blog site. No coding knowledge required.\n\nShare your story with the world.';
 
-  const shortPreviewUrl = `${PREVIEW_URL}/preview?template=${template?.slug || 'minimal-simple'}`;
-  const localPreviewUrl = image
-    ? `${PREVIEW_URL}/preview?template=${template?.slug || 'minimal-simple'}&name=${encodeURIComponent('My Blog')}&bio=${encodeURIComponent('Welcome to my blog')}&content=${encodeURIComponent(generatedBlog?.content || defaultContent)}&image=${encodeURIComponent(image)}`
-    : shortPreviewUrl;
+  // Note: local preview at port 3000 is deprecated - use the in-app preview or the share link
+  const shortPreviewUrl = null;
+  const localPreviewUrl = null;
 
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const shareUrl = generatedBlog?.shareCode
@@ -68,8 +70,11 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
   };
 
   const handleOpenPreview = () => {
-    if (localPreviewUrl) {
-      window.open(localPreviewUrl, '_blank');
+    // Open the share link in a new tab if available, otherwise show alert
+    if (shareUrl) {
+      window.open(shareUrl, '_blank');
+    } else {
+      alert('Preview will be available after publishing your page.');
     }
   };
 
@@ -375,11 +380,11 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
         </div>
 
         <div className="mb-4">
-          <p className="text-xs text-text-muted mb-2">Local Preview (Port 3000)</p>
+          <p className="text-xs text-text-muted mb-2">Preview</p>
           <div className="flex items-center gap-2">
             <input
               type="text"
-              value={localPreviewUrl || ''}
+              value={shareUrl || 'Publish to get your share link'}
               readOnly
               className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-text-primary text-xs font-mono truncate"
             />
@@ -414,12 +419,12 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
           </div>
         )}
 
-        {localPreviewUrl && localPreviewUrl.length < 500 && (
+        {shareUrl && (
           <div className="mt-6 pt-4 border-t border-border text-center">
             <p className="text-xs text-text-muted mb-3">Scan to Preview</p>
             <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center p-2">
               <QRCodeSVG
-                value={shortPreviewUrl}
+                value={shareUrl}
                 size={112}
                 level="M"
                 includeMargin={false}
@@ -524,28 +529,29 @@ function Preview({ blogId, blog: existingBlog, image, template, onGenerated, onB
 
             <div className="rounded-3xl overflow-hidden bg-surface border border-border animate-scale-in max-w-4xl mx-auto">
               <div className="relative h-72">
-                {image && (
+                {/* Use cover image from blocks or fallback to image prop */}
+                {(blocks?.find(b => b.type === 'image-single' || b.type === 'image-gallery')?.content || image) && (
                   <img
-                    src={image}
+                    src={blocks?.find(b => b.type === 'image-single' || b.type === 'image-gallery')?.content || image}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
-                  <h1 className="text-3xl font-bold">My Blog</h1>
+                  <h1 className="text-3xl font-bold">{blocks?.find(b => b.type === 'text-h1')?.content || 'My Blog'}</h1>
                 </div>
               </div>
 
               <div className="p-8">
-                <p className="text-text-secondary leading-relaxed mb-6">
-                  Welcome to my personal blog! This is a blog generated from your image.
-                  With advanced AI technology, we extract colors, style, and atmosphere from your photo
-                  to create a unique personal blog site. No coding knowledge required.
-                </p>
-                <p className="text-text-secondary leading-relaxed">
-                  Share your story with the world. Your unique link will be ready after publishing.
-                </p>
+                {/* Render blocks if available */}
+                {blocks && blocks.length > 0 ? (
+                  <BlogPreviewRenderer blocks={blocks} coverImage={image || undefined} />
+                ) : (
+                  <p className="text-text-secondary leading-relaxed mb-6">
+                    Welcome to my personal blog! This is a blog generated from your image.
+                  </p>
+                )}
 
                 <div className="mt-8 pt-6 border-t border-border flex items-center gap-4">
                   <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${template?.color || 'from-zinc-700 to-zinc-900'}`}>

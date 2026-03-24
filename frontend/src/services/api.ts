@@ -11,7 +11,8 @@ import type {
 } from '@/types/api';
 import type { Blog, Order, Template, GenerateBlogRequest, ShareLink } from '@/types/models';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -324,6 +325,15 @@ export const getBlogAnalytics = async (blogId: number, period: string = '7d'): P
 // Set featured/pinned blog
 export const setFeaturedBlog = async (blogId: number, featured: boolean): Promise<ApiResponse<null>> => {
   const response = await api.put(`/blog/${blogId}/featured`, { featured });
+  return response.data;
+};
+
+/**
+ * Update blog blocks.
+ * PUT /api/blog/{id}/blocks
+ */
+export const updateBlogBlocks = async (blogId: number | string, blocks: any[]): Promise<void> => {
+  const response = await api.put(`/blog/${blogId}/blocks`, { blocks });
   return response.data;
 };
 

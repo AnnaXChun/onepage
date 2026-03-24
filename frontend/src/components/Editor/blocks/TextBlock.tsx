@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { BlockDefinition, BlockType } from '../../../types/block';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
 
 interface TextBlockProps {
@@ -29,46 +29,82 @@ export default function TextBlock({
   const [isEditing, setIsEditing] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const [localValue, setLocalValue] = useState(content || block.defaultContent);
-  const elementRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isEditingRef = useRef(false);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
 
   useEffect(() => {
     setLocalValue(content || block.defaultContent);
   }, [content, block.defaultContent]);
 
+  // Focus the editable element when editing starts
+  const focusEditable = useCallback(() => {
+    if (!containerRef.current) return;
+
+    // Find the contentEditable element within the container
+    const editable = containerRef.current.querySelector('[contenteditable="true"]') as HTMLElement;
+    if (editable) {
+      editable.focus();
+      // Move cursor to end
+      const range = document.createRange();
+      range.selectNodeContents(editable);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }, []);
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect();
-    if (!isEditing) {
+    // Single click on selected block enters edit mode
+    if (!isEditingRef.current) {
       setIsEditing(true);
-      setTimeout(() => elementRef.current?.focus(), 0);
+      setTimeout(focusEditable, 0);
     }
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect();
+    setIsEditing(true);
+    setTimeout(focusEditable, 0);
+  };
+
   const handleBlur = () => {
-    setIsEditing(false);
-    if (localValue !== content) {
-      onContentChange(localValue);
-    }
+    // Small delay to allow click events to process
+    setTimeout(() => {
+      if (isEditingRef.current) {
+        setIsEditing(false);
+        if (localValue !== content) {
+          onContentChange(localValue);
+        }
+      }
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
+      e.preventDefault();
       setLocalValue(content || block.defaultContent);
       setIsEditing(false);
-      elementRef.current?.blur();
+      containerRef.current?.blur();
     }
+    // For headings, Enter key should exit editing
     if (e.key === 'Enter' && (block.type === 'text-h1' || block.type === 'text-h2')) {
       e.preventDefault();
-      elementRef.current?.blur();
+      handleBlur();
     }
   };
 
-  const handleInput = (e: React.FormEvent<HTMLHeadingElement | HTMLParagraphElement | HTMLUListElement>) => {
-    const text = e.currentTarget.textContent || '';
-    if (block.type === 'text-h1' || block.type === 'text-h2') {
-      e.currentTarget.textContent = text.replace(/\n/g, '');
-    }
-    setLocalValue(e.currentTarget.textContent || '');
+  const handleInput = (e: React.FormEvent) => {
+    const target = e.currentTarget;
+    setLocalValue(target.textContent || '');
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -91,24 +127,51 @@ export default function TextBlock({
   const headingClasses = isHeading ? 'font-bold tracking-tight' : '';
   const listClasses = isList ? 'list-disc list-inside space-y-1' : '';
 
-  const renderContent = () => {
-    if (isList) {
-      return localValue ? (
-        <ul className={`${headingClasses} ${listClasses} text-text-primary`}>
-          {localValue.split('\n').filter(item => item.trim()).map((item, i) => (
-            <li key={i}>{item}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-text-muted italic">{block.placeholder}</p>
-      );
+  const alignmentClass = {
+    'left': 'text-left',
+    'center': 'text-center',
+    'right': 'text-right',
+  }[block.config?.align || 'left'];
+
+  const containerStyle: React.CSSProperties = {
+    backgroundColor: block.config?.backgroundColor,
+    color: block.config?.textColor,
+    display: block.config?.visible === false ? 'none' : 'block',
+  };
+
+  const containerClass = `
+    relative p-4 rounded-lg transition-all duration-200 group
+    ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'hover:bg-primary/5'}
+    ${isLowConfidence ? 'ring-2 ring-amber-400/50' : ''}
+  `.trim().replace(/\s+/g, ' ');
+
+  const renderListContent = () => {
+    const items = localValue.split('\n').filter(item => item.trim());
+    if (items.length === 0) {
+      return <p className="text-text-muted italic">{block.placeholder}</p>;
     }
-    return localValue ? (
+    return (
+      <ul className={`${headingClasses} ${listClasses} text-text-primary`}>
+        {items.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    );
+  };
+
+  const renderEditableContent = () => {
+    if (isList) {
+      return renderListContent();
+    }
+
+    if (!localValue && !isEditing) {
+      return <p className={`${headingClasses} text-text-muted italic`}>{block.placeholder}</p>;
+    }
+
+    return (
       <Tag
-        ref={elementRef as React.RefObject<HTMLHeadingElement & HTMLParagraphElement>}
         contentEditable={isEditing}
         suppressContentEditableWarning
-        onClick={handleClick}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         onInput={handleInput}
@@ -117,8 +180,6 @@ export default function TextBlock({
       >
         {localValue}
       </Tag>
-    ) : (
-      <p className={`${headingClasses} text-text-muted italic`}>{block.placeholder}</p>
     );
   };
 
@@ -134,35 +195,18 @@ export default function TextBlock({
     </button>
   );
 
-  const containerClass = `
-    relative p-4 rounded-lg transition-all duration-200 group
-    ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'hover:bg-primary/5'}
-    ${isLowConfidence ? 'ring-2 ring-amber-400/50' : ''}
-  `.trim().replace(/\s+/g, ' ');
-
-  // Apply config styles
-  const alignmentClass = {
-    'left': 'text-left',
-    'center': 'text-center',
-    'right': 'text-right',
-  }[block.config?.align || 'left'];
-
-  const containerStyle: React.CSSProperties = {
-    backgroundColor: block.config?.backgroundColor,
-    color: block.config?.textColor,
-    display: block.config?.visible === false ? 'none' : 'block',
-  };
-
   return (
     <>
       <div
+        ref={containerRef}
         onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         className={`${containerClass} ${alignmentClass}`}
         style={containerStyle}
         title={isLowConfidence ? 'This content was generated with low confidence' : undefined}
       >
         {aiButton}
-        {renderContent()}
+        {renderEditableContent()}
       </div>
       <AIWriteModal
         isOpen={showAIModal}

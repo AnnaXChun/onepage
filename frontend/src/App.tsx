@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 're
 import { useState, useEffect, ReactNode } from 'react'
 import { LanguageProvider } from './i18n'
 import { BlogProvider, useBlog } from './context/BlogContext'
-import { getBlogById } from './services/api'
+import { getBlogById, updateBlogBlocks } from './services/api'
 import { saveBlocksToBackend } from './components/Editor/useAutoSave'
 import { useEditorStore } from './stores/editorStore'
 import Home from './pages/Home/Home'
@@ -160,6 +160,7 @@ function PreviewPage() {
   const initialState = (location.state as LocationState | null)
   const [uploadedImage, setUploadedImage] = useState<string | null>(initialState?.uploadedImage || null)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(initialState?.selectedTemplate || null)
+  const [blocks, setBlocks] = useState<any[]>(initialState?.blocks || [])
   const [isLoading, setIsLoading] = useState(false)
 
   console.log('[PreviewPage] Render:', { blogId, currentBlog, uploadedImage, selectedTemplate, locationState: location.state });
@@ -242,6 +243,7 @@ function PreviewPage() {
         blog={blogId ? currentBlog : null}
         image={uploadedImage}
         template={selectedTemplate}
+        blocks={blocks}
         onGenerated={handleGenerated}
         onBack={() => navigate('/template', { state: { uploadedImage } })}
         onSuccess={handleSuccess}
@@ -261,19 +263,41 @@ function EditorPage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null)
   const [blocksJson, setBlocksJson] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Load uploadedImage and selectedTemplate from navigation state
+  // Single unified effect to load all necessary data
   useEffect(() => {
-    const state = location.state as LocationState | null
-    if (state?.uploadedImage) setUploadedImage(state.uploadedImage)
-    if (state?.selectedTemplate) setSelectedTemplate(state.selectedTemplate)
-    if (state?.blocksJson) setBlocksJson(state.blocksJson)
-  }, [location.state])
+    const loadData = async () => {
+      const state = location.state as LocationState | null;
 
-  // Load blocks.json from selected template
-  useEffect(() => {
-    const loadBlocksJson = async () => {
-      if (selectedTemplate?.blocksJsonPath && !blocksJson) {
+      // 1. Load uploadedImage and template from state
+      if (state?.uploadedImage) setUploadedImage(state.uploadedImage)
+      if (state?.selectedTemplate) setSelectedTemplate(state.selectedTemplate)
+
+      // 2. If blocks passed in state, use those (from editor navigation)
+      if (state?.blocks && state.blocks.length > 0) {
+        setBlocksJson({ blocks: state.blocks });
+        setLoading(false);
+        return;
+      }
+
+      // 3. If editing existing blog, load saved blocks from backend
+      if (blogId) {
+        try {
+          const response = await getBlogById(blogId);
+          if (response.code === 200 && response.data?.blocks) {
+            const savedBlocks = JSON.parse(response.data.blocks);
+            setBlocksJson({ blocks: savedBlocks });
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to load saved blocks:', err);
+        }
+      }
+
+      // 4. Fallback: load from template
+      if (selectedTemplate?.blocksJsonPath) {
         try {
           const response = await fetch(selectedTemplate.blocksJsonPath)
           const data = await response.json()
@@ -282,43 +306,48 @@ function EditorPage() {
           console.error('Failed to load blocks.json:', err)
         }
       }
-    }
-    loadBlocksJson()
-  }, [selectedTemplate, blocksJson])
 
-  // Load saved blocks from backend when editing existing blog (D-01)
-  useEffect(() => {
-    const loadSavedBlocks = async () => {
-      if (blogId) {
-        try {
-          const response = await getBlogById(blogId);
-          if (response.code === 200 && response.data?.blocks) {
-            // Use saved blocks from backend, not template defaults
-            const savedBlocks = JSON.parse(response.data.blocks);
-            setBlocksJson({ blocks: savedBlocks });
-          }
-        } catch (err) {
-          console.error('Failed to load saved blocks:', err);
-        }
-      }
+      setLoading(false);
     };
-    loadSavedBlocks();
-  }, [blogId]);
+
+    loadData();
+  }, [location.state, blogId, selectedTemplate]);
 
   const handleDone = async () => {
-    // Trigger immediate save and wait for completion (D-05)
-    // Note: Must call saveBlocksToBackend directly, NOT the debounced save() function
-    // because save() from useDebouncedCallback returns void, not a Promise
     if (blogId || currentBlog?.id) {
       const targetBlogId = blogId || currentBlog?.id?.toString();
-      if (targetBlogId) {
+      if (targetBlogId && blocks.length > 0) {
+        // Save blocks to backend
         await saveBlocksToBackend(targetBlogId, blocks);
+
+        // Extract content from blocks for preview/publish
+        const imageBlock = blocks.find(b => b.type === 'image-single' || b.type === 'image-gallery');
+        const textBlocks = blocks.filter(b => b.type.startsWith('text-'));
+        const extractedContent = textBlocks.map(b => b.content).join('\n\n');
+
+        // Update blog content and coverImage
+        try {
+          await fetch(`http://localhost:8080/api/blog/update/${targetBlogId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              title: 'My Blog',
+              content: extractedContent,
+              coverImage: imageBlock?.content || uploadedImage
+            })
+          });
+        } catch (err) {
+          console.error('Failed to update blog content:', err);
+        }
       }
     }
-    // Navigate to preview/payment flow
+    // Navigate to preview with blocks for immediate rendering
     if (currentBlog?.id) {
       navigate(`/preview/${currentBlog.id}`, {
-        state: { uploadedImage, selectedTemplate }
+        state: { uploadedImage, selectedTemplate, blocks }
       })
     } else {
       navigate('/template', { state: { uploadedImage } })
@@ -333,6 +362,7 @@ function EditorPage() {
     <ProtectedRoute requireAuth>
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
         <Editor
+          key={blogId || currentBlog?.id?.toString() || 'new'}
           blogId={blogId || currentBlog?.id?.toString() || ''}
           initialBlocks={blocksJson}
           coverImage={uploadedImage || currentBlog?.coverImage}

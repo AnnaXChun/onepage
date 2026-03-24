@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useEditorStore, BlockState } from '../../stores/editorStore';
-import api from '../../services/api';
-
-const API_BASE = 'http://localhost:8080/api/v1';
+import { updateBlogBlocks, API_BASE } from '../../services/api';
 
 interface SaveResult {
   success: boolean;
@@ -12,21 +10,8 @@ interface SaveResult {
 
 export async function saveBlocksToBackend(blogId: string, blocks: BlockState[]): Promise<SaveResult> {
   try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE}/blogs/${blogId}/blocks`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({ blocks }),
-    });
-
-    if (response.ok) {
-      return { success: true };
-    }
-    const data = await response.json();
-    return { success: false, error: data.message || 'Save failed' };
+    await updateBlogBlocks(blogId, blocks);
+    return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Network error';
     return { success: false, error: message };
@@ -77,7 +62,7 @@ export default function useAutoSave(blogId: string | null) {
 
         if (navigator.sendBeacon) {
           navigator.sendBeacon(
-            `${API_BASE}/blogs/${blogId}/blocks`,
+            `${API_BASE}/blog/${blogId}/blocks`,
             new Blob([data], { type: 'application/json' })
           );
         }

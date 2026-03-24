@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useEditorStore } from '../../stores/editorStore';
 import EditorCanvas from './EditorCanvas';
 import EditorToolbar from './EditorToolbar';
@@ -17,31 +17,39 @@ interface EditorProps {
 export default function Editor({ blogId, initialBlocks, coverImage }: EditorProps) {
   const { setBlocks, blocks, selectBlock } = useEditorStore();
   const [isSeoPanelOpen, setIsSeoPanelOpen] = useState(false);
+  const prevBlogIdRef = useRef<string | null>(null);
 
-  // Initialize blocks from initialBlocks (loaded from blocks.json or saved blocks)
-  // If coverImage is provided, inject it into image blocks
+  // Clear and reinitialize blocks when blogId changes (handles localStorage persistence)
   useEffect(() => {
-    if (initialBlocks?.blocks && blocks.length === 0) {
-      const initialBlockStates = initialBlocks.blocks.map((block) => {
-        // If this is an image block and we have a coverImage, use it
-        if ((block.type === 'image' || block.type === 'image-gallery') && coverImage) {
-          return {
-            id: block.id,
-            type: block.type,
-            content: coverImage,  // Use uploaded image, not template default
-            config: block.config || {},
-          };
-        }
+    if (prevBlogIdRef.current !== blogId) {
+      prevBlogIdRef.current = blogId;
+      // Clear existing blocks first
+      setBlocks([]);
+    }
+  }, [blogId, setBlocks]);
+
+  // Initialize blocks from initialBlocks
+  useEffect(() => {
+    if (!initialBlocks?.blocks) return;
+
+    const initialBlockStates = initialBlocks.blocks.map((block) => {
+      if ((block.type === 'image' || block.type === 'image-single' || block.type === 'image-gallery') && coverImage) {
         return {
           id: block.id,
           type: block.type,
-          content: block.defaultContent,
+          content: coverImage,
           config: block.config || {},
         };
-      });
-      setBlocks(initialBlockStates);
-    }
-  }, [initialBlocks, setBlocks, blocks.length, coverImage]);
+      }
+      return {
+        id: block.id,
+        type: block.type,
+        content: block.defaultContent,
+        config: block.config || {},
+      };
+    });
+    setBlocks(initialBlockStates);
+  }, [initialBlocks, setBlocks, coverImage]);
 
   // Auto-save hook
   useAutoSave(blogId);

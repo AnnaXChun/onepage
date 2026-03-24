@@ -53,7 +53,7 @@ export default function ImageBlock({
     }
   };
 
-  const aspectRatio = block.config?.aspectRatio || '1/1';
+  const aspectRatio = block.config?.aspectRatio || '16/9';
   const isRounded = block.config?.rounded ?? false;
   const isGallery = block.type === 'image-gallery';
 
