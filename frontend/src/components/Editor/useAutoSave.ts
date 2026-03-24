@@ -19,7 +19,7 @@ export async function saveBlocksToBackend(blogId: string, blocks: BlockState[]):
 }
 
 export default function useAutoSave(blogId: string | null) {
-  const { blocks, isDirty, markSaved } = useEditorStore();
+  const { blocks, isDirty, markSaved, lexicalEditor } = useEditorStore();
   const lastSavedBlocksRef = useRef<string>('');
   const pendingSaveRef = useRef<boolean>(false);
 
@@ -27,11 +27,41 @@ export default function useAutoSave(blogId: string | null) {
     async () => {
       if (!blogId || !isDirty) return;
 
-      const blocksJson = JSON.stringify(blocks);
+      // Get blocks to save - prefer Lexical state if available
+      let blocksToSave = blocks;
+      if (lexicalEditor) {
+        try {
+          const editorState = lexicalEditor.getEditorState();
+          const json = editorState.toJSON();
+          // If Lexical has different content, use it
+          const lexicalJson = JSON.stringify(json);
+          const blocksJson = JSON.stringify(blocks);
+          if (lexicalJson !== blocksJson) {
+            // Parse Lexical state back to blocks format
+            const root = json.root;
+            if (root?.children) {
+              // Update blocks content from Lexical
+              blocksToSave = blocks.map((block) => {
+                const lexicalNode = root.children.find(
+                  (child: { blockId?: string }) => child.blockId === block.id
+                );
+                if (lexicalNode && 'text' in lexicalNode) {
+                  return { ...block, content: (lexicalNode as { text: string }).text };
+                }
+                return block;
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('[AutoSave] Failed to get Lexical state:', err);
+        }
+      }
+
+      const blocksJson = JSON.stringify(blocksToSave);
       if (blocksJson === lastSavedBlocksRef.current) return; // No changes
 
       pendingSaveRef.current = true;
-      const result = await saveBlocksToBackend(blogId, blocks);
+      const result = await saveBlocksToBackend(blogId, blocksToSave);
       pendingSaveRef.current = false;
 
       if (result.success) {
