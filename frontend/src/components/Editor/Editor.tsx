@@ -7,6 +7,7 @@ import BlockLibrary from './BlockLibrary';
 import SEOPanel from './SEOPanel';
 import useAutoSave from './useAutoSave';
 import LexicalEditor from './LexicalEditor';
+import AIWriteModal from './AIWriteModal';
 import { BlockManifest } from '../../types/block';
 
 interface EditorProps {
@@ -16,8 +17,9 @@ interface EditorProps {
 }
 
 export default function Editor({ blogId, initialBlocks, coverImage }: EditorProps) {
-  const { setBlocks, blocks, selectBlock } = useEditorStore();
+  const { setBlocks, blocks, selectBlock, selectedBlockId, updateBlock } = useEditorStore();
   const [isSeoPanelOpen, setIsSeoPanelOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const prevBlogIdRef = useRef<string | null>(null);
 
   // Clear and reinitialize blocks when blogId changes (handles localStorage persistence)
@@ -62,6 +64,21 @@ export default function Editor({ blogId, initialBlocks, coverImage }: EditorProp
     }
   };
 
+  // AI Assist handler
+  const handleAiAssist = () => {
+    if (selectedBlockId) {
+      setIsAiModalOpen(true);
+    }
+  };
+
+  // Get selected block text for AI modal
+  const selectedBlock = blocks.find(b => b.id === selectedBlockId);
+  const handleAiApply = (newText: string) => {
+    if (selectedBlockId) {
+      updateBlock(selectedBlockId, { content: newText });
+    }
+  };
+
   // Graceful fallback if no blogId provided
   if (!blogId) {
     return (
@@ -78,7 +95,7 @@ export default function Editor({ blogId, initialBlocks, coverImage }: EditorProp
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <EditorToolbar onSeoClick={() => setIsSeoPanelOpen(true)} />
+      <EditorToolbar onSeoClick={() => setIsSeoPanelOpen(true)} onAiAssist={handleAiAssist} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main editor area */}
@@ -99,6 +116,15 @@ export default function Editor({ blogId, initialBlocks, coverImage }: EditorProp
         blogId={Number(blogId)}
         isOpen={isSeoPanelOpen}
         onClose={() => setIsSeoPanelOpen(false)}
+      />
+
+      {/* AI Write Assist Modal */}
+      <AIWriteModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        blockId={selectedBlockId || ''}
+        currentText={selectedBlock?.content || ''}
+        onApply={handleAiApply}
       />
     </div>
   );

@@ -3,10 +3,12 @@ import { useEditorStore } from '../../stores/editorStore';
 
 interface EditorToolbarProps {
   onSeoClick: () => void;
+  onAiAssist: () => void;
 }
 
-export default function EditorToolbar({ onSeoClick }: EditorToolbarProps) {
-  const { isDirty, lastSaved, blocks } = useEditorStore();
+export default function EditorToolbar({ onSeoClick, onAiAssist }: EditorToolbarProps) {
+  const { isDirty, lastSaved, blocks, selectedBlockId } = useEditorStore();
+  const hasSelection = selectedBlockId !== null;
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
@@ -96,6 +98,20 @@ export default function EditorToolbar({ onSeoClick }: EditorToolbarProps) {
         </button>
 
         <div className="w-px h-6 bg-border mx-2" />
+
+        {/* AI Assist button */}
+        <button
+          onClick={onAiAssist}
+          disabled={!hasSelection}
+          className="p-2 text-primary hover:bg-primary hover:text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          title="AI Assist (improve selected text)"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
 
         {/* SEO button */}
         <button

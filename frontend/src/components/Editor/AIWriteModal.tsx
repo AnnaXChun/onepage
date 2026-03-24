@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Modal from '../common/Modal';
 import { aiWrite } from '../../services/aiApi';
+import { useEditorStore } from '../../stores/editorStore';
 
 interface AIWriteModalProps {
   isOpen: boolean;
@@ -21,12 +22,34 @@ export default function AIWriteModal({
   const [generatedText, setGeneratedText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedText, setSelectedText] = useState<string>('');
+  const { lexicalEditor } = useEditorStore();
+
+  // Get selected text from Lexical editor when modal opens
+  useEffect(() => {
+    if (!isOpen || !lexicalEditor) {
+      setSelectedText('');
+      return;
+    }
+    const selection = lexicalEditor.getEditorState().selection;
+    if (selection) {
+      const selected = selection.getTextContent();
+      setSelectedText(selected || '');
+    }
+  }, [isOpen, lexicalEditor]);
+
+  const getContextText = useCallback((): string => {
+    // Prefer selected text if available, otherwise fall back to currentText
+    if (selectedText) return selectedText;
+    return currentText;
+  }, [selectedText, currentText]);
 
   const handleGenerate = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await aiWrite(blockId, currentText, mode);
+      const context = getContextText();
+      const result = await aiWrite(blockId, context, mode);
       setGeneratedText(result);
     } catch (err) {
       setError('Failed to generate text. Please try again.');
