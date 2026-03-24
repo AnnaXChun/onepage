@@ -10,6 +10,17 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
+## Current Milestone: v1.9 Lexical Editor Rebuild
+
+**Goal:** Replace custom contentEditable-based editor with Lexical framework for stable, production-grade block editing.
+
+**Target features:**
+- Lexical-based block editor with stable text editing
+- Migrate all 5 block types to Lexical nodes (Text, Image, Social Links, Contact Form, Divider)
+- Drag-and-drop reordering with @dnd-kit + Lexical command integration
+- Zustand store sync with Lexical immutable state
+- Auto-save to backend via Lexical update listener
+
 ## Current State
 
 **Last Milestone Shipped:** v1.8 Editor Fixes & Drafts (2026-03-23)
@@ -135,5 +146,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-23 after v1.8 milestone shipped*
+*Last updated: 2026-03-24 after v1.9 started*
 
