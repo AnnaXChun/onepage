@@ -10,26 +10,17 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.9 Lexical Editor Rebuild
+## Current Milestone: v1.10 (待定义)
 
-**Goal:** Replace custom contentEditable-based editor with Lexical framework for stable, production-grade block editing.
-
-**Target features:**
-- Lexical-based block editor with stable text editing
-- Migrate all 5 block types to Lexical nodes (Text, Image, Social Links, Contact Form, Divider)
-- Drag-and-drop reordering with @dnd-kit + Lexical command integration
-- Zustand store sync with Lexical immutable state
-- Auto-save to backend via Lexical update listener
+**Next:** Run `/gsd:new-milestone` to start v1.10 planning.
 
 ## Current State
 
-**Last Milestone Shipped:** v1.8 Editor Fixes & Drafts (2026-03-23)
+**Last Milestone Shipped:** v1.9 Lexical Editor Rebuild (2026-03-24)
 
-**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, and editor fixes.
+**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, editor fixes, and Lexical editor rebuild.
 
-**Next:** Run `/gsd:new-milestone` to start v1.9 planning.
-
-## Previous Milestone: v1.8 Editor Fixes (COMPLETE)
+## Previous Milestone: v1.9 Lexical Editor Rebuild (COMPLETE)
 
 **Shipped features:**
 - Editor loads saved blocks from backend (not template defaults)
@@ -88,6 +79,9 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Profile Integration — View My Profile link, visitor counts, featured site pinning — v1.7 (Phase 22)
 - ✓ Editor Fixes — Editor loads saved blocks, Done button awaits save, template image reset on new session — v1.8 (Phase 23)
 - ✓ Drafts Infrastructure — Status field on blogs, GET /blog/drafts endpoint, My Drafts section on profile — v1.8 (Phase 23)
+- ✓ Lexical Core Setup — Lexical framework, custom BlockNode, Zustand sync, auto-save with Lexical state — v1.9 (Phase 24)
+- ✓ Block Type Migration — All 5 block types migrated to Lexical nodes (Text, Image, Social Links, Contact, Divider) — v1.9 (Phase 25)
+- ✓ AI Integration — AI Write Assist connected to Lexical selection, Replace/Append modes via editor.update() — v1.9 (Phase 26)
 
 ### Out of Scope
 
@@ -146,5 +140,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-24 after v1.9 started*
+*Last updated: 2026-03-24 after v1.9 shipped*
 
