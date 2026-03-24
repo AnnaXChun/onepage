@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { BlockType, BlockConfig } from '../types/block';
+import type { LexicalEditor } from 'lexical';
 
 export interface BlockState {
   id: string;
@@ -16,6 +17,7 @@ interface EditorState {
   selectedBlockId: string | null;
   isDirty: boolean;
   lastSaved: Date | null;
+  lexicalEditor: LexicalEditor | null;
 
   // Actions
   setBlocks: (blocks: BlockState[]) => void;
@@ -25,6 +27,8 @@ interface EditorState {
   reorderBlocks: (oldIndex: number, newIndex: number) => void;
   selectBlock: (id: string | null) => void;
   markSaved: () => void;
+  setLexicalEditor: (editor: LexicalEditor | null) => void;
+  syncFromLexical: (editorState: { toJSON: () => { root: { children: Array<{ blockId?: string; text?: string }> } } }) => void;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -35,6 +39,7 @@ export const useEditorStore = create<EditorState>()(
         selectedBlockId: null,
         isDirty: false,
         lastSaved: null,
+        lexicalEditor: null,
 
         setBlocks: (blocks) => set({ blocks, isDirty: true }),
 
@@ -69,6 +74,29 @@ export const useEditorStore = create<EditorState>()(
         selectBlock: (id) => set({ selectedBlockId: id }),
 
         markSaved: () => set({ isDirty: false, lastSaved: new Date() }),
+
+        setLexicalEditor: (editor) => set({ lexicalEditor: editor }),
+
+        syncFromLexical: (editorState) => {
+          // Extract blocks from Lexical editor state and sync to Zustand
+          const json = editorState.toJSON();
+          const lexicalBlocks = json.root?.children || [];
+
+          set((state) => {
+            // Update existing blocks with new content from Lexical
+            const updatedBlocks = state.blocks.map((block) => {
+              const lexicalBlock = lexicalBlocks.find(
+                (lb: { blockId?: string }) => lb.blockId === block.id
+              );
+              if (lexicalBlock && lexicalBlock.text !== undefined) {
+                return { ...block, content: lexicalBlock.text };
+              }
+              return block;
+            });
+
+            return { blocks: updatedBlocks, isDirty: true };
+          });
+        },
       }),
       {
         limit: 50, // Max undo history
