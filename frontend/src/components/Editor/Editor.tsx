@@ -6,6 +6,7 @@ import BlockConfigPanel from './BlockConfigPanel';
 import BlockLibrary from './BlockLibrary';
 import SEOPanel from './SEOPanel';
 import useAutoSave from './useAutoSave';
+import LexicalEditor from './LexicalEditor';
 import { BlockManifest } from '../../types/block';
 
 interface EditorProps {
