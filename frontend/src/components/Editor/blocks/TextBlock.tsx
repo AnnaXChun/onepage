@@ -4,6 +4,9 @@ import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
 import FloatingToolbar from '../FloatingToolbar';
 import { FORMAT_TEXT_COMMAND } from 'lexical/LexicalCommands';
+import { TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { validateUrl } from '../utils/linkUtils';
+import LinkEditorModal from '../LinkEditorModal';
 
 interface TextBlockProps {
   block: BlockDefinition;
@@ -31,6 +34,8 @@ export default function TextBlock({
 }: TextBlockProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [existingLinkUrl, setExistingLinkUrl] = useState<string | null>(null);
   const [localValue, setLocalValue] = useState(content || block.defaultContent);
   const containerRef = useRef<HTMLDivElement>(null);
   const isEditingRef = useRef(false);
@@ -112,6 +117,10 @@ export default function TextBlock({
         case 'u':
           format = 'underline';
           break;
+        case 'k':
+          e.preventDefault();
+          handleLinkClick();
+          return;
         default:
           return;
       }
@@ -187,9 +196,32 @@ export default function TextBlock({
   }, [lexicalEditor]);
 
   const handleLinkClick = useCallback(() => {
-    console.log('[TextBlock] link click');
-    // Will be implemented in Phase 30 - Link Support
-  }, []);
+    if (!lexicalEditor) {
+      console.warn('[TextBlock] No lexicalEditor available');
+      return;
+    }
+    setExistingLinkUrl(null);
+    setShowLinkModal(true);
+  }, [lexicalEditor]);
+
+  const handleLinkSubmit = useCallback((url: string, openInNewTab: boolean) => {
+    if (!lexicalEditor) return;
+
+    const validation = validateUrl(url);
+    if (!validation.valid) {
+      console.warn('[TextBlock] Invalid URL:', validation.error);
+      return;
+    }
+
+    lexicalEditor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+    setShowLinkModal(false);
+  }, [lexicalEditor]);
+
+  const handleLinkRemove = useCallback(() => {
+    if (!lexicalEditor) return;
+    lexicalEditor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    setShowLinkModal(false);
+  }, [lexicalEditor]);
 
   const Tag = textTypeToTag[block.type] || 'p';
   const isHeading = block.type === 'text-h1' || block.type === 'text-h2';
@@ -299,6 +331,13 @@ export default function TextBlock({
           onContentChange(newText);
           updateBlock(block.id, { content: newText });
         }}
+      />
+      <LinkEditorModal
+        isOpen={showLinkModal}
+        url={existingLinkUrl}
+        onSubmit={handleLinkSubmit}
+        onClose={() => setShowLinkModal(false)}
+        onRemove={existingLinkUrl ? handleLinkRemove : undefined}
       />
     </>
   );
