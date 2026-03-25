@@ -5,9 +5,9 @@ milestone_name: Rich Text Formatting
 status: in_progress
 last_updated: "2026-03-25"
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 5
   completed_plans: 0
 ---
 
@@ -25,10 +25,20 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: Not started (researching)
+Phase: 27 (not started)
 Plan: —
-Status: Researching
-Last activity: 2026-03-25 — Milestone v1.10 started
+Status: Roadmap created
+Last activity: 2026-03-25 — Roadmap created for v1.10 (Phases 27-31)
+
+## Phase Progress
+
+| Phase | Name | Status | Plans |
+|-------|------|--------|-------|
+| 27 | LinkNode Foundation | Not started | 1 |
+| 28 | Floating Toolbar | Not started | 1 |
+| 29 | Text Formatting | Not started | 1 |
+| 30 | Link Support | Not started | 1 |
+| 31 | UI Polish | Not started | 1 |
 
 ## Accumulated Context
 
@@ -39,6 +49,10 @@ Last activity: 2026-03-25 — Milestone v1.10 started
 - Fine-grained DOM updates for performance
 
 **Rich text approach:** Use Lexical's built-in RichTextPlugin + LexicalLinkPlugin for native rich text support. Floating toolbar via Lexical's deprecated-components pattern or custom SelectionEventHandler.
+
+**LinkNode requirement:** @lexical/link package needs to be installed (missing from package.json)
+
+**URL validation critical:** Must validate link URLs to prevent XSS attacks on published sites (no javascript:, data:, or invalid URLs)
 
 ---
 

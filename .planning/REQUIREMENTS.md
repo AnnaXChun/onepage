@@ -63,23 +63,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RICH-01 | | Pending |
-| RICH-02 | | Pending |
-| RICH-03 | | Pending |
-| LINK-01 | | Pending |
-| LINK-02 | | Pending |
-| LINK-03 | | Pending |
-| LINK-04 | | Pending |
-| LINK-05 | | Pending |
-| UI-01 | | Pending |
-| UI-02 | | Pending |
-| UI-03 | | Pending |
+| RICH-01 | Phase 29 | Pending |
+| RICH-02 | Phase 29 | Pending |
+| RICH-03 | Phase 29 | Pending |
+| LINK-01 | Phase 30 | Pending |
+| LINK-02 | Phase 30 | Pending |
+| LINK-03 | Phase 30 | Pending |
+| LINK-04 | Phase 27 | Pending |
+| LINK-05 | Phase 30 | Pending |
+| UI-01 | Phase 28 | Pending |
+| UI-02 | Phase 28 | Pending |
+| UI-03 | Phase 28, Phase 31 | Pending |
 
 **Coverage:**
 - v1.10 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11 ⚠️
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after v1.10 requirements definition*
+*Last updated: 2026-03-25 after v1.10 roadmap created*
