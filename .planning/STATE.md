@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-25T05:23:05.527Z"
+last_updated: "2026-03-25T05:34:43.023Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Vibe Onepage - Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 28
-Plan: Not started
+Phase: 28 (floating-toolbar) — EXECUTING
+Plan: 1 of 1
 
 ## Phase Progress
 

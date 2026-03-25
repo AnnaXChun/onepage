@@ -24,7 +24,7 @@
 ## Phases
 
 - [x] **Phase 27: LinkNode Foundation** - Install @lexical/link, implement URL validation, register LinkNode (completed 2026-03-25)
-- [ ] **Phase 28: Floating Toolbar** - Create toolbar that appears on text selection with format buttons
+- [x] **Phase 28: Floating Toolbar** - Create toolbar that appears on text selection with format buttons (completed 2026-03-25)
 - [ ] **Phase 29: Text Formatting** - Implement bold, italic, underline with keyboard shortcuts
 - [ ] **Phase 30: Link Support** - Insert, edit, remove links with URL validation and new tab option
 - [ ] **Phase 31: UI Polish** - Active formatting states, mixed formatting verification, edge cases
@@ -53,7 +53,7 @@
   2. Toolbar displays Bold, Italic, Underline, and Link buttons
   3. Toolbar visually indicates which formats are currently active on selection
   4. Clicking outside selection dismisses toolbar
-**Plans:** 1/1
+**Plans:** 1/1 plans complete
 - [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
 
 ### Phase 29: Text Formatting
@@ -99,7 +99,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 27. LinkNode Foundation | 1/1 | Complete    | 2026-03-25 |
-| 28. Floating Toolbar | 1/1 | Planned | - |
+| 28. Floating Toolbar | 1/1 | Complete   | 2026-03-25 |
 | 29. Text Formatting | 0/1 | Not started | - |
 | 30. Link Support | 0/1 | Not started | - |
 | 31. UI Polish | 0/1 | Not started | - |
