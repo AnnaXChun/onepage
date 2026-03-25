@@ -41,7 +41,8 @@
   1. User can insert a link with valid http/https URL
   2. User cannot insert javascript:, data:, or other dangerous URL schemes
   3. Invalid URL attempts show validation error message
-**Plans:** TBD
+**Plans:** 1 plan
+- [27-linknode-foundation-01](./phases/27-linknode-foundation/27-linknode-foundation-PLAN.md)
 
 ### Phase 28: Floating Toolbar
 **Goal:** Toolbar appears when text is selected with format buttons
@@ -93,7 +94,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 27. LinkNode Foundation | 0/1 | Not started | - |
+| 27. LinkNode Foundation | 1/1 | Planned | - |
 | 28. Floating Toolbar | 0/1 | Not started | - |
 | 29. Text Formatting | 0/1 | Not started | - |
 | 30. Link Support | 0/1 | Not started | - |
