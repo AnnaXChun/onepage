@@ -26,7 +26,7 @@
 - [x] **Phase 27: LinkNode Foundation** - Install @lexical/link, implement URL validation, register LinkNode (completed 2026-03-25)
 - [x] **Phase 28: Floating Toolbar** - Create toolbar that appears on text selection with format buttons (completed 2026-03-25)
 - [x] **Phase 29: Text Formatting** - Implement bold, italic, underline with keyboard shortcuts (completed 2026-03-25)
-- [ ] **Phase 30: Link Support** - Insert, edit, remove links with URL validation and new tab option
+- [x] **Phase 30: Link Support** - Insert, edit, remove links with URL validation and new tab option (completed 2026-03-25)
 - [ ] **Phase 31: UI Polish** - Active formatting states, mixed formatting verification, edge cases
 
 ---
@@ -77,7 +77,7 @@
   2. User can edit an existing link URL
   3. User can remove a link from text (converts to plain text)
   4. User can set link to open in new tab via toggle
-**Plans:** 1/1
+**Plans:** 1/1 plans complete
 - [30-link-support-01](./phases/30-link-support/30-link-support-PLAN.md)
 
 ### Phase 31: UI Polish
@@ -101,7 +101,7 @@
 | 27. LinkNode Foundation | 1/1 | Complete    | 2026-03-25 |
 | 28. Floating Toolbar | 1/1 | Complete    | 2026-03-25 |
 | 29. Text Formatting | 0/1 | Complete    | 2026-03-25 |
-| 30. Link Support | 0/1 | Not started | - |
+| 30. Link Support | 1/1 | Complete   | 2026-03-25 |
 | 31. UI Polish | 0/1 | Not started | - |
 
 ---
