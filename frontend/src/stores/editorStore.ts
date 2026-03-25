@@ -88,8 +88,10 @@ export const useEditorStore = create<EditorState>()(
               const lexicalBlock = lexicalBlocks.find(
                 (lb: { blockId?: string }) => lb.blockId === block.id
               );
-              if (lexicalBlock && lexicalBlock.text !== undefined) {
-                return { ...block, content: lexicalBlock.text };
+              if (lexicalBlock) {
+                // Store full Lexical JSON for rich text persistence
+                // The content field now contains JSON, not plain text
+                return { ...block, content: JSON.stringify(lexicalBlock) };
               }
               return block;
             });
