@@ -64,13 +64,26 @@ export default function TextBlock({
             x: rect.left + rect.width / 2,
             y: rect.top - 10,
           });
-          // Detect active formats using queryCommandState
-          const formats = new Set<string>();
-          if (document.queryCommandState('bold')) formats.add('bold');
-          if (document.queryCommandState('italic')) formats.add('italic');
-          if (document.queryCommandState('underline')) formats.add('underline');
-          // Link detection would require Lexical's selection API - deferred to Phase 30
-          setActiveFormats(formats);
+          // Detect active formats using Lexical's selection API
+          if (lexicalEditor) {
+            const selection = lexicalEditor.getSelection();
+            if (selection) {
+              const formats = new Set<string>();
+              const format = selection.format;
+              if (format & 1) formats.add('bold');        // Lexical format flags: 1=bold, 2=italic, 4=underline
+              if (format & 2) formats.add('italic');
+              if (format & 4) formats.add('underline');
+
+              // Check if selection contains a link
+              const node = selection.anchor.getNode();
+              const parent = node.getParent();
+              if (parent && parent.getType() === 'link') {
+                formats.add('link');
+              }
+
+              setActiveFormats(formats);
+            }
+          }
         }
       }
     };
