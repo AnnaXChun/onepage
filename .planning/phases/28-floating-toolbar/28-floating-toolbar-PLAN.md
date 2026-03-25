@@ -28,8 +28,8 @@ must_haves:
   key_links:
     - from: "TextBlock.tsx"
       to: "FloatingToolbar.tsx"
-      via: "Selection change triggers toolbar render"
-      pattern: "onMouseUp.*FloatingToolbar"
+      via: "TextBlock passes containerRef; FloatingToolbar uses containerRef for mouseup listener"
+      pattern: "containerRef.*mouseup"
     - from: "FloatingToolbar.tsx"
       to: "window.getSelection()"
       via: "Selection detection"
@@ -70,6 +70,8 @@ interface FloatingToolbarProps {
   position: { x: number; y: number } | null;
 }
 ```
+
+Note: The editorRef passed to FloatingToolbar is the containerRef created in TextBlock.
 </context>
 
 <tasks>
@@ -84,7 +86,7 @@ interface FloatingToolbarProps {
   <action>
     Create FloatingToolbar.tsx with the following features:
 
-    1. Selection detection via mouseup event listener on editorRef
+    1. Selection detection via mouseup event listener on editorRef (the container ref passed from TextBlock)
     2. Use window.getSelection() to detect text selection
     3. Calculate toolbar position from selection range.getBoundingClientRect()
     4. Render toolbar only when selection exists (rangeCount > 0)
@@ -103,7 +105,7 @@ interface FloatingToolbarProps {
 
     Implementation pattern:
     ```typescript
-    // Selection detection
+    // Selection detection via mouseup on editorRef container
     const handleMouseUp = useCallback(() => {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0 && selection.toString().trim()) {
@@ -119,7 +121,7 @@ interface FloatingToolbarProps {
     ```
   </action>
   <verify>
-    <automated>grep -l "FloatingToolbar" frontend/src/components/Editor/blocks/TextBlock.tsx</automated>
+    <automated>grep -l "getSelection\|rangeCount" frontend/src/components/Editor/FloatingToolbar.tsx</automated>
   </verify>
   <done>FloatingToolbar.tsx exists with selection detection, positioning, and format buttons</done>
 </task>
@@ -135,24 +137,27 @@ interface FloatingToolbarProps {
     Modify TextBlock.tsx to integrate the floating toolbar:
 
     1. Import FloatingToolbar component
-    2. Create a ref for the editable content container (editorRef)
-    3. Add useCallback for handleFormat that will be wired to Lexical later (for now, just logs)
-    4. Add useCallback for handleLinkClick (opens link modal placeholder - Phase 30)
-    5. Pass editorRef, handlers, and state to FloatingToolbar
+    2. Create a ref named containerRef for the editable content container
+    3. Pass containerRef to FloatingToolbar as the editorRef prop (per FloatingToolbarProps interface)
+    4. Add useCallback for handleFormat that will be wired to Lexical later (for now, just logs)
+    5. Add useCallback for handleLinkClick (opens link modal placeholder - Phase 30)
     6. Track activeFormats using Set<string> state
+    7. Track toolbarPosition state (position or null)
 
-    Selection detection in TextBlock:
+    Selection detection in TextBlock - TextBlock adds mouseup listener on document:
     ```typescript
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       const handleMouseUp = () => {
-        // Let FloatingToolbar handle selection detection via editorRef
+        // Let FloatingToolbar handle selection detection via containerRef
       };
       document.addEventListener('mouseup', handleMouseUp);
       return () => document.removeEventListener('mouseup', handleMouseUp);
     }, []);
     ```
+
+    Note: The mouseup listener is on document, not on containerRef. The FloatingToolbar uses containerRef to check if selection is within its bounds.
 
     Detect active formats by checking if selection is within format tags:
     ```typescript
@@ -166,7 +171,7 @@ interface FloatingToolbarProps {
     ```
   </action>
   <verify>
-    <automated>grep -l "FloatingToolbar" frontend/src/components/Editor/blocks/TextBlock.tsx && grep -l "editorRef" frontend/src/components/Editor/blocks/TextBlock.tsx</automated>
+    <automated>grep -l "FloatingToolbar" frontend/src/components/Editor/blocks/TextBlock.tsx && grep -l "containerRef" frontend/src/components/Editor/blocks/TextBlock.tsx</automated>
   </verify>
   <done>TextBlock renders FloatingToolbar when text is selected</done>
 </task>
