@@ -23,7 +23,7 @@
 
 ## Phases
 
-- [ ] **Phase 27: LinkNode Foundation** - Install @lexical/link, implement URL validation, register LinkNode
+- [x] **Phase 27: LinkNode Foundation** - Install @lexical/link, implement URL validation, register LinkNode (completed 2026-03-25)
 - [ ] **Phase 28: Floating Toolbar** - Create toolbar that appears on text selection with format buttons
 - [ ] **Phase 29: Text Formatting** - Implement bold, italic, underline with keyboard shortcuts
 - [ ] **Phase 30: Link Support** - Insert, edit, remove links with URL validation and new tab option
@@ -41,7 +41,7 @@
   1. User can insert a link with valid http/https URL
   2. User cannot insert javascript:, data:, or other dangerous URL schemes
   3. Invalid URL attempts show validation error message
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 - [27-linknode-foundation-01](./phases/27-linknode-foundation/27-linknode-foundation-PLAN.md)
 
 ### Phase 28: Floating Toolbar
@@ -94,7 +94,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 27. LinkNode Foundation | 1/1 | Planned | - |
+| 27. LinkNode Foundation | 1/1 | Complete    | 2026-03-25 |
 | 28. Floating Toolbar | 0/1 | Not started | - |
 | 29. Text Formatting | 0/1 | Not started | - |
 | 30. Link Support | 0/1 | Not started | - |

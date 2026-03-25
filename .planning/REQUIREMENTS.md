@@ -18,7 +18,7 @@ Requirements for rich text formatting. Add inline text formatting and link suppo
 - [ ] **LINK-01**: User can insert a link on selected text (Ctrl+K or toolbar button)
 - [ ] **LINK-02**: User can edit an existing link URL
 - [ ] **LINK-03**: User can remove a link from text
-- [ ] **LINK-04**: Link URLs are validated (no javascript:, data:, or invalid URLs)
+- [x] **LINK-04**: Link URLs are validated (no javascript:, data:, or invalid URLs)
 - [ ] **LINK-05**: User can set link to open in new tab
 
 ### UI/UX
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LINK-01 | Phase 30 | Pending |
 | LINK-02 | Phase 30 | Pending |
 | LINK-03 | Phase 30 | Pending |
-| LINK-04 | Phase 27 | Pending |
+| LINK-04 | Phase 27 | Complete |
 | LINK-05 | Phase 30 | Pending |
 | UI-01 | Phase 28 | Pending |
 | UI-02 | Phase 28 | Pending |
