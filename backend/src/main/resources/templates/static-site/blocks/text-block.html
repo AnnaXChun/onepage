@@ -1,10 +1,14 @@
 <th:block th:fragment="text-block">
+    <style>
+        .text-paragraph a, .text-h1 a, .text-h2 a { color: #8b5cf6; text-decoration: underline; }
+        .text-paragraph a:hover, .text-h1 a:hover, .text-h2 a:hover { color: #7c3aed; }
+    </style>
     <th:block th:switch="${block.type}">
-        <h1 th:case="'text-h1'" th:text="${block.content}" class="text-h1">Heading</h1>
-        <h2 th:case="'text-h2'" th:text="${block.content}" class="text-h2">Subheading</h2>
-        <p th:case="'text-paragraph'" th:text="${block.content}" class="text-paragraph">Paragraph</p>
+        <h1 th:case="'text-h1'" th:utext="${block.content}" class="text-h1">Heading</h1>
+        <h2 th:case="'text-h2'" th:utext="${block.content}" class="text-h2">Subheading</h2>
+        <p th:case="'text-paragraph'" th:utext="${block.content}" class="text-paragraph">Paragraph</p>
         <ul th:case="'text-list'" class="text-list">
-            <li th:each="item : ${#strings.arraySplit(block.content, '|')}" th:text="${item}">Item</li>
+            <li th:utext="${item}" th:each="item : ${#strings.arraySplit(block.content, '|')}">Item</li>
         </ul>
     </th:block>
 </th:block>

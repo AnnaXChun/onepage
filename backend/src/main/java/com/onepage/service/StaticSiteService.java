@@ -98,6 +98,7 @@ public class StaticSiteService {
 
     /**
      * Parse blocks JSON into list of block maps.
+     * For text blocks, converts Lexical JSON to HTML for rich text rendering.
      */
     @SuppressWarnings("unchecked")
     private List<Map<String, String>> parseBlocks(String blocksJson) {
@@ -105,10 +106,155 @@ public class StaticSiteService {
             return Collections.emptyList();
         }
         try {
-            return objectMapper.readValue(blocksJson, new TypeReference<List<Map<String, String>>>() {});
+            List<Map<String, Object>> blocks = objectMapper.readValue(blocksJson, new TypeReference<List<Map<String, Object>>>() {});
+            return blocks.stream().map(block -> {
+                Map<String, String> result = new java.util.HashMap<>();
+                for (Map.Entry<String, Object> entry : block.entrySet()) {
+                    if ("content".equals(entry.getKey())) {
+                        // Convert text block content from Lexical JSON to HTML
+                        String type = (String) block.get("type");
+                        if ("text".equals(type) || type.startsWith("text-")) {
+                            result.put("content", lexicalJsonToHtml(entry.getValue()));
+                        } else {
+                            result.put("content", entry.getValue() != null ? entry.getValue().toString() : "");
+                        }
+                    } else {
+                        result.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : "");
+                    }
+                }
+                return result;
+            }).toList();
         } catch (Exception e) {
             log.error("Failed to parse blocks JSON", e);
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Convert Lexical JSON to HTML for rich text rendering.
+     * Handles text nodes with format flags (bold, italic, underline) and link nodes.
+     */
+    @SuppressWarnings("unchecked")
+    private String lexicalJsonToHtml(Object content) {
+        if (content == null || content.toString().isBlank()) {
+            return "";
+        }
+        try {
+            // Parse the Lexical JSON content
+            Map<String, Object> lexicalNode = objectMapper.readValue(content.toString(), new TypeReference<Map<String, Object>>() {});
+            return nodeToHtml(lexicalNode);
+        } catch (Exception e) {
+            log.error("Failed to convert Lexical JSON to HTML", e);
+            // Fallback: treat as plain text
+            return escapeHtml(content.toString());
+        }
+    }
+
+    /**
+     * Convert a single Lexical node to HTML.
+     */
+    @SuppressWarnings("unchecked")
+    private String nodeToHtml(Map<String, Object> node) {
+        String type = (String) node.get("type");
+        if ("text".equals(type)) {
+            return textNodeToHtml(node);
+        } else if ("link".equals(type)) {
+            return linkNodeToHtml(node);
+        } else if ("block".equals(type)) {
+            // Block node - process children
+            List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
+            if (children == null || children.isEmpty()) {
+                return "";
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Map<String, Object> child : children) {
+                sb.append(nodeToHtml(child));
+            }
+            return sb.toString();
+        }
+        // Unknown node type - try children
+        List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
+        if (children != null && !children.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (Map<String, Object> child : children) {
+                sb.append(nodeToHtml(child));
+            }
+            return sb.toString();
+        }
+        return "";
+    }
+
+    /**
+     * Convert a Lexical text node to HTML with format flags.
+     * Format flags: 1=bold, 2=italic, 4=underline
+     */
+    private String textNodeToHtml(Map<String, Object> node) {
+        String text = (String) node.get("text");
+        if (text == null) return "";
+
+        int format = 0;
+        Object formatObj = node.get("format");
+        if (formatObj instanceof Number) {
+            format = ((Number) formatObj).intValue();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        boolean bold = (format & 1) != 0;
+        boolean italic = (format & 2) != 0;
+        boolean underline = (format & 4) != 0;
+
+        if (bold) sb.append("<strong>");
+        if (italic) sb.append("<em>");
+        if (underline) sb.append("<u>");
+
+        sb.append(escapeHtml(text));
+
+        if (underline) sb.append("</u>");
+        if (italic) sb.append("</em>");
+        if (bold) sb.append("</strong>");
+
+        return sb.toString();
+    }
+
+    /**
+     * Convert a Lexical link node to HTML anchor tag.
+     */
+    @SuppressWarnings("unchecked")
+    private String linkNodeToHtml(Map<String, Object> node) {
+        String href = (String) node.get("href");
+        if (href == null || href.isBlank()) return "";
+
+        String target = (String) node.get("target");
+        boolean newTab = "_blank".equals(target);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<a href=\"").append(escapeHtml(href)).append("\"");
+        if (newTab) {
+            sb.append(" target=\"_blank\" rel=\"noopener noreferrer\"");
+        }
+        sb.append(">");
+
+        // Process children
+        List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
+        if (children != null) {
+            for (Map<String, Object> child : children) {
+                sb.append(nodeToHtml(child));
+            }
+        }
+
+        sb.append("</a>");
+        return sb.toString();
+    }
+
+    /**
+     * Escape HTML special characters for safe rendering.
+     */
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;")
+                  .replace("<", "&lt;")
+                  .replace(">", "&gt;")
+                  .replace("\"", "&quot;")
+                  .replace("'", "&#39;");
     }
 }
