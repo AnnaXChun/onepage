@@ -27,7 +27,7 @@
 - [x] **Phase 28: Floating Toolbar** - Create toolbar that appears on text selection with format buttons (completed 2026-03-25)
 - [x] **Phase 29: Text Formatting** - Implement bold, italic, underline with keyboard shortcuts (completed 2026-03-25)
 - [x] **Phase 30: Link Support** - Insert, edit, remove links with URL validation and new tab option (completed 2026-03-25)
-- [ ] **Phase 31: UI Polish** - Active formatting states, mixed formatting verification, edge cases
+- [x] **Phase 31: UI Polish** - Active formatting states, mixed formatting verification, edge cases (completed 2026-03-25)
 
 ---
 
@@ -89,7 +89,7 @@
   2. Mixed formatting within paragraphs works correctly (e.g., bold within italic)
   3. Undo/redo preserves formatting
   4. Links with new tab setting render correctly on published site
-**Plans:** 1/1
+**Plans:** 1/1 plans complete
 - [31-ui-polish-01](./phases/31-ui-polish/31-ui-polish-PLAN.md)
 
 ---
@@ -102,7 +102,7 @@
 | 28. Floating Toolbar | 1/1 | Complete    | 2026-03-25 |
 | 29. Text Formatting | 0/1 | Complete    | 2026-03-25 |
 | 30. Link Support | 1/1 | Complete    | 2026-03-25 |
-| 31. UI Polish | 0/1 | Not started | - |
+| 31. UI Polish | 0/1 | Complete    | 2026-03-25 |
 
 ---
 
