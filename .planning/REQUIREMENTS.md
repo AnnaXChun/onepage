@@ -23,9 +23,9 @@ Requirements for rich text formatting. Add inline text formatting and link suppo
 
 ### UI/UX
 
-- [ ] **UI-01**: Floating toolbar appears when text is selected
-- [ ] **UI-02**: Toolbar shows Bold, Italic, Underline, Link buttons
-- [ ] **UI-03**: Active formatting states are visually indicated in toolbar
+- [x] **UI-01**: Floating toolbar appears when text is selected
+- [x] **UI-02**: Toolbar shows Bold, Italic, Underline, Link buttons
+- [x] **UI-03**: Active formatting states are visually indicated in toolbar
 
 ## v2 Requirements
 
@@ -71,9 +71,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LINK-03 | Phase 30 | Pending |
 | LINK-04 | Phase 27 | Complete |
 | LINK-05 | Phase 30 | Pending |
-| UI-01 | Phase 28 | Pending |
-| UI-02 | Phase 28 | Pending |
-| UI-03 | Phase 28, Phase 31 | Pending |
+| UI-01 | Phase 28 | Complete |
+| UI-02 | Phase 28 | Complete |
+| UI-03 | Phase 28, Phase 31 | Complete |
 
 **Coverage:**
 - v1.10 requirements: 11 total
