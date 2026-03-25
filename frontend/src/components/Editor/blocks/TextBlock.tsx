@@ -1,7 +1,8 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useEditorStore } from '../../../stores/editorStore';
 import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
+import FloatingToolbar from '../FloatingToolbar';
 
 interface TextBlockProps {
   block: BlockDefinition;
@@ -33,6 +34,8 @@ export default function TextBlock({
   const containerRef = useRef<HTMLDivElement>(null);
   const isEditingRef = useRef(false);
   const { updateBlock } = useEditorStore();
+  const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null);
+  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     isEditingRef.current = isEditing;
@@ -41,6 +44,52 @@ export default function TextBlock({
   useEffect(() => {
     setLocalValue(content || block.defaultContent);
   }, [content, block.defaultContent]);
+
+  // Detect text selection and show floating toolbar
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0 && selection.toString().trim()) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        // Only show if selection is within our container
+        if (containerRef.current?.contains(range.startContainer)) {
+          setToolbarPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10,
+          });
+          // Detect active formats
+          const formats = new Set<string>();
+          if (document.querySelector('.vibe-text-bold')) formats.add('bold');
+          if (document.querySelector('.vibe-text-italic')) formats.add('italic');
+          if (document.querySelector('.vibe-text-underline')) formats.add('underline');
+          if (document.querySelector('.vibe-text-link')) formats.add('link');
+          setActiveFormats(formats);
+        }
+      }
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => document.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  // Click outside to dismiss toolbar
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (toolbarPosition && containerRef.current) {
+        const target = e.target as Node;
+        const isInsideToolbar = containerRef.current?.querySelector('.floating-toolbar')?.contains(target);
+        const selection = window.getSelection();
+        const hasSelection = selection && selection.toString().length > 0;
+        if (!isInsideToolbar && !hasSelection) {
+          setToolbarPosition(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [toolbarPosition]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,6 +140,16 @@ export default function TextBlock({
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
   };
+
+  const handleFormat = useCallback((format: 'bold' | 'italic' | 'underline' | 'link') => {
+    console.log('[TextBlock] format:', format);
+    // Will be wired to Lexical in Phase 29
+  }, []);
+
+  const handleLinkClick = useCallback(() => {
+    console.log('[TextBlock] link click');
+    // Will be implemented in Phase 30 - Link Support
+  }, []);
 
   const Tag = textTypeToTag[block.type] || 'p';
   const isHeading = block.type === 'text-h1' || block.type === 'text-h2';
@@ -183,6 +242,13 @@ export default function TextBlock({
         {aiButton}
         {renderEditableContent()}
       </div>
+      <FloatingToolbar
+        editorRef={containerRef}
+        onFormat={handleFormat}
+        activeFormats={activeFormats}
+        onLinkClick={handleLinkClick}
+        position={toolbarPosition}
+      />
       <AIWriteModal
         isOpen={showAIModal}
         onClose={() => setShowAIModal(false)}
