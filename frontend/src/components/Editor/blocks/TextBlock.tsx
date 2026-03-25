@@ -3,6 +3,7 @@ import { useEditorStore } from '../../../stores/editorStore';
 import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
 import FloatingToolbar from '../FloatingToolbar';
+import { FORMAT_TEXT_COMMAND } from 'lexical/LexicalCommands';
 
 interface TextBlockProps {
   block: BlockDefinition;
@@ -58,12 +59,12 @@ export default function TextBlock({
             x: rect.left + rect.width / 2,
             y: rect.top - 10,
           });
-          // Detect active formats
+          // Detect active formats using queryCommandState
           const formats = new Set<string>();
-          if (document.querySelector('.vibe-text-bold')) formats.add('bold');
-          if (document.querySelector('.vibe-text-italic')) formats.add('italic');
-          if (document.querySelector('.vibe-text-underline')) formats.add('underline');
-          if (document.querySelector('.vibe-text-link')) formats.add('link');
+          if (document.queryCommandState('bold')) formats.add('bold');
+          if (document.queryCommandState('italic')) formats.add('italic');
+          if (document.queryCommandState('underline')) formats.add('underline');
+          // Link detection would require Lexical's selection API - deferred to Phase 30
           setActiveFormats(formats);
         }
       }
@@ -90,6 +91,40 @@ export default function TextBlock({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [toolbarPosition]);
+
+  // Keyboard shortcuts for text formatting
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!lexicalEditor) return;
+
+      const isMod = e.ctrlKey || e.metaKey;
+      if (!isMod) return;
+
+      let format: 'bold' | 'italic' | 'underline' | null = null;
+
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          format = 'bold';
+          break;
+        case 'i':
+          format = 'italic';
+          break;
+        case 'u':
+          format = 'underline';
+          break;
+        default:
+          return;
+      }
+
+      if (format) {
+        e.preventDefault();
+        lexicalEditor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [lexicalEditor]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -141,10 +176,15 @@ export default function TextBlock({
     document.execCommand('insertText', false, text);
   };
 
+  const { lexicalEditor } = useEditorStore();
+
   const handleFormat = useCallback((format: 'bold' | 'italic' | 'underline' | 'link') => {
-    console.log('[TextBlock] format:', format);
-    // Will be wired to Lexical in Phase 29
-  }, []);
+    if (!lexicalEditor) {
+      console.warn('[TextBlock] No lexicalEditor available');
+      return;
+    }
+    lexicalEditor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+  }, [lexicalEditor]);
 
   const handleLinkClick = useCallback(() => {
     console.log('[TextBlock] link click');
