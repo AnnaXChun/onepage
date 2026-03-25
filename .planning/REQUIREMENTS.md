@@ -1,52 +1,40 @@
 # Requirements: Vibe Onepage
 
-**Defined:** 2026-03-24
+**Defined:** 2026-03-25
 **Core Value:** Users can have a beautiful, personalized website live in minutes by combining AI-assisted generation with an intuitive block-level editor.
 
-## v1.9 Requirements (SHIPPED 2026-03-24)
+## v1.10 Requirements
 
-Requirements for Lexical editor rebuild. Migrated from custom contentEditable to production-grade Lexical framework.
+Requirements for rich text formatting. Add inline text formatting and link support within text blocks.
 
-### Editor Core
+### Text Formatting
 
-- [x] **LEXICAL-01**: User can edit text inline in blocks using Lexical TextNode with stable contentEditable behavior
-- [x] **LEXICAL-02**: User can drag-and-drop reorder blocks using @dnd-kit integrated with Lexical commands
-- [x] **LEXICAL-03**: Editor state syncs to Zustand store via Lexical update listener
-- [x] **LEXICAL-04**: Editor auto-saves to backend API with 500ms debounce
+- [ ] **RICH-01**: User can make text bold (Ctrl+B or toolbar button)
+- [ ] **RICH-02**: User can make text italic (Ctrl+I or toolbar button)
+- [ ] **RICH-03**: User can underline text (Ctrl+U or toolbar button)
 
-### Block Types
+### Links
 
-- [x] **BLOCK-01**: User can add/edit Text blocks (H1, H2, Paragraph, List) with Lexical nodes
-- [x] **BLOCK-02**: User can add/edit Image blocks with aspect ratio and corner style config
-- [x] **BLOCK-03**: User can add/edit Social Links blocks with editable URLs
-- [x] **BLOCK-04**: User can add/edit Contact Form blocks
-- [x] **BLOCK-05**: User can add/edit Divider blocks
+- [ ] **LINK-01**: User can insert a link on selected text (Ctrl+K or toolbar button)
+- [ ] **LINK-02**: User can edit an existing link URL
+- [ ] **LINK-03**: User can remove a link from text
+- [ ] **LINK-04**: Link URLs are validated (no javascript:, data:, or invalid URLs)
+- [ ] **LINK-05**: User can set link to open in new tab
 
-### Block Configuration
+### UI/UX
 
-- [x] **CONFIG-01**: User can change text alignment (left, center, right) per block
-- [x] **CONFIG-02**: User can change text color and background color per block
-- [x] **CONFIG-03**: User can toggle block visibility
-- [x] **CONFIG-04**: Config changes persist to backend via existing API
-
-### AI Integration
-
-- [x] **AI-01**: User can trigger AI Write Assist on selected text block
-- [x] **AI-02**: AI suggestions show confidence score and apply via Replace/Append modes
-
-### Migration
-
-- [x] **MIGRATE-01**: Existing saved blocks load correctly from backend into Lexical editor
-- [x] **MIGRATE-02**: Preview page renders edited blocks correctly
-- [x] **MIGRATE-03**: Published blog displays all block types correctly
+- [ ] **UI-01**: Floating toolbar appears when text is selected
+- [ ] **UI-02**: Toolbar shows Bold, Italic, Underline, Link buttons
+- [ ] **UI-03**: Active formatting states are visually indicated in toolbar
 
 ## v2 Requirements
 
 Deferred to future release.
 
-### Rich Text
-- **RICH-01**: Bold, italic, underline formatting within text blocks
-- **RICH-02**: Link insertion within text
+### Extended Formatting
+- **RICH-04**: User can strikethrough text
+- **RICH-05**: User can apply inline code formatting
+- **RICH-06**: User can highlight text
 
 ### Media
 - **MEDIA-01**: Video embedding
@@ -64,8 +52,10 @@ Explicitly excluded. Documented to prevent scope creep.
 |---------|--------|
 | Real-time collaboration | Single-user editing only per v1 constraints |
 | Custom domain binding | Deferred to future |
+| Custom template creation by users | Deferred |
 | User-generated block components | Deferred |
 | Multi-page websites | Single page only |
+| Mobile app | Web-only for now |
 
 ## Traceability
 
@@ -73,30 +63,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LEXICAL-01 | 24 | Complete |
-| LEXICAL-02 | 24 | Complete |
-| LEXICAL-03 | 24 | Complete |
-| LEXICAL-04 | 24 | Complete |
-| BLOCK-01 | 25 | Complete |
-| BLOCK-02 | 25 | Complete |
-| BLOCK-03 | 25 | Complete |
-| BLOCK-04 | 25 | Complete |
-| BLOCK-05 | 25 | Complete |
-| CONFIG-01 | 25 | Complete |
-| CONFIG-02 | 25 | Complete |
-| CONFIG-03 | 25 | Complete |
-| CONFIG-04 | 25 | Complete |
-| AI-01 | 26 | Complete |
-| AI-02 | 26 | Complete |
-| MIGRATE-01 | 26 | Complete |
-| MIGRATE-02 | 26 | Complete |
-| MIGRATE-03 | 26 | Complete |
+| RICH-01 | | Pending |
+| RICH-02 | | Pending |
+| RICH-03 | | Pending |
+| LINK-01 | | Pending |
+| LINK-02 | | Pending |
+| LINK-03 | | Pending |
+| LINK-04 | | Pending |
+| LINK-05 | | Pending |
+| UI-01 | | Pending |
+| UI-02 | | Pending |
+| UI-03 | | Pending |
 
 **Coverage:**
-- v1.9 requirements: 18 total
-- Mapped to phases: 18
-- Unmapped: 0 ✓
+- v1.10 requirements: 11 total
+- Mapped to phases: 0
+- Unmapped: 11 ⚠️
 
 ---
-*Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Requirements defined: 2026-03-25*
+*Last updated: 2026-03-25 after v1.10 requirements definition*
