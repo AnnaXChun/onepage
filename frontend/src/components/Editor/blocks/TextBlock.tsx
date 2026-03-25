@@ -213,7 +213,9 @@ export default function TextBlock({
       return;
     }
 
-    lexicalEditor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+    lexicalEditor.dispatchCommand(TOGGLE_LINK_COMMAND, url, {
+      target: openInNewTab ? '_blank' : '_self',
+    });
     setShowLinkModal(false);
   }, [lexicalEditor]);
 
