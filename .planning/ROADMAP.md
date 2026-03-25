@@ -101,7 +101,7 @@
 | 27. LinkNode Foundation | 1/1 | Complete    | 2026-03-25 |
 | 28. Floating Toolbar | 1/1 | Complete    | 2026-03-25 |
 | 29. Text Formatting | 0/1 | Complete    | 2026-03-25 |
-| 30. Link Support | 1/1 | Complete   | 2026-03-25 |
+| 30. Link Support | 1/1 | Complete    | 2026-03-25 |
 | 31. UI Polish | 0/1 | Not started | - |
 
 ---
