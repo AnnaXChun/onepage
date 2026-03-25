@@ -16,6 +16,7 @@
     "@lexical/rich-text": "^0.42.0",
     "@lexical/list": "^0.42.0",
     "@lexical/utils": "^0.42.0",
+    "@lexical/link": "^0.42.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@types/colorthief": "^2.6.1",
