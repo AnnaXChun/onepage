@@ -66,7 +66,7 @@
   3. User can underline text via toolbar button or Ctrl+U
   4. Formatting persists when saving and reopening the editor
 **Plans:** 1/1
-- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
+- [29-text-formatting-01](./phases/29-text-formatting/29-text-formatting-PLAN.md)
 
 ### Phase 30: Link Support
 **Goal:** User can insert, edit, and remove links within text
@@ -78,7 +78,7 @@
   3. User can remove a link from text (converts to plain text)
   4. User can set link to open in new tab via toggle
 **Plans:** 1/1
-- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
+- [30-link-support-01](./phases/30-link-support/30-link-support-PLAN.md)
 
 ### Phase 31: UI Polish
 **Goal:** Verify complex interactions and polish user experience
@@ -90,7 +90,7 @@
   3. Undo/redo preserves formatting
   4. Links with new tab setting render correctly on published site
 **Plans:** 1/1
-- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
+- [31-ui-polish-01](./phases/31-ui-polish/31-ui-polish-PLAN.md)
 
 ---
 
