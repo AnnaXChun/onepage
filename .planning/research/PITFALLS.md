@@ -773,6 +773,254 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 
 ---
 
+## Critical Pitfalls (v1.10 Rich Text Formatting)
+
+The following pitfalls address adding rich text formatting (bold, italic, underline, links) to the existing Lexical editor (v0.42.0) with custom BlockNode architecture.
+
+### Pitfall 27: Treating BlockNode Content as Plain String
+
+**What goes wrong:**
+When users apply bold/italic formatting, the formatted text is lost on save/restore. The Zustand store expects `content: string` but Lexical rich text stores formatting as format flags on TextNode children, not as enriched string content.
+
+**Why it happens:**
+The existing `BlockState.content` is a plain string. Lexical's TextNode children have `__format` flags (e.g., `__format: 1` for bold). If the sync logic only extracts `.text` property from Lexical nodes, all formatting is stripped.
+
+The current `editorStore.ts` `syncFromLexical` function (lines 80-99) only maps `lexicalBlock.text`:
+```typescript
+const lexicalBlock = lexicalBlocks.find((lb: { blockId?: string }) => lb.blockId === block.id);
+if (lexicalBlock && lexicalBlock.text !== undefined) {
+  return { ...block, content: lexicalBlock.text };
+}
+```
+
+This loses format flags stored in Lexical TextNode format property.
+
+**How to avoid:**
+1. Extend `BlockState.content` to support structured format data (e.g., `{ raw: string, formats?: FormatFlags }`)
+2. Store full Lexical JSON serialized state for rich text blocks
+3. When syncing from Lexical to Zustand, serialize including TextNode format flags
+
+**Warning signs:**
+- Bold text becomes regular text after save/reload
+- `editorState.toJSON()` shows format flags but they're not persisted
+- Only plain text appears in published HTML
+
+**Phase to address:**
+v1.10 rich text formatting - requires content model redesign
+
+---
+
+### Pitfall 28: Floating Toolbar Positioning Breaks with BlockNode Selection
+
+**What goes wrong:**
+The floating toolbar appears at wrong position (top-left of viewport, cursor position, or off-screen) when triggered from within a block inside custom BlockNode.
+
+**Why it happens:**
+Floating toolbar positioning uses `selection.getBoundingClientRect()` relative to the Lexical editor root. When BlockNode creates its own DOM element (`createDOM()` at LexicalBlockNode.ts lines 28-32), the selection coordinates are calculated incorrectly because the editor root is not the same as the block container.
+
+The `LexicalConfig.ts` already defines theme classes for text formats (bold, italic, underline) but the floating toolbar plugin needs proper anchor positioning.
+
+**How to avoid:**
+1. Ensure floating toolbar plugin is rendered within LexicalComposer context
+2. Pass `anchor` option explicitly to FloatingTextFormatToolbarPlugin with correct anchor element
+3. Use `useEffect` to reposition toolbar after block selection changes
+4. Consider using `useRef` on the block's contentEditable to anchor the toolbar
+
+**Warning signs:**
+- Toolbar appears at `(0, 0)` or at wrong scroll position
+- Toolbar is visible but not clickable (z-index issues)
+- Toolbar disappears when scrolling
+
+**Phase to address:**
+v1.10 floating toolbar UX - requires careful anchor positioning
+
+---
+
+### Pitfall 29: Link Insertion Without URL Validation
+
+**What goes wrong:**
+Users can insert `javascript:alert(1)` or `data:text/html,<script>alert(1)</script>` links. When published site renders this content, XSS executes.
+
+**Why it happens:**
+Lexical's LinkNode accepts any URL string without validation. The project's existing `BlogService` sanitizes script/iframe tags, but LinkNode stores raw URL which renders as `<a href="...">` in published HTML.
+
+**How to avoid:**
+1. Create URL validation utility that:
+   - Allows only `http://` and `https://` protocols
+   - Rejects `javascript:`, `data:`, and `vbscript:` protocols
+   - Optionally allows relative URLs for internal links
+2. Hook into LinkNode insertion via `INSERT_LINK` command override
+3. Reject invalid URLs with user feedback (toast message)
+4. Sanitize URLs on publish/render side as defense-in-depth
+
+```typescript
+// Example URL validation
+function isValidUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    // Allow relative URLs
+    return url.startsWith('/');
+  }
+}
+```
+
+**Warning signs:**
+- Users can paste `javascript:` URLs into link dialog
+- No error shown when invalid URL format entered
+- Published HTML shows raw `href="javascript:..."` without sanitization
+
+**Phase to address:**
+v1.10 link insertion - critical security requirement
+
+---
+
+### Pitfall 30: Keyboard Shortcuts Fire When Editor Not Focused
+
+**What goes wrong:**
+Ctrl+B/I/U/K fires system-wide shortcuts even when the Lexical editor has no selection or is not the active element.
+
+**Why it happens:**
+`registerKeyboardShortcuts` is called globally on the editor instance without checking `editor.isFocused()`. The shortcuts fire regardless of focus state.
+
+**How to avoid:**
+Wrap shortcut handlers with focus check:
+```typescript
+const SHORTCRUTS = {
+  bold: {
+    plugins: [RichText],
+    shortcuts: [
+      {
+        keywords: ['bold', 'b'],
+        type: 'mutation',
+        command: (editor, params) => {
+          if (!editor.isFocused()) return false;
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+          return true;
+        },
+      },
+    ],
+  },
+};
+```
+
+**Warning signs:**
+- Browser's "Bookmarks" shortcut fires when pressing Ctrl+D in editor
+- System "Save Page" dialog opens on Ctrl+S
+- Bold formatting applies to other React inputs outside editor
+
+**Phase to address:**
+v1.10 keyboard shortcuts - ensure proper focus handling
+
+---
+
+### Pitfall 31: Double-Update Sync Loop Between Lexical and Zustand
+
+**What goes wrong:**
+Editing text triggers: Lexical update -> Zustand sync -> auto-save -> blocks reload -> Lexical re-render -> Lexical update -> infinite loop or stale selection.
+
+**Why it happens:**
+`createLexicalUpdateListener` (LexicalConfig.ts lines 30-45) calls `syncFromLexical` which calls `set({ blocks: updatedBlocks, isDirty: true })`. If auto-save then loads blocks from backend, the Zustand update triggers another Lexical update.
+
+**How to avoid:**
+1. Add a flag to skip listener when syncing FROM Zustand TO Lexical (for programmatic updates)
+2. Compare previous and next block content before triggering update
+3. Use Lexical's `dirtyLeaves` and `dirtyElements` from update listener payload to only sync changed nodes
+4. Debounce the Zustand sync (e.g., 100ms) to batch rapid changes
+
+**Warning signs:**
+- Console shows rapid `[Lexical] Editor state updated` logs
+- Cursor jumps to start of text after typing
+- Undo/redo breaks (history state corrupted)
+- Memory usage grows over time
+
+**Phase to address:**
+v1.10 integration testing - requires careful sync architecture
+
+---
+
+### Pitfall 32: BlockNode DOM Structure Not Compatible with Rich Text
+
+**What goes wrong:**
+Text content disappears or renders as empty when BlockNode contains formatted TextNode children.
+
+**Why it happens:**
+Current `BlockNode.createDOM()` returns `<div data-block-id="..." data-block-type="..."></div>` with no children container. Lexical's TextNode children are appended inside BlockNode's DOM, but CSS may hide them or the flex/grid layout breaks the DOM tree.
+
+The `LexicalConfig.ts` theme defines `text: { bold, italic, underline }` CSS classes but BlockNode DOM may not properly expose children.
+
+**How to avoid:**
+1. Ensure BlockNode DOM has proper `display: block` and no overflow hidden
+2. Add CSS class for `.vibe-editor-block` that doesn't interfere with text selection
+3. Verify that TextNode children render by checking `node.getChildren()` returns TextNode instances
+4. Test with mixed formatting (bold word in middle of paragraph)
+
+**Warning signs:**
+- Only first character of text appears
+- Text is invisible but cursor can position in it
+- Selection highlight shows only partial text
+
+**Phase to address:**
+v1.10 CSS/theme work - verify BlockNode DOM compatibility
+
+---
+
+### Pitfall 33: Paste Stripping All Formatting
+
+**What goes wrong:**
+Paste from Word/Google Docs always strips formatting, even when user wants to keep bold/italic.
+
+**Why it happens:**
+Current `handlePaste` in TextBlock.tsx (lines 89-93) uses `e.preventDefault()` + `insertText` which strips all formatting:
+```typescript
+const handlePaste = (e: React.ClipboardEvent) => {
+  e.preventDefault();
+  const text = e.clipboardData.getData('text/plain');
+  document.execCommand('insertText', false, text);
+};
+```
+
+Lexical has built-in paste handling via `$insertNodes` but the current paste handler bypasses it.
+
+**How to avoid:**
+1. Remove the custom paste handler from TextBlock
+2. Let Lexical's `RichTextPlugin` handle paste with its `$getHtmlContent()` and `$getTextContent()`
+3. If custom paste needed, use `editor.dispatchCommand(INSERT_PARSED_HTML_COMMAND, html)` instead of `execCommand`
+
+**Warning signs:**
+- Paste from web shows plain text only
+- "Paste as plain text" is the only option
+- Rich text formatting disappears after paste
+
+**Phase to address:**
+v1.10 paste handling - leverage Lexical's built-in paste handling
+
+---
+
+### Pitfall 34: Undo/Redo Loses Formatting Changes
+
+**What goes wrong:**
+Pressing undo after applying bold removes the bold but also removes typed text.
+
+**Why it happens:**
+Zustand's temporal middleware (`zundo`) tracks `pastState.blocks` as reference equality. If formatting changes only modify Lexical internal state (TextNode format flags) without changing the `blocks` array reference, undo doesn't capture the format change.
+
+**How to avoid:**
+1. Ensure format changes trigger `isDirty: true` which changes Zustand state reference
+2. Alternatively, use Lexical's built-in history (`@lexical/history`) instead of Zustand temporal
+3. If keeping both, sync Lexical history state to Zustand on every format change
+
+**Warning signs:**
+- Ctrl+Z removes text AND formatting together
+- Redo doesn't restore just the bold, restores entire typing
+- Undo stack seems to skip format-only changes
+
+**Phase to address:**
+v1.10 undo/redo - verify undo works with format changes
+
+---
+
 ## Technical Debt Patterns
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
@@ -792,13 +1040,18 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | Use same cache TTL as blogs | Simpler cache config | Profile updates take 24h to propagate | Only if acceptable SLA |
 | Skip rate limiting on profile read | Fewer moving parts | Enumeration attacks possible | Only for truly public data |
 | Store avatar as external URL | No file upload complexity | SSRF risk, image can disappear | Only with strict URL validation |
+| Store only plain text for rich text | Simpler backend schema | Formatting lost permanently | Never - core feature |
+| Allow javascript: URLs in links | Faster to ship | XSS vulnerability | Never |
+| Use document.execCommand for formatting | Quick prototype | Deprecated, conflicts with Lexical | Never |
+| Ignore floating toolbar positioning | Avoids complex anchor logic | Broken UX | Only if keyboard-only first |
+| Disable paste handling entirely | Avoids paste conflicts | User frustration | Never |
 
 ---
 
 ## Integration Gotchas
 
 | Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
+|-------------|----------------|-----------------|
 | MiniMax API | Calling synchronously, blocking UI | Async job pattern with polling |
 | MiniMax API | No timeout configuration | Set 30s timeout, retry with backoff |
 | MiniMax API | Passing user content in system prompt | Sandboxed prompt templates |
@@ -818,6 +1071,10 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | JWT auth | Not extracting userId from principal correctly | Use `@AuthenticationPrincipal JwtUserPrincipal` |
 | Redis caching | Forgetting to delete profile cache on update | Invalidate in same service method |
 | Frontend routing | Using same route for edit mode and public view | `/profile/edit` vs `/user/{username}` |
+| Zustand store | Treating `blocks` as source of truth for rich text | Lexical editor state is source; Zustand syncs from it |
+| Backend API | Storing `content` as plain string | Store full Lexical JSON or add `formattedContent` field |
+| Auto-save | Saving Zustand state instead of Lexical state | Always serialize from `editor.getEditorState().toJSON()` |
+| Published HTML | Trusting LinkNode URLs | Sanitize all URLs on render server-side |
 
 ---
 
@@ -839,6 +1096,9 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | Uncached profile data | Database load spike | Redis cache with 1-24h TTL | > 100 concurrent profile views |
 | Large avatar images | Bandwidth bloat, slow page load | Resize/compress on upload, max 200x200 | Users with 5MB avatar uploads |
 | Expensive stats aggregation | Profile page timeout | Cache blog stats separately, lazy-load | Users with > 50 published blogs |
+| Sync every keystroke to Zustand | 60fps drops during typing | Batch sync with 100ms debounce | Continuous typing |
+| Floating toolbar re-renders | Toolbar flickers | Use `memo` + position in useEffect | Selection changes |
+| Full Lexical state in localStorage | Slow page load, storage quota | Store only block metadata, load Lexical from server | Large documents |
 
 ---
 
@@ -860,6 +1120,10 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | Avatar URL without validation | SSRF attack | URL allowlist + private IP block |
 | Username in SQL without escaping | SQL injection | Parameterized queries via MyBatis-Plus |
 | Rate limit missing on profile API | Username enumeration | 60 req/min per IP, return 429 |
+| Allow javascript: in LinkNode | XSS on published site | URL validation rejects non-http/https |
+| Allow data: URLs in links | XSS via data: protocol | Reject data: and vbscript: protocols |
+| Not sanitizing on publish | Stored XSS | Use DOMPurify on render server-side |
+| Missing CSRF on link insert | CSRF attacks | Standard CSRF tokens on blog save API |
 
 ---
 
@@ -882,6 +1146,11 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | Long bio truncates without ellipsis | Information loss | Truncate at 280 chars with "read more" |
 | Profile page 404 vs. "user not found" | Inconsistent error handling | Consistent message |
 | Avatar upload fails silently | User doesn't know why | Show explicit error message |
+| Floating toolbar appears far from selection | User loses context | Position relative to selection bounding rect |
+| No visual indication of active format | User doesn't know bold is on | Show toggle state in toolbar button |
+| Keyboard shortcuts only, no toolbar | Non-power users can't format | Provide both toolbar AND shortcuts |
+| Link dialog closes on outside click | Lost input if misclick | Require explicit confirm/cancel |
+| Format changes not immediately visible | Suggests bug | Apply format to selection immediately |
 
 ---
 
@@ -913,6 +1182,13 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 - [ ] **Query count:** Profile page with 10 blogs makes < 5 queries total
 - [ ] **Rate limiting:** Profile API returns 429 after 60 requests/minute from same IP
 - [ ] **Username change:** Existing published sites still accessible at old URL
+- [ ] **Bold formatting:** Text renders bold after save/reload - verify with mixed content (bold word in sentence)
+- [ ] **Link insertion:** `javascript:alert(1)` is rejected with error message
+- [ ] **Floating toolbar:** Appears near cursor, not at viewport top-left
+- [ ] **Keyboard shortcuts:** Ctrl+B works only when editor is focused, not system-wide
+- [ ] **Undo/redo:** Ctrl+Z undoes format change without losing typed text
+- [ ] **Paste:** Rich text from web retains formatting when pasted
+- [ ] **Mixed content:** "This **bold** and *italic* text" renders correctly
 
 ---
 
@@ -936,6 +1212,10 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | XSS via bio field | HIGH | Purge malicious content from database, audit all rendered fields |
 | SSRF via avatar URL | MEDIUM | Block external access, audit server for suspicious traffic |
 | IDOR on profile edit | HIGH | Audit access logs for unauthorized modifications |
+| Formatting lost on save | HIGH | Migrate content table to store Lexical JSON, run migration script |
+| XSS via links | CRITICAL | Hotfix backend URL sanitization, audit all published pages |
+| Sync loop freeze | MEDIUM | Add `isSyncing` flag, reload page, clear localStorage |
+| Floating toolbar broken | LOW | Disable toolbar, rely on keyboard shortcuts temporarily |
 
 ---
 
@@ -967,6 +1247,13 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 | Cache invalidation missing | v1.7 Profile API - cache layer | Update profile, immediately fetch, verify update visible |
 | Username enumeration | v1.7 Profile API - rate limiting | Script 100 profile requests, verify 429 returned |
 | SSRF via avatar | v1.7 Profile API - URL validation | POST `http://localhost:6379` as avatar, verify rejected |
+| Plain text content loss | v1.10 rich text formatting | Save/reload with bold text in middle of paragraph |
+| Floating toolbar positioning | v1.10 floating toolbar UX | Select text at scroll position, toolbar should be near selection |
+| Link XSS | v1.10 link insertion | Try inserting `javascript:alert(1)` - should be rejected |
+| Keyboard shortcut conflicts | v1.10 keyboard shortcuts | Press Ctrl+B when editor NOT focused - should not fire |
+| Sync loop | v1.10 integration testing | Type continuously, verify no rapid console logs |
+| Paste stripping | v1.10 paste handling | Paste from web, verify formatting retained |
+| Undo/redo format | v1.10 undo/redo | Apply bold, type, undo - should restore bold, remove typing |
 
 ---
 
@@ -975,6 +1262,7 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 **Authoritative:**
 - WeChat Pay API v3 documentation via WebFetch (signature validation patterns, error codes)
 - Spring AI documentation (streaming, retry patterns)
+- Lexical 0.42.0 official documentation (via npm node_modules/@lexical/*)
 
 **Code Analysis:**
 - AIGenerationService.java - stub implementation identified
@@ -990,6 +1278,11 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 - SiteController.java - route collision potential with /host/{username}
 - BlogService.java - sanitization and caching patterns
 - SecurityConfig.java - public endpoint configuration
+- LexicalEditor.tsx - current implementation structure
+- editorStore.ts - syncFromLexical only extracts `.text` property
+- LexicalBlockNode.ts - BlockNode DOM structure
+- TextBlock.tsx - handlePaste strips formatting
+- LexicalConfig.ts - theme defines text format CSS classes
 
 **Industry Patterns (Training Data):**
 - AI generation pipeline failure modes
@@ -1000,6 +1293,7 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 - Referral tracking browser privacy limitations
 - Profile page security (IDOR, XSS, SSRF patterns)
 - Public API enumeration attacks
+- Lexical rich text formatting pitfalls (floating toolbar, link insertion, undo/redo)
 
 **Note:** Web search API was unavailable during research. Confidence levels reflect this limitation.
 
@@ -1011,3 +1305,5 @@ Avatar is a URL field (like coverImage). BlogService has `sanitizeUrl()` which o
 *Analytics enhancements added: 2026-03-22 for v1.5 Enhanced Analytics milestone*
 
 *Profile pages added: 2026-03-22 for v1.7 User Profiles milestone*
+
+*Rich text formatting added: 2026-03-25 for v1.10 Rich Text Formatting milestone*

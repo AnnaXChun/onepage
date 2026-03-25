@@ -1,199 +1,188 @@
-# Stack Research: Public Profile Pages (v1.7)
+# Stack Research: Rich Text Formatting in Lexical (v1.10)
 
-**Domain:** User profile pages with bio, avatar, social links, and published sites grid
-**Researched:** 2026-03-22
+**Domain:** Rich text formatting for existing Lexical editor
+**Researched:** 2026-03-25
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Public profile pages at `/user/{username}` require minimal stack additions. The existing infrastructure (User model, ImageController, Blog model) already provides 80% of what's needed. Only two database columns and one new API endpoint are required on the backend. Frontend needs a new route and profile components.
+The project already has **all required packages** installed for rich text formatting. No new npm packages are needed. The work involves integrating existing packages (`@lexical/rich-text`, `@lexical/link`) and building a custom floating toolbar component for text selection formatting.
 
-## What Stays the Same (Existing Stack Validated)
+## Current State
 
-| Technology | Current Version | Status | Notes |
-|------------|-----------------|--------|-------|
-| React | 18.2.0 | Keep | Stable |
-| Spring Boot | 3.2.0 | Keep | No changes needed |
-| MyBatis-Plus | 3.5.5 | Keep | Working mapper pattern |
-| MySQL 8 | 8.x | Keep | JSON column support confirmed |
-| Redis | 6.x | Keep | No profile caching needed initially |
-| ImageController | Existing | Keep | Reuse for avatar upload |
+| Package | Version | Purpose | Status |
+|---------|---------|---------|--------|
+| `lexical` | 0.42.0 | Core editor framework | Installed |
+| `@lexical/react` | 0.42.0 | React bindings, plugins | Installed |
+| `@lexical/rich-text` | 0.42.0 | Rich text commands | Installed |
+| `@lexical/link` | 0.42.0 | Link nodes and commands | Installed |
+| `@lexical/list` | 0.42.0 | List formatting | Installed |
+| `@lexical/utils` | 0.42.0 | Utilities | Installed |
+| `@lexical/selection` | 0.42.0 | Selection handling | Installed |
+| `@lexical/history` | 0.42.0 | Undo/redo | Installed |
+| `@lexical/code-core` | 0.42.0 | Code highlighting | Installed |
 
----
+## Required Additions
 
-## New Additions for v1.7
+### 1. Custom Floating Toolbar (Required)
 
-### 1. User Model Extensions
+**No Lexical package provides a floating text format toolbar.** A custom component is required.
 
-**Database changes (MySQL DDL):**
+Reference: [Lexical Playground FloatingTextFormatToolbarPlugin](https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/FloatingTextFormatToolbarPlugin/index.tsx)
 
-```sql
-ALTER TABLE users ADD COLUMN bio VARCHAR(500) DEFAULT NULL;
-ALTER TABLE users ADD COLUMN social_links JSON DEFAULT NULL;
+**Key imports needed:**
+```typescript
+import { FORMAT_TEXT_COMMAND } from 'lexical';
+import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { mergeRegister } from '@lexical/utils';
+import { $getSelection, $isRangeSelection, $isTextNode } from 'lexical';
+import { createPortal } from 'react-dom';
 ```
 
-**Why JSON for social_links:**
-- MySQL 8 JSON column stores structured data natively
-- MyBatis-Plus handles JSON with TypeHandler (no extra library)
-- Schema flexibility: add/remove platforms without migrations
-- Indexable viaGenerated Columns if search needed later
+**Toolbar features:**
+- Bold, Italic, Underline, Strikethrough buttons
+- Link toggle button
+- Code formatting button
+- Positioned via `createPortal` at selection
 
-**social_links JSON structure:**
-```json
-{
-  "twitter": "https://twitter.com/username",
-  "github": "https://github.com/username",
-  "linkedin": "https://linkedin.com/in/username",
-  "instagram": "https://instagram.com/username",
-  "website": "https://example.com"
-}
+### 2. Plugins Integration
+
+Add to `LexicalConfig.ts` or wrap with plugins:
+
+```typescript
+import { LexicalRichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { LexicalLinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+
+// In JSX:
+<LexicalComposer initialConfig={...}>
+  <LexicalRichTextPlugin />
+  <LexicalLinkPlugin />
+  {/* Your editor content */}
+</LexicalComposer>
 ```
 
-### 2. Backend API Endpoints
+### 3. TextFormatType Available
 
-**New endpoint: Get public profile**
-```
-GET /api/user/profile/{username}
-Response: {
-  id, username, avatar, bio, socialLinks,
-  publishedSites: [{ id, title, coverImage, shareCode, publishTime }]
-}
-```
-- No authentication required (public endpoint)
-- Returns only published blogs (status = published)
-- 404 if username not found
+From `lexical/nodes/LexicalTextNode`:
 
-**Existing endpoint reuse for avatar upload:**
-```
-POST /api/image/upload
-```
-- Already exists in ImageController
-- Reuse for avatar images
-- Returns URL, store in User.avatar
+| Format Type | Command Payload | Keyboard |
+|-------------|----------------|----------|
+| bold | `'bold'` | Ctrl/Cmd+B |
+| italic | `'italic'` | Ctrl/Cmd+I |
+| underline | `'underline'` | Ctrl/Cmd+U |
+| strikethrough | `'strikethrough'` | - |
+| code | `'code'` | - |
+| highlight | `'highlight'` | - |
+| subscript | `'subscript'` | - |
+| superscript | `'superscript'` | - |
 
-**Existing endpoint reuse for profile update:**
-```
-PUT /api/user/profile (requires auth)
-```
-- New endpoint to update bio, avatar, socialLinks
-- Protected like other authenticated endpoints
+### 4. Link Integration
 
-### 3. Frontend Dependencies
+```typescript
+// Insert link
+editor.dispatchCommand(TOGGLE_LINK_COMMAND, { url: 'https://example.com' });
 
-**No new dependencies required.**
-
-| Approach | Library | Why |
-|----------|---------|-----|
-| Icon library | None | Use inline SVGs for social icons (Twitter, GitHub, etc.) - zero bundle cost |
-| Avatar display | None | Standard `<img>` with fallback to initials |
-| Avatar upload | None | Reuse existing Upload component, send to `/api/image/upload` |
-| Grid layout | TailwindCSS | Existing grid utilities (grid, gap, etc.) |
-
-**Alternative considered: lucide-react**
-- `lucide-react@0.577.0` available (verified via npm)
-- Pros: Consistent icon style, easy to swap icons
-- Cons: Adds ~30KB to bundle for just 5-6 icons
-- Decision: Use inline SVGs to keep bundle small
-
----
-
-## Backend Additions Summary
-
-| Addition | Type | Location | Purpose |
-|----------|------|----------|---------|
-| `bio` column | DB migration | users table | User biography text |
-| `social_links` column | DB migration | users table | JSON object with social URLs |
-| UserController.getProfile() | New method | UserController.java | GET /api/user/profile/{username} |
-| UserController.updateProfile() | New method | UserController.java | PUT /api/user/profile (auth) |
-| UserService.getPublicProfile() | New method | UserService.java | Fetch profile + published blogs |
-| UserService.updateProfile() | New method | UserService.java | Update bio, avatar, social links |
-| BlogMapper.getPublishedByUserId() | New query | BlogMapper.java | Get user's published blogs |
-
-**No new Maven dependencies.** MySQL 8 JSON handling is native.
-
----
-
-## Frontend Additions Summary
-
-| Addition | Type | Purpose |
-|----------|------|---------|
-| ProfilePage | New route `/user/:username` | Public profile display |
-| ProfileEditSection | New component | Edit bio, avatar, social links |
-| useProfile hook | New hook | Fetch/update profile data |
-| SocialIcons | New component | Inline SVG icons for each platform |
-
-**Routing addition (App.tsx):**
-```tsx
-<Route path="/user/:username" element={<ProfilePage />} />
+// Remove link
+editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
 ```
 
-**Key integration points:**
-- Reuse existing `api.ts` service for HTTP calls
-- Reuse existing `AuthContext` for profile edit permissions
-- Use BlogContext or create ProfileContext for user data
+## Optional Addition
 
----
+### @lexical/code (React Bindings)
+
+Only needed if inline code formatting requires React-specific UI:
+
+| Package | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| `@lexical/code` | 0.42.0 | Code highlighting with React bindings | Only if `code-core` is insufficient |
+
+**Current status:** `code-core` is installed but React bindings are not. Most use cases work with `code-core` alone.
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Separate social_links table | Over-engineered for 5 platforms; adds JOIN complexity | JSON column in users table |
-| Avatar cropping library | Adds complexity; existing upload works fine | Direct upload to existing endpoint |
-| react-icons | Heavy bundle (~40KB) for few icons | Inline SVG components |
-| Profile caching in Redis | Low traffic feature; MySQL sufficient | No caching initially |
-| Separate Profile model | UserProfile 1:1 with User is unnecessary | Extend User model |
+| `@tiptap` or other editors | Lexical is already integrated; full replacement unnecessary | Build on existing Lexical foundation |
+| `@lexical/yjs` | Collaborative editing; out of scope per constraints | Single-user editing only |
+| `@lexical/markdown` | Markdown serialization; defer until rich text working | Plain text/JSON serialization |
+| Custom `contentEditable` solutions | Project migrated to Lexical | Lexical commands and nodes |
+| `@lexical/clipboard` | Already handled by `LexicalRichTextPlugin` | Built-in paste handling |
 
----
+## Integration Points
 
-## Integration with Existing Stack
+### 1. LexicalEditor.tsx
 
-### Avatar Upload Flow
-```
-1. User selects image in profile edit
-2. POST /api/image/upload with MultipartFile
-3. ImageService stores file, returns URL
-4. UserService updates User.avatar with URL
-```
+Current implementation wraps content in `LexicalComposer`. Add plugins:
 
-### Public Profile Data Flow
-```
-1. Visitor navigates to /user/johndoe
-2. GET /api/user/profile/johndoe (no auth)
-3. UserService queries User by username
-4. UserService queries BlogMapper.getPublishedByUserId(userId)
-5. Returns { user, publishedSites[] }
+```typescript
+// Already has: LexicalComposer with BlockNode
+// Add: LexicalRichTextPlugin and LexicalLinkPlugin
 ```
 
-### Profile Edit Flow
-```
-1. Authenticated user navigates to settings
-2. PUT /api/user/profile with { bio, avatar, socialLinks }
-3. UserService validates and updates
-4. Frontend updates local state
+### 2. TextBlock.tsx
+
+Current uses plain `contentEditable`. Migrate to:
+
+1. `ContentEditable` from `@lexical/react`
+2. `LexicalComposer` wrapper (already in LexicalEditor.tsx)
+3. Rich text formatting via `FORMAT_TEXT_COMMAND`
+
+### 3. EditorToolbar.tsx
+
+Add formatting buttons that dispatch Lexical commands:
+
+```typescript
+// Bold
+editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+
+// Italic
+editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+
+// Link
+editor.dispatchCommand(TOGGLE_LINK_COMMAND, { url });
 ```
 
----
+## Keyboard Shortcuts
+
+Lexical handles these automatically with `LexicalRichTextPlugin`:
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl/Cmd + B | Bold |
+| Ctrl/Cmd + I | Italic |
+| Ctrl/Cmd + U | Underline |
+| Ctrl/Cmd + K | Insert link (requires custom binding) |
 
 ## Version Compatibility
 
+All @lexical packages are aligned at **0.42.0**. No compatibility issues.
+
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| MySQL 8 JSON | Spring Boot 3.2, MyBatis-Plus 3.5.5 | Native JSON functions |
-| react-avatar-editor@15.1.0 | React 18.x | Available but not recommended |
+| `lexical@0.42.0` | All @lexical/*@0.42.0 | Core version |
+| `@lexical/react@0.42.0` | lexical@0.42.0 | React bindings |
+| `@lexical/rich-text@0.42.0` | lexical@0.42.0 | Rich text commands |
+| `@lexical/link@0.42.0` | lexical@0.42.0 | Link support |
+| `@lexical/code-core@0.42.0` | lexical@0.42.0 | Code highlighting |
 
----
+## Installation
+
+```bash
+# No new packages required - all needed packages are already installed
+# If @lexical/code React bindings are needed:
+npm install @lexical/code@0.42.0
+```
 
 ## Sources
 
 | Technology | Source | Confidence |
 |-----------|--------|------------|
-| MySQL 8 JSON column | [dev.mysql.com/doc/refman/8.0/en/json.html](https://dev.mysql.com/doc/refman/8.0/en/json.html) | HIGH - native feature |
-| react-avatar-editor | npm registry | MEDIUM - available but not needed |
-| lucide-react | npm registry @0.577.0 | MEDIUM - alternative not chosen |
-| MyBatis-Plus JSON | [baomidou.com/pages/24112f](https://baomidou.com/pages/24112f) | HIGH - TypeHandler docs |
+| Lexical rich text packages | npm/frontend/node_modules/@lexical/* | HIGH - verified installed |
+| FloatingTextFormatToolbarPlugin | [Lexical Playground GitHub](https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/FloatingTextFormatToolbarPlugin/index.tsx) | HIGH - official reference |
+| TextFormatType | [Lexical source](file:///Users/chunxiang/Desktop/Vibe/Onepage/frontend/node_modules/lexical/nodes/LexicalTextNode.d.ts) | HIGH - type definition |
+| TOGGLE_LINK_COMMAND | [Lexical @lexical/link](file:///Users/chunxiang/Desktop/Vibe/Onepage/frontend/node_modules/@lexical/link/index.d.ts) | HIGH - export verified |
 
 ---
 
-*Stack research for: v1.7 Public Profile Pages*
-*Researched: 2026-03-22*
+*Stack research for: v1.10 Rich Text Formatting*
+*Researched: 2026-03-25*

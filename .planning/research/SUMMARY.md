@@ -1,166 +1,173 @@
 # Project Research Summary
 
-**Project:** Vibe Onepage - v1.7 User Profiles
-**Domain:** Single-page website builder SaaS with public user profile pages
-**Researched:** 2026-03-22
-**Confidence:** HIGH (Stack/Architecture), MEDIUM (Features/Pitfalls)
+**Project:** Vibe Onepage - Rich Text Formatting (v1.10)
+**Domain:** Block editor rich text formatting with Lexical
+**Researched:** 2026-03-25
+**Confidence:** HIGH
 
 ## Executive Summary
 
-Vibe Onepage v1.7 adds public user profile pages at `/user/{username}` to showcase users and their published blog sites. Research confirms the existing Spring Boot + React + MySQL stack handles this well with minimal additions: two database columns (bio, social_links JSON), one new public endpoint, and standard frontend routing. The existing User entity, ImageController, and Blog model provide 80% of needed infrastructure.
+This research addresses adding rich text formatting (bold, italic, underline, links) to the existing Lexical-based block editor. The good news: all core packages are already installed at v0.42.0 and the foundation exists. The work involves building a custom floating toolbar component that appears on text selection and integrating link support which requires installing `@lexical/link` (currently missing from package.json).
 
-The recommended approach is incremental: extend the User model with profile fields, create a ProfileDTO to prevent exposing sensitive data, add public and authenticated profile endpoints, then build the frontend profile page. Architecture follows the established Controller-Service-Repository pattern. Critical risks center on security (IDOR on profile edits, XSS via bio field, SSRF via avatar URLs) and performance (N+1 queries, missing cache invalidation).
+The recommended approach is Option B: Floating Toolbar on Existing Structure. This keeps the current TextBlock contentEditable architecture but adds a floating format toolbar that dispatches Lexical commands. This is faster to implement than Option A (full Lexical per-block editors) while still delivering working rich text for v1.10, with migration to Option A possible in a later milestone.
 
-Key pitfalls from prior milestones (AI generation, PDF export, WeChat Pay, analytics) are in past phases. The v1.7-specific pitfalls are manageable with standard patterns: always extract userId from SecurityContext, apply the same sanitization used in BlogService, validate avatar URLs strictly, and use batch queries for published blogs.
+Key risks center on content model changes. The current Zustand store treats block content as plain strings, but rich text formatting requires storing structured Lexical JSON. The sync logic in `editorStore.ts` currently only extracts `.text` property, which will lose format flags. This must be redesigned before any formatting persists correctly. Link URL validation is also critical to prevent XSS attacks on published sites.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**Stack remains unchanged from v1.6.** Existing infrastructure validated for profile pages.
-
 **Core technologies:**
-- **React 18.2.0 + Spring Boot 3.2.0**: No changes needed, existing patterns work
-- **MySQL 8 JSON column**: Native JSON handling for social_links without extra libraries
-- **MyBatis-Plus 3.5.5**: TypeHandler for JSON column deserialization — no new dependencies
-- **Redis 6.x**: Reuse existing caching pattern; profile caching optional for v1.7
-- **ImageController (existing)**: Reuse for avatar uploads
+- `lexical@0.42.0` (core editor framework) — already installed
+- `@lexical/react@0.42.0` (React bindings) — already installed
+- `@lexical/rich-text@0.42.0` (formatting commands) — already installed
+- `@lexical/link@0.42.0` (link support) — **MISSING, must install**
+- `@lexical/code-core@0.42.0` (code highlighting) — already installed
+- `FloatingTextFormatToolbarPlugin` (playground reference) — custom implementation required
 
-**New additions for v1.7:**
-- Database: `bio` (VARCHAR 500), `social_links` (JSON) columns on users table
-- Backend: `UserProfileController`, `ProfileDTO`, `UpdateProfileRequest`, new UserService methods
-- Frontend: `Profile.tsx` page, `ProfileHeader.tsx`, `ProfileEditModal.tsx`, `BlogGrid.tsx`
+No new npm packages required except `@lexical/link`. All other packages are installed and version-aligned at 0.42.0.
 
 ### Expected Features
 
 **Must have (table stakes):**
-- Public profile endpoint `GET /api/user/profile/{username}` — core deliverable
-- Avatar display — existing field, needs upload UI integration
-- Bio field — new database column required
-- Social links (Twitter, GitHub, LinkedIn, website) — new JSON column required
-- Published sites grid — filter existing Blog model by status=1 (published)
-- VIP badge — existing vipStatus field, expose in ProfileDTO
-- Profile page UI at `/user/{username}` — new frontend route
-- Profile editing UI in account settings — authenticated flow
+- Bold, Italic, Underline (Ctrl+B/I/U) — universal editing expectation
+- Strikethrough, Inline code — common formatting needs
+- Clickable links (Ctrl+K) — web-standard expectation
+- Floating toolbar on text selection — modern editor UX pattern
+- Keyboard shortcuts — power user requirement
+- Mixed formatting within paragraphs — rich text expectation
 
-**Should have (competitive differentiation):**
-- Featured site pinning — lets users highlight best work (needs is_featured column on Blog)
-- Total visitor count across all sites — aggregate from blog_daily_stats
-- Per-site visitor counts — join with analytics tables
+**Should have (competitive):**
+- Link URL editing inline — professional feel
+- Highlight formatting — nice-to-have
 
 **Defer (v2+):**
-- Site preview on hover — high complexity, performance concerns
-- Follow system — notification infrastructure, not aligned with one-page site product
-- Custom profile subdomain — requires DNS infrastructure
-- Custom profile theme/branding — brand colors for power users
+- Real-time collaborative formatting — requires Yjs, significant complexity
+- Table blocks — low value vs complexity for single-page builder
+- Custom formatting presets — theme inconsistency risk
+- Inline image formatting — requires complex node types
 
 ### Architecture Approach
 
-Public profile pages follow the established Controller-Service-Repository pattern with clear separation: UserProfileController handles profile API requests (GET public, PUT authenticated), UserService contains getPublicProfile() and updateProfile() business logic, BlogService provides getPublishedBlogsByUserId() for filtering published blogs by userId. The ProfileDTO explicitly excludes sensitive fields (password, email). Frontend follows existing routing conventions with App.tsx route `/user/:username`.
+The system uses Lexical's command-based architecture where actions dispatch commands (FORMAT_TEXT_COMMAND, TOGGLE_LINK_COMMAND) that registered listeners handle. The floating toolbar subscribes to SELECTION_CHANGE_COMMAND to appear on text selection and positions via portal at the selection bounding rect.
 
 **Major components:**
-1. **UserProfileController**: Public profile endpoint + authenticated profile update; uses `@AuthenticationPrincipal JwtUserPrincipal` for ownership verification
-2. **UserService**: getPublicProfile() builds ProfileDTO and fetches published blogs; updateProfile() validates and persists changes
-3. **ProfileDTO**: Excludes sensitive fields; includes username, avatar, bio, socialLinks, and published blogs array
-4. **ProfilePage (frontend)**: Public profile display at `/user/:username`; fetches data, renders ProfileHeader and BlogGrid
-5. **ProfileEditModal (frontend)**: Authenticated-only editing of bio, avatar, and social links
+1. **RichTextPlugin** — registers keyboard shortcuts and formatting commands via FORMAT_TEXT_COMMAND
+2. **FloatingToolbar** — shows on text selection, positions near selection, dispatches format commands
+3. **LinkEditorModal** — URL input, validation, insert/edit links via TOGGLE_LINK_COMMAND
+4. **TextNode** — stores text with inline styles (bold, italic, etc.) via __format flags
+5. **LinkNode** — hyperlink element with URL, target, rel attributes
+
+**New files to create:**
+- `FloatingToolbar.tsx` — selection-aware toolbar with format buttons
+- `LinkEditorModal.tsx` — modal for URL input and validation
+- `useTextFormat.ts` — hook wrapping dispatchCommand for each format
+- `useSelectionPosition.ts` — hook calculating toolbar position from selection rect
+- `linkUtils.ts` — URL sanitization and validation (critical for XSS prevention)
+- `toolbar.css` — floating toolbar styling with OKLCH colors
+
+**Modified files:**
+- `LexicalBlockNode.tsx` — add LinkNode to initialConfig.nodes
+- `EditorContext.tsx` — add FloatingToolbar and LinkEditorModal to editor wrapper
 
 ### Critical Pitfalls
 
-1. **IDOR on Profile Editing** — Profile update must extract userId from SecurityContext, never accept userId in request body. Follow BlogController pattern at lines 79-85.
+1. **BlockNode content treated as plain string** — `editorStore.ts` sync only extracts `.text`, losing format flags. Must redesign content model to store Lexical JSON or structured format data.
 
-2. **XSS via Unsanitized Bio and Social Links** — Apply same `sanitizeContent()` and `sanitizeUrl()` from BlogService to profile fields. Bio accepts script tags by default — must sanitize before rendering.
+2. **Floating toolbar positioning breaks with BlockNode** — selection.getBoundingClientRect() calculates incorrectly because editor root differs from block container. Requires proper anchor positioning within LexicalComposer context.
 
-3. **N+1 Query on Profile Page** — Use single query with `WHERE user_id = ? AND status = 1` instead of looping. Cache profile data with separate key from blog cache.
+3. **Link insertion without URL validation** — XSS risk. Users can insert `javascript:alert(1)` links. Must create URL validation utility rejecting non-http/https protocols before insertion.
 
-4. **Route Collision with /host/{username}** — SiteController serves published sites at `/host/{username}`. New profile routes at `/user/{username}` must be registered before host routes to avoid conflicts.
+4. **Keyboard shortcuts fire when editor not focused** — Ctrl+B/I/U fires system-wide. Must wrap handlers with `editor.isFocused()` check.
 
-5. **Username Changes Break Published Site URLs** — Store `publishedUsername` on Blog at publish time for og:url. Current implementation queries by username directly, so username changes break embedded URLs.
+5. **Double-update sync loop between Lexical and Zustand** — Lexical update triggers Zustand sync triggers auto-save triggers Lexical re-render. Must add sync flag and use Lexical's dirtyLeaves/dirtyElements to only sync changed nodes.
 
 ## Implications for Roadmap
 
-Based on research, v1.7 User Profiles milestone should proceed in three phases:
+### Phase 1: Foundation - LinkNode and URL Validation
+**Rationale:** Links require `@lexical/link` package installation and URL validation is security-critical before any link feature ships.
+**Delivers:** `@lexical/link` installed, LinkNode registered in Lexical config, linkUtils.ts with URL validation
+**Addresses:** Links feature from FEATURES.md
+**Avoids:** XSS via link insertion (Pitfall 29)
+**Research flag:** Standard Lexical patterns, no additional research needed
 
-### Phase 1: Database & Backend Foundation
-**Rationale:** Schema changes must precede any API or frontend work. Profile endpoint cannot return meaningful data without bio and social_links columns.
+### Phase 2: Core Formatting - Bold, Italic, Underline
+**Rationale:** These are the most expected features and use the same FORMAT_TEXT_COMMAND pattern. Build toolbar structure with these first.
+**Delivers:** FloatingToolbar.tsx with bold/italic/underline buttons, useTextFormat.ts hook
+**Addresses:** Bold, Italic, Underline, Floating toolbar, Keyboard shortcuts
+**Avoids:** Toolbar positioning issues by implementing proper anchor positioning from the start
+**Research flag:** Standard Lexical patterns
 
-**Delivers:**
-- Database migration: bio (VARCHAR 500), social_links (JSON) on users table
-- Updated User entity with new fields
-- ProfileDTO (excludes password, email, internal fields)
-- UpdateProfileRequest DTO with validation
-- UserService.getPublicProfile(username) — find user, build DTO, fetch published blogs
-- UserService.updateProfile(userId, request) — update fields with sanitization
-- BlogService.getPublishedBlogsByUserId(userId) — filter status=1 only
-- UserProfileController — GET /api/user/profile/{username} (public), PUT /api/user/profile (auth)
-- Profile cache invalidation on update
+### Phase 3: Extended Formatting - Strikethrough, Code, Highlight
+**Rationale:** Lower priority, same implementation pattern as core formatting.
+**Delivers:** Additional format buttons on toolbar
+**Uses:** Same useTextFormat.ts hook, new format types
+**Research flag:** Standard Lexical patterns
 
-**Avoids:** N+1 queries, cache invalidation gaps, IDOR (extract userId from SecurityContext)
+### Phase 4: Link Support - Insert, Edit, Remove
+**Rationale:** Depends on Phase 1 URL validation. Link insertion requires user input modal.
+**Delivers:** LinkEditorModal.tsx, link button on toolbar, edit-existing-link flow
+**Implements:** LinkEditorModal component
+**Avoids:** Sync loop by careful update listener architecture
+**Research flag:** Standard Lexical patterns
 
-### Phase 2: Frontend Profile Page
-**Rationale:** Frontend components depend on API contracts being stable. Build profile display page, then profile editing modal.
+### Phase 5: Polish - Testing and Edge Cases
+**Rationale:** Verify the complex interactions work correctly before release.
+**Delivers:** Mixed formatting within paragraphs, paste handling, undo/redo with formatting
+**Avoids:** Paste stripping formatting (must remove custom paste handler), undo losing formats
+**Research flag:** May need integration testing research
 
-**Delivers:**
-- ProfileApi service for fetchProfile/updateProfile
-- Profile.tsx page component at `/user/:username`
-- ProfileHeader.tsx — avatar, username, bio, social link icons (inline SVG, no bundle cost)
-- BlogGrid.tsx — published blogs as cards linking to /blog/:shareCode
-- ProfileEditModal.tsx — authenticated editing of bio, avatar, social links
-- App.tsx route addition
+### Phase Ordering Rationale
 
-**Uses:** Existing api.ts service, AuthContext for permissions, TailwindCSS grid utilities
+- **Links first for security:** URL validation must ship with link feature, not added after
+- **Core formatting first:** Bold/italic/underline are highest-value, simplest to implement
+- **Link modal after toolbar:** The modal builds on the same toolbar infrastructure
+- **Polish last:** Undo/redo and paste handling are complex interactions that need full feature set working
 
-### Phase 3: Integration & Polish
-**Rationale:** Connect profile to existing flows (post-login redirect, navigation links) and add v2 features if time permits.
-
-**Delivers:**
-- Add "View My Profile" link to navigation (authenticated users)
-- Auto-redirect to /user/{username} after login
-- Featured site pinning (if v1.7 scope allows)
-- Total visitor count display on profile (aggregate from blog_daily_stats)
-
-**Research Flags:**
-
-Phases likely needing deeper research during planning:
-- **Phase 2 (Frontend)**: BlogGrid pagination strategy — if users have many published sites, need pagination design (12 per page recommended per Architecture.md)
+### Research Flags
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Database & Backend)**: Well-documented MyBatis-Plus patterns, existing User entity extension is straightforward
-- **Phase 3 (Integration)**: Standard React routing and AuthContext patterns, no new integration patterns
+- **Phases 1-4:** Lexical rich text is well-documented, official patterns available
+
+Phases likely needing deeper research during planning:
+- **Phase 5 (Polish):** Paste handling conflict between custom handler and Lexical's built-in requires investigation of current TextBlock implementation
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Verified against existing codebase; MySQL 8 JSON handling confirmed native |
-| Features | MEDIUM | Based on competitor analysis and codebase; user validation not performed |
-| Architecture | HIGH | Based on existing patterns (Controller-Service-Repository); clear component map |
-| Pitfalls | MEDIUM | Code analysis verified with limited external sources; web search had errors |
+| Stack | HIGH | All packages verified in node_modules, versions aligned at 0.42.0 |
+| Features | MEDIUM-HIGH | User expectations clear; implementation approach (Option B) is recommended but not final |
+| Architecture | HIGH | Lexical patterns well-documented; floating toolbar reference implementation available |
+| Pitfalls | HIGH | v1.10 pitfalls identified from code analysis; architectural issues verified in source |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH
+
+The research is specific and actionable. The main uncertainty is whether Option B (floating toolbar on existing structure) is the right long-term approach versus Option A (per-block Lexical editors), but Option B is correct for v1.10 to ship working rich text quickly.
 
 ### Gaps to Address
 
-- **Username change strategy**: Open question from FEATURES.md — should username be immutable after first site publish? Need PM decision before Phase 1 completes
-- **Default avatar**: What placeholder to show when user has no avatar uploaded? Need design decision
-- **Minimum blogs threshold**: Should empty profiles show placeholder with CTA? Or just display user info? Need UX decision
-- **Feature prioritization**: P2 features (featured site, visitor counts) may need reprioritization based on user feedback
+- **Content model redesign:** The sync between Lexical JSON and Zustand store needs architectural decision before Phase 2 begins. Options: (a) store Lexical JSON in content field, (b) create structured format data type. Must resolve in planning.
+
+- **TextBlock migration path:** Current TextBlock uses contentEditable. Research assumes it will be migrated to use Lexical's ContentEditable. If this is not feasible, Option B implementation changes significantly.
+
+- **@lexical/link installation:** The package is missing from package.json. Must be installed before Phase 1 can proceed.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing Vibe Onepage codebase analysis — User.java, Blog.java, UserController.java, BlogController.java, SecurityConfig.java
-- MySQL 8 documentation — JSON column native support
-- MyBatis-Plus documentation — TypeHandler for JSON deserialization
+- Lexical 0.42.0 official documentation (lexical.dev) — rich text concepts, commands, selection
+- Lexical Playground FloatingTextFormatToolbarPlugin (GitHub) — reference implementation
+- Lexical npm packages — verified installed at 0.42.0
+- Existing codebase: LexicalConfig.ts, editorStore.ts, LexicalBlockNode.ts
 
 ### Secondary (MEDIUM confidence)
-- Competitor analysis (Linktree, Carrd, about.me, Wix) — feature comparison from FEATURES.md
-- Spring Boot REST best practices — API design patterns
-- Industry pattern training data — profile page security (IDOR, XSS, SSRF patterns)
+- Lexical Playground ToolbarPlugin — implementation patterns for toolbar
+- Community discussions on floating toolbar positioning with custom nodes
 
 ### Tertiary (LOW confidence)
-- WeChat Pay v3 patterns via WebFetch — not directly applicable to v1.7 profile pages
+- None identified
 
 ---
-*Research completed: 2026-03-22*
+*Research completed: 2026-03-25*
 *Ready for roadmap: yes*

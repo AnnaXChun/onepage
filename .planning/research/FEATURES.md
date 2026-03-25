@@ -1,10 +1,8 @@
-# Feature Research: Public Profile Pages
+# Feature Research: Rich Text Formatting (v1.10)
 
-**Domain:** Personal website builder with public user profile pages
-**Researched:** 2026-03-22
-**Confidence:** MEDIUM
-
-*Note: Web search tools encountered errors during research. Findings synthesized from existing codebase analysis and domain knowledge of comparable products (Linktree, Carrd, about.me, Wix, WordPress.com).*
+**Domain:** Lexical-based block editor rich text formatting
+**Researched:** 2026-03-25
+**Confidence:** MEDIUM-HIGH
 
 ---
 
@@ -12,108 +10,141 @@
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist on any public profile page. Missing these = product feels broken or incomplete.
+Users expect text editing to behave like Google Docs or Notion -- standard rich text that "just works."
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Avatar image** | Visual identity is fundamental to any profile | LOW | Existing `avatar` field in User model, needs upload UI |
-| **Username/display name** | Basic identification | LOW | Existing `username` field, display prominently |
-| **Bio text** | "Who is this person?" - first thing visitors want to know | LOW | MISSING from User model - needs new `bio` field (200-500 chars) |
-| **Published sites grid** | Showcases user's work/product | MEDIUM | Existing Blog model with `status=1` for published; needs public endpoint to list by username |
-| **Social links** | "How do I follow/contact them?" | LOW | MISSING from User model - needs `social_links` JSON field or columns |
-| **Profile URL** | Shareable link like `/user/{username}` | LOW | New endpoint + frontend page; existing `username` is UNIQUE constraint |
-| **VIP badge** | Social proof of premium user | LOW | Existing `vip_status` boolean in User model |
-| **Cover/thumbnail images** | Visual richness for site cards | LOW | Existing `cover_image` in Blog model |
+| Bold (Ctrl+B / Cmd+B) | Universal editing expectation | LOW | Lexical `FORMAT_TEXT_COMMAND` with `bold` type. Theme class `vibe-text-bold` already defined in LexicalConfig. |
+| Italic (Ctrl+I / Cmd+I) | Universal editing expectation | LOW | Same mechanism as bold, using `italic` format type. Theme class `vibe-text-italic` already defined. |
+| Underline (Ctrl+U / Cmd+U) | Universal editing expectation | LOW | Same mechanism using `underline` format type. Theme class `vibe-text-underline` already defined. |
+| Strikethrough | Common editing need | LOW | Uses `strikethrough` format type. Not yet in theme config. |
+| Inline code | Technical content formatting | LOW | Uses `code` format type. |
+| Clickable links (Ctrl+K) | Web-standard expectation | MEDIUM | Requires `@lexical/link` package (NOT in package.json). Needs `LinkNode`, `TOGGLE_LINK_COMMAND`. |
+| Floating toolbar on selection | Modern editor UX pattern | MEDIUM | Lexical Playground pattern: multi-listener approach (selectionchange + SELECTION_CHANGE_COMMAND + registerUpdateListener). |
+| Mixed formatting within paragraphs | Rich text expectation | MEDIUM | Lexical TextNodes natively support multiple format flags simultaneously. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set Vibe Onepage apart. Not required, but valuable for differentiation.
+These are not expected by default but add significant value for a website builder.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Featured/pinned site** | Let users highlight their best work | MEDIUM | New boolean field on Blog model (`is_featured`) |
-| **Site preview on hover** | Immediate engagement, shows quality | HIGH | Requires loading blog HTML content; may impact performance |
-| **Visitor count display** | Social proof - "500 people visited my page" | LOW | Existing analytics infrastructure; add to profile |
-| **Total views across all sites** | Aggregate achievement metric | LOW | Sum from `blog_daily_stats` table |
-| **Custom profile theme** | Brand alignment for power users | MEDIUM | Extend User model with `profile_theme` JSON |
-| **"View site" CTA buttons** | Clear call-to-action on profile | LOW | Each site card needs prominent button |
-| **Engagement metrics per site** | Page views, unique visitors on each card | MEDIUM | Join with `blog_daily_stats` |
+| Format-preserving AI Write Assist | AI suggestions respect existing formatting | MEDIUM | Current AI Write replaces entire text. With rich text, AI should preserve/respect inline formatting. |
+| Block-level format toolbar vs floating | Consistent with block-editor mental model | LOW | Floating toolbar on text selection is the standard pattern, but a block-level toolbar when block is selected could be simpler. |
+| Link URL editing inline | Professional feel | MEDIUM | Requires URL input in floating toolbar, URL validation, link security (no javascript: URLs). |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
-Features that seem good but create problems for this use case.
-
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Full editor on profile page** | "Let me tweak my profile from here" | Breaks the product mental model; editor is for sites, not profiles | Keep profile editing in settings/account area |
-| **Comments on profile** | "Let visitors leave feedback" | Adds moderation burden, not aligned with one-page site product | Use contact block in user's actual site |
-| **Follow system** | "Let me follow interesting creators" | Notification complexity, ongoing engagement expectations | Social links are sufficient for now |
-| **Real-time activity feed** | "Show when someone visits" | Privacy concerns, infrastructure complexity | Periodic email digest (already exists) |
-| **Unlimited social links** | "Add all my accounts" | Visual clutter, diminishes important links | Cap at 5-6 essential links |
+| Real-time collaborative formatting | "Google Docs has it" | Significant complexity: CRDTs, presence cursors, conflict resolution. Lexical supports this but requires Yjs integration. | Single-user editing for v1.10 |
+| Inline image formatting | "Can add images in text" | Images in text flow require complex node types and rendering logic. | Keep images as separate blocks |
+| Table formatting | "Notion has tables" | Tables in a single-page website builder are low-value vs complexity. | No tables in v1 |
+| Custom formatting styles | "Want my own bold style" | Theme inconsistency, CSS explosion. | Limit to standard formats |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Profile Page] ──requires──> [Public User Endpoint]
-                              └──requires──> [User Model: bio + social_links fields]
+Bold/Italic/Underline/Strikethrough/Code
+    └──requires──> Lexical RichTextPlugin + FORMAT_TEXT_COMMAND
+                       └──requires──> @lexical/rich-text (already in package.json)
 
-[Published Sites Grid] ──requires──> [BlogService.getByUsername(username)]
-                                     └──requires──> [blogs.status = 1 (published)]
+Links
+    └──requires──> @lexical/link (MISSING from package.json)
+                       └──requires──> LinkNode registration in lexicalConfig
+                                  └──requires──> TOGGLE_LINK_COMMAND handling
 
-[VIP Badge Display] ──requires──> [User.vipStatus field]
+Floating Toolbar
+    └──requires──> Selection detection (SELECTION_CHANGE_COMMAND + selectionchange)
+                       └──requires──> FloatingElemPosition for positioning
+                                  └──requires──> Toolbar state from selection.hasFormat()
 
-[Featured Site] ──requires──> [Blog.isFeatured field]
-
-[Visitor Counts] ──requires──> [blog_daily_stats aggregation]
-
-[Site Preview Hover] ──enhances──> [Published Sites Grid]
-                                    └──conflicts──> [Performance at scale]
+Keyboard Shortcuts
+    └──requires──> editor.registerCommand for FORMAT_TEXT_COMMAND
+    └──requires──> LinkPlugin for Ctrl+K
 ```
 
 ### Dependency Notes
 
-- **Profile page requires new User fields:** Bio and social_links are not in the current User model. These must be added in a schema migration before the profile endpoint can return meaningful data.
-- **Published sites requires filtered query:** Current `BlogController.listMyBlogs()` returns all blogs. Need new `BlogService.getPublishedByUsername()` that filters by `status=1`.
-- **VIP badge is already available:** The `vip_status` field exists; just needs to be exposed in the public UserDTO.
+- **Bold/Italic/Underline require RichTextPlugin:** The existing `@lexical/rich-text` package provides `registerRichText` which registers `FORMAT_TEXT_COMMAND` with the editor.
+- **Links require @lexical/link:** This package is NOT in package.json and must be installed. It provides `LinkNode`, `$createLinkNode`, and `TOGGLE_LINK_COMMAND`.
+- **Floating toolbar requires selection tracking:** Uses Lexical's `SELECTION_CHANGE_COMMAND` and native `selectionchange` events to detect when to show/hide.
+- **TextBlock must migrate from contentEditable:** Current TextBlock uses plain `contentEditable` divs. It needs to use Lexical's `ContentEditable` component with proper node rendering.
 
 ---
 
-## MVP Definition (v1.7)
+## Current Architecture Assessment
 
-### Launch With (v1.7)
+### What Exists
 
-Minimum viable public profile page - what's needed to validate the concept.
+1. **LexicalComposer setup** (`LexicalEditor.tsx`) - wraps editor in Lexical context
+2. **Custom BlockNode** (`LexicalBlockNode.ts`) - stores blockId/blockType for each block
+3. **Theme config** (`LexicalConfig.ts`) - already has `text.bold`, `text.italic`, `text.underline` CSS classes
+4. **@lexical/rich-text, @lexical/list, @lexical/utils** - all in package.json
+5. **Plain contentEditable TextBlock** (`TextBlock.tsx`) - NOT using Lexical's rich text API
 
-- [ ] **Public profile endpoint** `GET /api/user/profile/{username}` - Returns user info + their published sites
-- [ ] **Avatar display** - Show user's avatar on profile page
-- [ ] **Username prominently displayed** - The user's chosen name
-- [ ] **Bio field** - Short text introduction (requires User schema update)
-- [ ] **Social links** - Twitter, GitHub, LinkedIn, etc. (requires User schema update)
-- [ ] **Published sites grid** - Cards showing title, cover image, share link
-- [ ] **VIP badge** - Visual indicator for premium users
-- [ ] **Profile page UI** at `/user/{username}` - Public-facing page
-- [ ] **Profile editing UI** in account settings - Form to edit bio and social links
-- [ ] **Auto-redirect after login** - Send authenticated users to their profile
+### What Is Missing
+
+1. **@lexical/link** - NOT in package.json, required for links
+2. **RichTextPlugin** - NOT registered in LexicalConfig
+3. **ContentEditable integration** - TextBlock uses native contentEditable, not Lexical's ContentEditable
+4. **FloatingTextFormatToolbarPlugin** - does not exist
+5. **LinkPlugin** - not registered
+
+---
+
+## Implementation Approach
+
+### Option A: True Lexical Rich Text (Recommended)
+Replace TextBlock's `contentEditable` with Lexical's `ContentEditable` inside each block. Each text block becomes its own Lexical editor instance.
+
+**Pros:** Full rich text support, proper undo/redo per block, AI integration benefits
+**Cons:** More complex; each block is its own editor instance (not one global editor)
+**Complexity:** HIGH
+
+### Option B: Floating Toolbar on Existing Structure (v1.10 Path)
+Keep TextBlock's contentEditable but add a floating toolbar that dispatches `FORMAT_TEXT_COMMAND` to a shared Lexical editor instance.
+
+**Pros:** Lower complexity, leverages existing code
+**Cons:** Mixed architecture (plain contentEditable + Lexical commands), undo/redo complexity
+**Complexity:** MEDIUM
+
+### Option C: Block-Level Lexical with Shared State
+One Lexical editor instance per block, but using `BlockNode` as a wrapper that manages a nested Lexical editor for rich text.
+
+**Pros:** Clean architecture, each block is self-contained
+**Cons:** Requires significant refactoring of BlockNode
+**Complexity:** HIGH
+
+**Recommendation:** Option B for v1.10 (fastest path to working rich text), with migration path to Option A in v1.x.
+
+---
+
+## MVP Definition
+
+### Launch With (v1.10)
+
+- [ ] **Bold, Italic, Underline** - via floating toolbar + keyboard shortcuts. Uses `FORMAT_TEXT_COMMAND` with `RichTextPlugin`.
+- [ ] **Strikethrough, Code** - same toolbar, additional format types.
+- [ ] **Links** - via Ctrl+K and toolbar button. Requires `@lexical/link` installation.
+- [ ] **Floating toolbar** - appears on text selection, positioned near selection. Shows format buttons with active state.
+- [ ] **Keyboard shortcuts** - Ctrl/Cmd+B, +I, +U, +K for link insertion.
+- [ ] **Theme CSS classes** - `vibe-text-bold`, `vibe-text-italic`, `vibe-text-underline` already defined.
 
 ### Add After Validation (v1.x)
 
-Features to add once core profile page is working.
-
-- [ ] **Featured site** - Let users pin one site to the top
-- [ ] **Total visitor count** - Aggregate views across all published sites
-- [ ] **Per-site visitor counts** - Show page views on each site card
-- [ ] **Custom profile theme** - Brand colors for power users
+- [ ] **Inline code formatting with background** - add `code` styling to theme
+- [ ] **Link URL editing inline** - show URL in toolbar when link selected
+- [ ] **Highlight formatting** - `highlight` format type
+- [ ] **Format-preserving AI** - AI suggestions respect inline formatting
 
 ### Future Consideration (v2+)
 
-Features to defer until product-market fit is established.
-
-- [ ] **Site preview on hover** - Rich interaction but high complexity
-- [ ] **Follow system** - Adds notification infrastructure
-- [ ] **Profile visit notifications** - Email digest is sufficient
-- [ ] **Custom profile subdomain** - `username.vibeonepage.com` (requires DNS infrastructure)
+- [ ] **Real-time collaboration** - Yjs integration with Lexical
+- [ ] **Table blocks** - dedicated table block type
+- [ ] **Custom formatting presets** - user-defined text styles
 
 ---
 
@@ -121,98 +152,89 @@ Features to defer until product-market fit is established.
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Public profile endpoint | HIGH | LOW | P1 |
-| Bio field + editing | HIGH | LOW | P1 |
-| Social links field + editing | HIGH | LOW | P1 |
-| Published sites grid | HIGH | MEDIUM | P1 |
-| Profile page UI | HIGH | MEDIUM | P1 |
-| Avatar display | MEDIUM | LOW | P1 |
-| VIP badge | LOW | LOW | P2 |
-| Featured site pinning | MEDIUM | MEDIUM | P2 |
-| Total visitor counts | MEDIUM | MEDIUM | P2 |
-| Per-site visitor counts | MEDIUM | MEDIUM | P2 |
-| Custom profile theme | LOW | HIGH | P3 |
-| Site preview on hover | MEDIUM | HIGH | P3 |
+| Bold/Italic/Underline | HIGH | LOW | P1 |
+| Strikethrough | MEDIUM | LOW | P1 |
+| Inline code | MEDIUM | LOW | P1 |
+| Links (Ctrl+K) | HIGH | MEDIUM | P1 |
+| Floating toolbar | HIGH | MEDIUM | P1 |
+| Keyboard shortcuts | HIGH | LOW | P1 |
+| Link URL editing | MEDIUM | MEDIUM | P2 |
+| Highlight | LOW | LOW | P2 |
+| Format-preserving AI | MEDIUM | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for launch - without these, profile page is incomplete
-- P2: Should have - adds meaningful value without major complexity
-- P3: Nice to have - defer until after validation
+- P1: Must have for v1.10 launch
+- P2: Should have, add shortly after
+- P3: Nice to have, future consideration
 
 ---
 
-## Schema Changes Required
+## Technical Implementation Notes
 
-### User Model Additions
+### Packages Needed
 
-```sql
--- Add bio field
-ALTER TABLE users ADD COLUMN bio VARCHAR(500) DEFAULT NULL COMMENT 'Profile bio text';
-
--- Add social links as JSON
-ALTER TABLE users ADD COLUMN social_links JSON DEFAULT NULL COMMENT '{"twitter":"", "github":"", "linkedin":"", "website":""}';
+```bash
+npm install @lexical/link  # MISSING - required for links
+# Already installed:
+# @lexical/react, lexical, @lexical/rich-text, @lexical/list, @lexical/utils
 ```
 
-### Blog Model Additions
+### Key Lexical APIs
 
-```sql
--- Add featured flag for pinning
-ALTER TABLE blogs ADD COLUMN is_featured TINYINT DEFAULT 0 COMMENT '1:featured 0:normal';
-```
+1. **FORMAT_TEXT_COMMAND** - Dispatch with format type:
+   ```typescript
+   editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+   editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+   editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+   ```
 
----
+2. **TextFormatType** (from `lexical`):
+   ```typescript
+   type TextFormatType = 'bold' | 'underline' | 'strikethrough' | 'italic' |
+     'highlight' | 'code' | 'subscript' | 'superscript' |
+     'lowercase' | 'uppercase' | 'capitalize';
+   ```
 
-## Competitor Feature Analysis
+3. **TOGGLE_LINK_COMMAND** (from `@lexical/link`):
+   ```typescript
+   editor.dispatchCommand(TOGGLE_LINK_COMMAND, { url: 'https://...' });
+   editor.dispatchCommand(TOGGLE_LINK_COMMAND, null); // remove link
+   ```
 
-| Feature | Linktree | Carrd | about.me | Wix | Our Approach |
-|---------|----------|-------|----------|-----|--------------|
-| Avatar | Yes | Yes | Yes | Yes | Yes - existing field |
-| Bio | Yes (80 char) | Yes | Yes | Yes | Yes - new field |
-| Social links | Yes (unlimited) | Yes | Yes | Yes | Yes - new JSON field |
-| Published items grid | Links only | Single page | Links only | Full sites | Published sites grid |
-| Featured item | Pro only | No | No | Yes | Featured site (P2) |
-| Visitor counts | Pro only | No | No | Yes | Total + per-site (P2) |
-| Custom theme | Pro only | Limited | No | Yes | Custom colors (P3) |
-| Follow system | Yes | No | No | Yes | No - use social links |
+4. **Floating toolbar positioning** (from Lexical Playground):
+   - Track selection via `selectionchange` + `SELECTION_CHANGE_COMMAND`
+   - Use `getBoundingRect()` on selection range for positioning
+   - Show only when `!nativeSelection.isCollapsed` and selection contains text
 
-**Observations:**
-- Linktree pioneered the link-in-bio profile, but they charge for advanced features
-- Carrd is simplest - one page, minimal features
-- about.me was early entrant but has not innovated much
-- Wix offers full website builder with user profiles
+### Keyboard Shortcut Mapping
 
-**Our positioning:** Vibe Onepage is for users who want more than a link page - they want actual single-page websites. The profile page should showcase those sites prominently.
+| Shortcut | Action | Command |
+|----------|--------|---------|
+| Ctrl/ Cmd + B | Bold | `FORMAT_TEXT_COMMAND` with `bold` |
+| Ctrl/ Cmd + I | Italic | `FORMAT_TEXT_COMMAND` with `italic` |
+| Ctrl/ Cmd + U | Underline | `FORMAT_TEXT_COMMAND` with `underline` |
+| Ctrl/ Cmd + K | Insert link | `TOGGLE_LINK_COMMAND` |
+
+### State Sync Concern
+
+The existing architecture syncs between Zustand (blocks array with plain strings) and Lexical (BlockNode with text). For v1.10:
+
+- TextBlock currently stores `content: string` in Zustand
+- With rich text, content becomes structured (formatting metadata)
+- Options: (a) store Lexical JSON in Zustand, or (b) serialize to HTML/plain text on save
+- **Recommended:** Store Lexical editor state as JSON in `content` field, deserialize on load
 
 ---
 
 ## Sources
 
-- **Linktree** - Link-in-bio profile pages (linktr.ee)
-- **Carrd** - Simple one-page site builder with profiles (carrd.co)
-- **about.me** - Classic personal profile pages (about.me)
-- **Wix** - Website builder with user profiles (wix.com)
-- **WordPress.com** - Blogging platform with public user profiles
-- **Existing codebase analysis** - User.java, Blog.java, schema.sql, UserController.java, BlogController.java
+- [Lexical TextFormatType definition](https://raw.githubusercontent.com/facebook/lexical/main/packages/lexical/src/nodes/LexicalTextNode.ts) - HIGH confidence
+- [Lexical FORMAT_TEXT_COMMAND](https://raw.githubusercontent.com/facebook/lexical/main/packages/lexical-rich-text/src/index.ts) - HIGH confidence
+- [Lexical TOGGLE_LINK_COMMAND](https://raw.githubusercontent.com/facebook/lexical/main/packages/lexical-link/src/index.ts) - HIGH confidence
+- [Lexical FloatingTextFormatToolbarPlugin pattern](https://raw.githubusercontent.com/facebook/lexical/main/packages/lexical-playground/src/plugins/FloatingTextFormatToolbarPlugin/index.tsx) - HIGH confidence
+- [Lexical rich-text package](https://lexical.dev/docs/packages/lexical-react) - MEDIUM confidence
+- Existing codebase: LexicalConfig.ts, TextBlock.tsx, LexicalBlockNode.ts, editorStore.ts - HIGH confidence
 
 ---
 
-## Open Questions
-
-1. **Username uniqueness enforcement** - The `username` column has UNIQUE constraint. What happens if a user wants to change their username? (Need slug migration strategy)
-2. **Profile page vs published site URL conflict** - Currently sites are at `/blog/share/{shareCode}`. Profile is at `/user/{username}`. Is this the intended URL structure?
-3. **Default avatar** - What if user has no avatar uploaded? Need placeholder image.
-4. **Minimum blogs to show** - Should empty profiles (no published sites) be shown? What message to display?
-
----
-
-## Confidence Assessment
-
-| Area | Level | Reason |
-|------|-------|--------|
-| Table stakes features | HIGH | Standard pattern across all profile products |
-| Differentiators | MEDIUM | Based on product positioning; may need user validation |
-| Anti-features | MEDIUM | Based on product constraints; could change with user feedback |
-| Schema recommendations | HIGH | Based on existing codebase analysis |
-| Priority matrix | MEDIUM | Informed by industry patterns; actual priorities need PM input |
-
-*Research completed: 2026-03-22*
+*Research completed: 2026-03-25*
