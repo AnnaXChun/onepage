@@ -1,5 +1,6 @@
 import { InitialConfigType, LexicalComposer } from '@lexical/react/LexicalComposer';
 import { BlockNode } from './LexicalBlockNode';
+import { LinkNode } from '@lexical/link';
 import type { LexicalEditor } from 'lexical';
 
 /**
@@ -8,7 +9,7 @@ import type { LexicalEditor } from 'lexical';
  */
 export const lexicalConfig: InitialConfigType = {
   namespace: 'vibe-editor',
-  nodes: [BlockNode],
+  nodes: [BlockNode, LinkNode],
   onError: (error: Error) => {
     console.error('[Lexical Error]', error);
   },
@@ -20,6 +21,7 @@ export const lexicalConfig: InitialConfigType = {
       italic: 'vibe-text-italic',
       underline: 'vibe-text-underline',
     },
+    link: 'vibe-text-link',
   },
 };
 
