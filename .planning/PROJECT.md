@@ -25,7 +25,7 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 **Last Milestone Shipped:** v1.9 Lexical Editor Rebuild (2026-03-24)
 
-**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, editor fixes, and Lexical editor rebuild.
+**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, editor fixes, Lexical editor rebuild, and LinkNode foundation (v1.10).
 
 ## Previous Milestone: v1.9 Lexical Editor Rebuild (COMPLETE)
 
@@ -89,6 +89,7 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Lexical Core Setup — Lexical framework, custom BlockNode, Zustand sync, auto-save with Lexical state — v1.9 (Phase 24)
 - ✓ Block Type Migration — All 5 block types migrated to Lexical nodes (Text, Image, Social Links, Contact, Divider) — v1.9 (Phase 25)
 - ✓ AI Integration — AI Write Assist connected to Lexical selection, Replace/Append modes via editor.update() — v1.9 (Phase 26)
+- ✓ LinkNode Foundation — @lexical/link installed, URL validation utility created, LinkNode registered — v1.10 (Phase 27)
 
 ### Out of Scope
 
