@@ -3,7 +3,7 @@ phase: 29-text-formatting
 plan: 01
 type: execute
 wave: 1
-depends_on: []
+depends_on: ["28"]
 files_modified:
   - frontend/src/components/Editor/blocks/TextBlock.tsx
 autonomous: true
@@ -21,12 +21,12 @@ must_haves:
     - path: "frontend/src/components/Editor/blocks/TextBlock.tsx"
       provides: "Text formatting with keyboard shortcuts and toolbar integration"
       min_lines: 50
-    - path: "frontend/src/store/editorStore.ts"
+    - path: "frontend/src/stores/editorStore.ts"
       provides: "lexicalEditor reference for command dispatch"
       exports: ["lexicalEditor", "setLexicalEditor"]
   key_links:
     - from: "TextBlock.tsx"
-      to: "editorStore.ts"
+      to: "stores/editorStore.ts"
       via: "useEditorStore().lexicalEditor"
       pattern: "lexicalEditor.*dispatch"
     - from: "FloatingToolbar.tsx"
@@ -46,7 +46,7 @@ Implement bold, italic, and underline text formatting with keyboard shortcuts (C
 <context>
 @frontend/src/components/Editor/FloatingToolbar.tsx
 @frontend/src/components/Editor/blocks/TextBlock.tsx
-@frontend/src/store/editorStore.ts
+@frontend/src/stores/editorStore.ts
 @frontend/src/components/Editor/LexicalConfig.ts
 </context>
 
@@ -57,21 +57,16 @@ Implement bold, italic, and underline text formatting with keyboard shortcuts (C
   <files>frontend/src/components/Editor/blocks/TextBlock.tsx</files>
   <read_first>
     - frontend/src/components/Editor/blocks/TextBlock.tsx
-    - frontend/src/store/editorStore.ts
+    - frontend/src/stores/editorStore.ts
   </read_first>
   <action>
     In TextBlock.tsx, update the handleFormat function to:
 
     1. Import FORMAT_TEXT_COMMAND from 'lexical/LexicalCommands' and $getSelection, $isRangeSelection from 'lexical'
     2. Get lexicalEditor from the Zustand store via useEditorStore()
-    3. Update handleFormat to dispatch FORMAT_TEXT_COMMAND based on format parameter:
-       - 'bold' -> dispatch($createCommand('FORMAT_TEXT_COMMAND'), { type: 'bold' }, editor)
-       - 'italic' -> dispatch($createCommand('FORMAT_TEXT_COMMAND'), { type: 'italic' }, editor)
-       - 'underline' -> dispatch($createCommand('FORMAT_TEXT_COMMAND'), { type: 'underline' }, editor)
+    3. Update handleFormat to dispatch FORMAT_TEXT_COMMAND using editor.dispatchCommand(FORMAT_TEXT_COMMAND, format) where format is 'bold', 'italic', or 'underline'
 
     The lexicalEditor is stored in Zustand at state.lexicalEditor (set by LexicalEditorInner in LexicalEditor.tsx).
-
-    IMPORTANT: Use editor.dispatchCommand(FORMAT_TEXT_COMMAND, format) where format is 'bold', 'italic', or 'underline'.
   </action>
   <verify>
     <automated>grep -n "dispatchCommand.*FORMAT_TEXT_COMMAND" frontend/src/components/Editor/blocks/TextBlock.tsx</automated>
