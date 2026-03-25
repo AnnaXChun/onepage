@@ -53,7 +53,8 @@
   2. Toolbar displays Bold, Italic, Underline, and Link buttons
   3. Toolbar visually indicates which formats are currently active on selection
   4. Clicking outside selection dismisses toolbar
-**Plans:** TBD
+**Plans:** 1/1
+- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
 
 ### Phase 29: Text Formatting
 **Goal:** User can apply bold, italic, and underline formatting to text
@@ -64,7 +65,8 @@
   2. User can make text italic via toolbar button or Ctrl+I
   3. User can underline text via toolbar button or Ctrl+U
   4. Formatting persists when saving and reopening the editor
-**Plans:** TBD
+**Plans:** 1/1
+- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
 
 ### Phase 30: Link Support
 **Goal:** User can insert, edit, and remove links within text
@@ -75,7 +77,8 @@
   2. User can edit an existing link URL
   3. User can remove a link from text (converts to plain text)
   4. User can set link to open in new tab via toggle
-**Plans:** TBD
+**Plans:** 1/1
+- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
 
 ### Phase 31: UI Polish
 **Goal:** Verify complex interactions and polish user experience
@@ -86,7 +89,8 @@
   2. Mixed formatting within paragraphs works correctly (e.g., bold within italic)
   3. Undo/redo preserves formatting
   4. Links with new tab setting render correctly on published site
-**Plans:** TBD
+**Plans:** 1/1
+- [28-floating-toolbar-01](./phases/28-floating-toolbar/28-floating-toolbar-PLAN.md)
 
 ---
 
@@ -95,7 +99,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 27. LinkNode Foundation | 1/1 | Complete    | 2026-03-25 |
-| 28. Floating Toolbar | 0/1 | Not started | - |
+| 28. Floating Toolbar | 1/1 | Planned | - |
 | 29. Text Formatting | 0/1 | Not started | - |
 | 30. Link Support | 0/1 | Not started | - |
 | 31. UI Polish | 0/1 | Not started | - |
