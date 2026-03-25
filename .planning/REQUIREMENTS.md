@@ -9,9 +9,9 @@ Requirements for rich text formatting. Add inline text formatting and link suppo
 
 ### Text Formatting
 
-- [ ] **RICH-01**: User can make text bold (Ctrl+B or toolbar button)
-- [ ] **RICH-02**: User can make text italic (Ctrl+I or toolbar button)
-- [ ] **RICH-03**: User can underline text (Ctrl+U or toolbar button)
+- [x] **RICH-01**: User can make text bold (Ctrl+B or toolbar button)
+- [x] **RICH-02**: User can make text italic (Ctrl+I or toolbar button)
+- [x] **RICH-03**: User can underline text (Ctrl+U or toolbar button)
 
 ### Links
 
@@ -63,9 +63,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RICH-01 | Phase 29 | Pending |
-| RICH-02 | Phase 29 | Pending |
-| RICH-03 | Phase 29 | Pending |
+| RICH-01 | Phase 29 | Complete |
+| RICH-02 | Phase 29 | Complete |
+| RICH-03 | Phase 29 | Complete |
 | LINK-01 | Phase 30 | Pending |
 | LINK-02 | Phase 30 | Pending |
 | LINK-03 | Phase 30 | Pending |
