@@ -10,9 +10,16 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.10 (待定义)
+## Current Milestone: v1.10 Rich Text Formatting
 
-**Next:** Run `/gsd:new-milestone` to start v1.10 planning.
+**Goal:** Add rich text formatting (bold, italic, underline, links) within text blocks using Lexical's native rich text API.
+
+**Target features:**
+- Bold, italic, underline, strikethrough, code formatting
+- Clickable links with URL editing
+- Mixed formatting within paragraphs
+- Floating toolbar on text selection
+- Keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+K)
 
 ## Current State
 
