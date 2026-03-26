@@ -10,36 +10,25 @@ A drag-and-drop single-page website builder SaaS. Users select a template (Blog,
 
 Users can have a beautiful, personalized website live in minutes — not hours — by combining AI-assisted generation with an intuitive block-level editor.
 
-## Current Milestone: v1.10 Rich Text Formatting
+## Current Milestone: v1.11 (Planning)
 
-**Goal:** Add rich text formatting (bold, italic, underline, links) within text blocks using Lexical's native rich text API.
-
-**Target features:**
-- Bold, italic, underline, strikethrough, code formatting
-- Clickable links with URL editing
-- Mixed formatting within paragraphs
-- Floating toolbar on text selection
-- Keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+K)
+**Goal:** TBD
 
 ## Current State
 
-**Last Milestone Shipped:** v1.9 Lexical Editor Rebuild (2026-03-24)
+**Last Milestone Shipped:** v1.10 Rich Text Formatting (2026-03-26)
 
-**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, editor fixes, Lexical editor rebuild, and LinkNode foundation (v1.10).
+**What's been built:** Full-stack SaaS with AI generation, WeChat Pay, PDF export, analytics, SEO tools, email notifications, user profiles, editor fixes, Lexical editor rebuild, and rich text formatting with floating toolbar.
 
-## Previous Milestone: v1.9 Lexical Editor Rebuild (COMPLETE)
-
-**Shipped features:**
-- Editor loads saved blocks from backend (not template defaults)
-- Done button awaits saveBlocksToBackend before navigation
-- Draft status infrastructure (STATUS_DRAFT, GET /blog/drafts)
-- My Drafts section on profile page with resume editing
+## Previous Milestone: v1.10 Rich Text Formatting (COMPLETE)
 
 **Shipped features:**
-- White/light theme for all pages (Home, Editor, Templates, Analytics, etc.)
-- Blue-black color scheme for buttons and components
-- Editor UX improvements (block handles with selection state, config panel, smooth drag animations)
-- Consistent hover animations on all interactive elements
+- Floating toolbar on text selection with Bold, Italic, Underline, Link buttons
+- Bold, italic, underline formatting via toolbar and keyboard shortcuts (Ctrl+B/I/U)
+- Link insertion, editing, and removal with URL validation (no javascript:, data: URLs)
+- New tab option for links
+- Active formatting states visually indicated in toolbar
+- Lexical JSON persistence for rich text on published sites
 
 ## Requirements
 
@@ -90,6 +79,12 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 - ✓ Block Type Migration — All 5 block types migrated to Lexical nodes (Text, Image, Social Links, Contact, Divider) — v1.9 (Phase 25)
 - ✓ AI Integration — AI Write Assist connected to Lexical selection, Replace/Append modes via editor.update() — v1.9 (Phase 26)
 - ✓ LinkNode Foundation — @lexical/link installed, URL validation utility created, LinkNode registered — v1.10 (Phase 27)
+- ✓ Floating Toolbar — Selection-triggered toolbar with Bold, Italic, Underline, Link buttons — v1.10 (Phase 28)
+- ✓ Bold Formatting — Ctrl+B and toolbar button — v1.10 (Phase 29)
+- ✓ Italic Formatting — Ctrl+I and toolbar button — v1.10 (Phase 29)
+- ✓ Underline Formatting — Ctrl+U and toolbar button — v1.10 (Phase 29)
+- ✓ Link Insert/Edit/Remove — Ctrl+K and toolbar, URL validation, new tab option — v1.10 (Phase 30)
+- ✓ Active Format States — Toolbar shows current formatting state — v1.10 (Phase 31)
 
 ### Out of Scope
 
@@ -148,5 +143,5 @@ Users can have a beautiful, personalized website live in minutes — not hours �
 
 ## Evolution
 
-*Last updated: 2026-03-24 after v1.9 shipped*
+*Last updated: 2026-03-26 after v1.10 shipped*
 

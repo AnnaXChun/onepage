@@ -1,5 +1,18 @@
 # Milestones
 
+## 1.10 Rich Text Formatting (Shipped: 2026-03-26)
+
+**Phases completed:** 5 phases, 5 plans, 0 tasks
+
+**Key accomplishments:**
+
+- FloatingToolbar.tsx
+- Bold, italic, underline formatting with:
+- Link insertion, editing, and removal with URL validation and new tab option
+- Frontend build fails due to lexical package import error
+
+---
+
 ## v1.8 Editor Fixes & Drafts (Shipped: 2026-03-23)
 
 **Phases completed:** 1 phase, 3 plans
