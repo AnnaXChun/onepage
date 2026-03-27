@@ -22,6 +22,7 @@ const textTypeToTag: Record<string, string> = {
   'text-h2': 'h2',
   'text-paragraph': 'p',
   'text-list': 'ul',
+  'text-container': 'div',
 };
 
 export default function TextBlock({

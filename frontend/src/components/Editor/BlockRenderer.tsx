@@ -41,6 +41,7 @@ export default function BlockRenderer({
     case 'text-h2':
     case 'text-paragraph':
     case 'text-list':
+    case 'text-container':
       return <TextBlock {...commonProps} />;
     case 'image-single':
     case 'image-gallery':
