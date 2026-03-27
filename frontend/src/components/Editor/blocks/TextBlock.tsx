@@ -39,7 +39,7 @@ export default function TextBlock({
   const [localValue, setLocalValue] = useState(content || block.defaultContent);
   const containerRef = useRef<HTMLDivElement>(null);
   const isEditingRef = useRef(false);
-  const { updateBlock } = useEditorStore();
+  const { updateBlock, lexicalEditor } = useEditorStore();
   const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
 
@@ -197,8 +197,6 @@ export default function TextBlock({
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
   };
-
-  const { lexicalEditor } = useEditorStore();
 
   const handleFormat = useCallback((format: 'bold' | 'italic' | 'underline' | 'link') => {
     if (!lexicalEditor) {
