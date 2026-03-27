@@ -3,7 +3,7 @@ import { useEditorStore } from '../../../stores/editorStore';
 import { BlockDefinition } from '../../../types/block';
 import AIWriteModal from '../AIWriteModal';
 import FloatingToolbar from '../FloatingToolbar';
-import { FORMAT_TEXT_COMMAND } from 'lexical/LexicalCommands';
+import { FORMAT_TEXT_COMMAND } from 'lexical';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { validateUrl } from '../utils/linkUtils';
 import LinkEditorModal from '../LinkEditorModal';
