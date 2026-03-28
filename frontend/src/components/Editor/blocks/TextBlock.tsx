@@ -43,6 +43,7 @@ export default function TextBlock({
   const { updateBlock, lexicalEditor } = useEditorStore();
   const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
+  const [cursorOffset, setCursorOffset] = useState<number | null>(null);
 
   useEffect(() => {
     isEditingRef.current = isEditing;
@@ -189,9 +190,38 @@ export default function TextBlock({
   };
 
   const handleInput = (e: React.FormEvent) => {
-    const target = e.currentTarget;
+    const target = e.currentTarget as HTMLElement;
+    // Save selection offset before React re-render
+    const selection = window.getSelection();
+    const offset = selection && selection.rangeCount > 0
+      ? selection.getRangeAt(0).startOffset
+      : (target.textContent?.length || 0);
+    setCursorOffset(offset);
     setLocalValue(target.textContent || '');
   };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (cursorOffset !== null && containerRef.current) {
+      const el = containerRef.current.querySelector('[contenteditable]') as HTMLElement;
+      if (el) {
+        try {
+          const range = document.createRange();
+          const sel = window.getSelection();
+          // Clamp offset to valid range
+          const maxOffset = el.textContent?.length || 0;
+          const safeOffset = Math.min(cursorOffset, maxOffset);
+          range.setStart(el.firstChild || el, safeOffset);
+          range.collapse(true);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        } catch {
+          // Ignore cursor restoration errors
+        }
+      }
+    }
+    setCursorOffset(null);
+  }, [localValue]);
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
